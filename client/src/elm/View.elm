@@ -8,39 +8,26 @@ import Types
         ( ColorTheme(..)
         , Model
         , Msg(..)
-        , View(..)
         )
 import View.Style as Style
-import Views.Header as Header
 import Views.Home
-import Views.About
 
 
 view : Model -> Html Msg
 view model =
-    let
-        body =
-            case model.view of
-                ViewHome ->
-                    Views.Home.view model
-
-                ViewAbout ->
-                    Views.About.view model
-    in
     render <|
         column
             [ height <| Element.minimum model.screen.height <| fill
             , width fill
             , Background.color Style.backgroundTheme
             ]
-            [ Header.view
-            , el
+            [ el
                 [ padding 50
                 , width fill
                 , height fill
                 ]
                 <|
-                body
+                Views.Home.view model
             ]
 
 

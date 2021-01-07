@@ -1,12 +1,12 @@
 {
-  "name": "elm-skeleton",
-  "description": "Skeleton Elm project with all basic necessities for any Elm project",
+  "name": "anagram-magic",
+  "description": "Remake of the legendary Miniclip game of the past: Anagram Magic (in Elm/Go)",
   "version": "1.0.0",
   "license": "BSD3",
-  "author": "Mark Loevenstein",
+  "author": "Mark Loevenstein and Tyler Lentz",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Markloev/Halo-Tier-List"
+    "url": "https://github.com/Markloev/anagram-magic"
   },
   "scripts": {
     "build": "set NODE_ENV=production && webpack",
