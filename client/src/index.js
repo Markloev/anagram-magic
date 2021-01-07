@@ -6,8 +6,3 @@ const { Elm } = require('./elm/Main.elm');
 const app = Elm.Main.init({
   node: document.getElementById('main')
 });
-
-app.ports.pushUrl.subscribe(url => {
-  history.pushState({}, "", url);
-  app.ports.onUrlChange.send(location.href);
-});

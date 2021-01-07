@@ -1,6 +1,5 @@
 module Subscriptions exposing (subscriptions)
 
-import Ports
 import Types exposing (Model, Msg(..))
 
 

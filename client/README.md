@@ -1,4 +1,4 @@
-# Elm-Skeleton
+# anagram-magic
 
 ## Setup
 

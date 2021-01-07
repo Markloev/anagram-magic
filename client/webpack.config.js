@@ -1,4 +1,4 @@
-const { resolve, join } = require("path");
+const { resolve } = require("path");
 const webpack = require("webpack");
 const autoPrefixer = require('autoprefixer');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
@@ -83,13 +83,13 @@ module.exports = {
       { from: 'assets/images', to: 'images' }
     ]),
     new HtmlWebpackPlugin({
-      inject: true | 'body',
+      inject: 'body',
       filename: 'index.html',
       template: require('html-webpack-template'),
       appMountId: 'main',
       mobile: true,
       lang: 'en-US',
-      title: 'Elm-Skeleton',
+      title: 'anagram-magic',
       links: [],
       xhtml: true,
       hash: false,
