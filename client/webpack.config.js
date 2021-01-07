@@ -11,7 +11,7 @@ const isProd = ENV === "production";
 const webpackLoader = {
   loader: "elm-webpack-loader",
   options: {
-    debug: false,
+    debug: isProd ? false : true,
     optimize: isProd,
     cwd: __dirname,
   },

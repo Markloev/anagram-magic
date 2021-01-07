@@ -3,7 +3,9 @@ module Update exposing (update)
 import Browser.Dom as Dom
 import Helper exposing (return)
 import Http exposing (Error(..))
+import Prelude exposing (iff)
 import Task
+import Time
 import Types
     exposing
         ( ColorTheme(..)
@@ -32,3 +34,24 @@ update msg model =
         
         GetResponse _ ->
             ( model, Cmd.none )
+        
+        Tick posix ->
+            let
+                isStart =
+                    Time.posixToMillis model.startTime == 0
+            in
+            { model
+                | currentTime = posix
+                , startTime = iff isStart posix model.startTime
+            }
+                |> tick
+
+
+addNone : Model -> ( Model, Cmd Msg )
+addNone model =
+    ( model, Cmd.none )
+
+
+tick : Model -> ( Model, Cmd Msg )
+tick model =
+    model |> addNone

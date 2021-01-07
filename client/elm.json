@@ -22,6 +22,7 @@
             "elm-community/random-extra": "3.0.0",
             "elm-community/result-extra": "2.4.0",
             "fredcy/elm-parseint": "2.0.1",
+            "gribouille/elm-prelude": "2.0.0",
             "icidasset/elm-material-icons": "3.1.0",
             "jschomay/elm-paginate": "3.1.1",
             "mdgriffith/elm-ui": "1.1.5"
