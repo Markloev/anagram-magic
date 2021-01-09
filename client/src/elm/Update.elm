@@ -1,21 +1,24 @@
 module Update exposing (update)
 
 import Browser.Dom as Dom
+import Game exposing (GameState(..))
 import Helper exposing (return)
 import Msg exposing (Msg(..))
 import Prelude exposing (iff)
 import Task
 import Time
-import Types
-    exposing
-        ( ColorTheme(..)
-        , Model
-        )
+import Types exposing (ColorTheme(..), Model)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        Start ->
+            return { model | gameState = Running } []
+
+        Stop ->
+            return { model | gameState = Stopped } []
+
         DoNothing ->
             return model []
 

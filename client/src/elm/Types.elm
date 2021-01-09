@@ -1,5 +1,6 @@
 module Types exposing (..)
 
+import Game exposing (GameState(..))
 import Time exposing (Posix)
 
 
@@ -12,6 +13,8 @@ type alias Model =
     , totalScore : Int
     , currentTime : Posix
     , startTime : Posix
+    , elapsedTime : Int
+    , gameState : GameState
     }
 
 
@@ -25,12 +28,14 @@ emptyModel =
     , totalScore = 0
     , currentTime = Time.millisToPosix 0
     , startTime = Time.millisToPosix 0
+    , elapsedTime = 0
+    , gameState = NotStarted
     }
 
 
 type alias Tile =
     { letter : Char
-    , points : Int
+    , value : Int
     }
 
 
