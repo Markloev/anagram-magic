@@ -1,6 +1,6 @@
 module View exposing (view)
 
-import Element exposing (Element, column, el, fill, height, padding, width)
+import Element exposing (Element, column, el, fill, height, padding, width, px, text, centerX, centerY)
 import Element.Background as Background exposing (color)
 import Html exposing (Html)
 import Types
@@ -10,16 +10,24 @@ import Types
         , Msg(..)
         )
 import View.Style as Style
-import Views.Home
 
 
 view : Model -> Html Msg
 view model =
+    let
+        errorTxt =
+            case model.errorMessage of
+                Just txt ->
+                    el [] <| text txt
+
+                Nothing ->
+                    Element.none
+    in
+    
     render <|
         column
             [ height <| Element.minimum model.screen.height <| fill
             , width fill
-            , Background.color Style.backgroundTheme
             ]
             [ el
                 [ padding 50
@@ -27,7 +35,10 @@ view model =
                 , height fill
                 ]
                 <|
-                Views.Home.view model
+                column [ centerX, centerY ]
+                    [ errorTxt
+                    , el [ width <| px 20, height <| px 20 ] <| model.selectedTiles.letter
+                    ]
             ]
 
 
