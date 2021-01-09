@@ -1,7 +1,5 @@
-module Types exposing (ColorTheme(..), Model, Msg(..), Screen, emptyModel)
+module Types exposing (..)
 
-import Browser.Dom as Dom
-import Http
 import Time exposing (Posix)
 
 
@@ -34,16 +32,6 @@ type alias Tile =
     { letter : Char
     , points : Int
     }
-
-
-type Msg
-    = DoNothing
-    | Resize Screen
-    | FocusOn String
-    | FocusResult (Result Dom.Error ())
-    | SetViewportCb
-    | GetResponse (Result Http.Error String)
-    | Tick Time.Posix
 
 
 type alias Screen =

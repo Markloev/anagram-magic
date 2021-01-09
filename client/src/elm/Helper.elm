@@ -6,11 +6,11 @@ import Html.Attributes as Attrs exposing (style)
 import Html.Events
 import Json.Decode as Json
 import Maybe.Extra
+import Msg exposing (Msg)
 import Task
 import Types
     exposing
         ( ColorTheme(..)
-        , Msg(..)
         , Screen
         )
 
@@ -51,24 +51,6 @@ whenAttr bool =
         Attrs.classList []
             |> Element.htmlAttribute
             |> always
-
-
-when : Bool -> Element msg -> Element msg
-when b =
-    if b then
-        identity
-
-    else
-        always Element.none
-
-
-ifThenElse : Bool -> a -> a -> a
-ifThenElse bool a b =
-    if bool then
-        a
-
-    else
-        b
 
 
 isMobile : Screen -> Bool

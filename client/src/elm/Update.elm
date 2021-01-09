@@ -2,7 +2,7 @@ module Update exposing (update)
 
 import Browser.Dom as Dom
 import Helper exposing (return)
-import Http exposing (Error(..))
+import Msg exposing (Msg(..))
 import Prelude exposing (iff)
 import Task
 import Time
@@ -10,7 +10,6 @@ import Types
     exposing
         ( ColorTheme(..)
         , Model
-        , Msg(..)
         )
 
 
@@ -31,10 +30,10 @@ update msg model =
 
         FocusResult _ ->
             ( model, Cmd.none )
-        
+
         GetResponse _ ->
             ( model, Cmd.none )
-        
+
         Tick posix ->
             let
                 isStart =

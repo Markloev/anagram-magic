@@ -1,13 +1,13 @@
 module View exposing (view)
 
-import Element exposing (Element, column, el, fill, height, padding, width, px, text, centerX, centerY)
+import Element exposing (Element, centerX, centerY, column, el, fill, height, padding, px, text, width)
 import Element.Background as Background exposing (color)
 import Html exposing (Html)
+import Msg exposing (Msg(..))
 import Types
     exposing
         ( ColorTheme(..)
         , Model
-        , Msg(..)
         )
 import View.Style as Style
 
@@ -23,7 +23,6 @@ view model =
                 Nothing ->
                     Element.none
     in
-    
     render <|
         column
             [ height <| Element.minimum model.screen.height <| fill
@@ -34,10 +33,10 @@ view model =
                 , width fill
                 , height fill
                 ]
-                <|
+              <|
                 column [ centerX, centerY ]
                     [ errorTxt
-                    , el [ width <| px 20, height <| px 20 ] <| model.selectedTiles.letter
+                    , el [ width <| px 20, height <| px 20 ] <| text "txt"
                     ]
             ]
 
