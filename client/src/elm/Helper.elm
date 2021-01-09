@@ -1,4 +1,4 @@
-module Helper exposing (colorThemeToString, ifThenElse, isMobile, mkCmd, mouseDownPreventDefault, onRightClick, return, style, when, whenAttr, whenJust)
+module Helper exposing (..)
 
 import Element exposing (Attribute, Element)
 import Html
