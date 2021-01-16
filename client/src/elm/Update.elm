@@ -8,9 +8,10 @@ import Task
 import Time
 import Types
     exposing
-        ( ColorTheme(..)
-        , Model
+        ( Model
         , Msg(..)
+        , GameState(..)
+        , initGame
         )
 
 
@@ -19,12 +20,6 @@ update msg model =
     case msg of
         DoNothing ->
             return model []
-
-        Resize screen ->
-            ( { model | screen = screen }, Cmd.none )
-
-        SetViewportCb ->
-            ( model, Cmd.none )
 
         FocusOn id ->
             ( model, Dom.focus id |> Task.attempt FocusResult )
@@ -37,21 +32,25 @@ update msg model =
         
         Tick posix ->
             let
-                isStart =
-                    Time.posixToMillis model.startTime == 0
+                updatedGameState =
+                    case model.gameState of
+                        Stopped ->
+                            model.gameState
+                        
+                        Started g ->
+                            let
+                                isStart =
+                                    Time.posixToMillis g.startTime == 0
+
+                                newGameState =
+                                    { g
+                                        | currentTime = posix
+                                        , startTime = iff isStart posix g.startTime
+                                    }
+                            in
+                            Started newGameState
             in
-            { model
-                | currentTime = posix
-                , startTime = iff isStart posix model.startTime
-            }
-                |> tick
-
-
-addNone : Model -> ( Model, Cmd Msg )
-addNone model =
-    ( model, Cmd.none )
-
-
-tick : Model -> ( Model, Cmd Msg )
-tick model =
-    model |> addNone
+            ( { model | gameState = updatedGameState }, Cmd.none )
+        
+        StartGame ->
+            ( { model | gameState = Started initGame}, Cmd.none)

@@ -1,58 +1,61 @@
 module View exposing (view)
 
-import Element exposing (Element, column, el, fill, height, padding, width, px, text, centerX, centerY)
-import Element.Background as Background exposing (color)
-import Html exposing (Html)
+import Html exposing (Html, div, text, input, label, button)
+import Html.Attributes as Attrs exposing (checked, class, classList, title, type_, style, value)
+import Html.Events exposing (onClick, onCheck, onInput)
 import Types
     exposing
-        ( ColorTheme(..)
-        , Model
+        ( Model
         , Msg(..)
+        , GameState(..)
+        , Game
+        , Phase(..)
         )
-import View.Style as Style
 
 
 view : Model -> Html Msg
 view model =
     let
-        errorTxt =
-            case model.errorMessage of
-                Just txt ->
-                    el [] <| text txt
+        content =
+            case model.gameState of
+                Stopped ->
+                    button [ onClick StartGame, class "button" ] [ text "Start Game" ]
+                
+                Started g ->
+                    gameView g
 
-                Nothing ->
-                    Element.none
     in
-    
-    render <|
-        column
-            [ height <| Element.minimum model.screen.height <| fill
-            , width fill
-            ]
-            [ el
-                [ padding 50
-                , width fill
-                , height fill
-                ]
-                <|
-                column [ centerX, centerY ]
-                    [ errorTxt
-                    , el [ width <| px 20, height <| px 20 ] <| model.selectedTiles.letter
-                    ]
-            ]
+    div [ style "height" "100%", style "width" "100%", class "content-container" ]
+        [ content ]
 
 
-render : Element Msg -> Html Msg
-render =
-    Element.layoutWith
-        { options =
-            [ Element.focusStyle
-                { borderColor = Nothing
-                , backgroundColor = Nothing
-                , shadow = Nothing
-                }
-            ]
-        }
-        [ height fill
-        , width fill
-        ]
+gameView : Game -> Html Msg
+gameView game =
+    let
+        gameContent =
+            case game.phase of
+                TileSelection ->
+                    tileSelection game
+                
+                RegularRound ->
+                    regularRound game
+                
+                FinalRound ->
+                    finalRound game
+    in
+    gameContent
+
+
+tileSelection : Game -> Html Msg
+tileSelection game =
+    div [] []
+
+
+regularRound : Game -> Html Msg
+regularRound game =
+    div [] []
+
+
+finalRound : Game -> Html Msg
+finalRound game =
+    div [] []

@@ -1,4 +1,4 @@
-module Types exposing (ColorTheme(..), Model, Msg(..), Screen, emptyModel)
+module Types exposing (Model, Msg(..), Game, GameState(..), Phase(..), emptyModel, initGame)
 
 import Browser.Dom as Dom
 import Http
@@ -6,27 +6,13 @@ import Time exposing (Posix)
 
 
 type alias Model =
-    { screen : Screen
-    , errorMessage : Maybe String
-    , selectedTiles : Maybe (List Tile)
-    , availableTiles : Maybe (List Tile)
-    , answerString : Maybe String
-    , totalScore : Int
-    , currentTime : Posix
-    , startTime : Posix
+    { gameState : GameState
     }
 
 
 emptyModel : Model
 emptyModel =
-    { screen = { width = 0, height = 0 }
-    , errorMessage = Nothing
-    , selectedTiles = Nothing
-    , availableTiles = Nothing
-    , answerString = Nothing
-    , totalScore = 0
-    , currentTime = Time.millisToPosix 0
-    , startTime = Time.millisToPosix 0
+    { gameState = Stopped
     }
 
 
@@ -38,20 +24,40 @@ type alias Tile =
 
 type Msg
     = DoNothing
-    | Resize Screen
     | FocusOn String
     | FocusResult (Result Dom.Error ())
-    | SetViewportCb
     | GetResponse (Result Http.Error String)
     | Tick Time.Posix
+    | StartGame
 
 
-type alias Screen =
-    { width : Int
-    , height : Int
+type GameState
+    = Stopped
+    | Started Game
+
+
+type alias Game =
+    { currentTime : Posix
+    , startTime : Posix
+    , phase : Phase
+    , selectedTiles : Maybe (List Tile)
+    , availableTiles : Maybe (List Tile)
+    , answerString : Maybe String
+    , totalScore : Int
     }
 
+initGame : Game
+initGame =
+    { currentTime = Time.millisToPosix 0
+    , startTime = Time.millisToPosix 0
+    , phase = TileSelection
+    , selectedTiles = Nothing
+    , availableTiles = Nothing
+    , answerString = Nothing
+    , totalScore = 0
+    }
 
-type ColorTheme
-    = Light
-    | Dark
+type Phase
+    = TileSelection
+    | RegularRound
+    | FinalRound
