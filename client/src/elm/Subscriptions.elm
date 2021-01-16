@@ -1,16 +1,17 @@
 module Subscriptions exposing (subscriptions)
 
 import Constants exposing (timeInterval)
-import Types exposing (Msg(..), GameState(..))
+import Game exposing (GameState(..), isRunning)
+import Msg exposing (Msg(..))
+import Prelude exposing (iff)
 import Time
-import Types exposing (Model, Msg(..))
+import Types exposing (Model)
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
-    case model.gameState of
-        Stopped ->
-            Sub.none
-        
-        Started _ ->
-            Time.every timeInterval Tick
+subscriptions { gameState } =
+    iff (isRunning gameState) tick Sub.none
+
+
+tick =
+    Time.every timeInterval Tick

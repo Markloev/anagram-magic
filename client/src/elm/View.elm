@@ -1,16 +1,11 @@
 module View exposing (view)
 
+import Game exposing (GameState(..), Game, Phase(..))
 import Html exposing (Html, div, text, input, label, button)
 import Html.Attributes as Attrs exposing (checked, class, classList, title, type_, style, value)
 import Html.Events exposing (onClick, onCheck, onInput)
-import Types
-    exposing
-        ( Model
-        , Msg(..)
-        , GameState(..)
-        , Game
-        , Phase(..)
-        )
+import Msg exposing (Msg(..))
+import Types exposing (Model)
 
 
 view : Model -> Html Msg
@@ -18,7 +13,7 @@ view model =
     let
         content =
             case model.gameState of
-                Stopped ->
+                NotStarted ->
                     button [ onClick StartGame, class "button" ] [ text "Start Game" ]
                 
                 Started g ->

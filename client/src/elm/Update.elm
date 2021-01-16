@@ -1,18 +1,13 @@
 module Update exposing (update)
 
 import Browser.Dom as Dom
+import Game exposing (GameState(..), initGame)
 import Helper exposing (return)
-import Http exposing (Error(..))
+import Msg exposing (Msg(..))
 import Prelude exposing (iff)
 import Task
 import Time
-import Types
-    exposing
-        ( Model
-        , Msg(..)
-        , GameState(..)
-        , initGame
-        )
+import Types exposing (Model)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -26,15 +21,12 @@ update msg model =
 
         FocusResult _ ->
             ( model, Cmd.none )
-        
-        GetResponse _ ->
-            ( model, Cmd.none )
-        
+
         Tick posix ->
             let
                 updatedGameState =
                     case model.gameState of
-                        Stopped ->
+                        NotStarted ->
                             model.gameState
                         
                         Started g ->

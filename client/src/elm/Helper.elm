@@ -1,4 +1,4 @@
-module Helper exposing (ifThenElse, mkCmd, mouseDownPreventDefault, onRightClick, return, style, when, whenAttr, whenJust)
+module Helper exposing (..)
 
 import Element exposing (Attribute, Element)
 import Html
@@ -6,11 +6,8 @@ import Html.Attributes as Attrs exposing (style)
 import Html.Events
 import Json.Decode as Json
 import Maybe.Extra
+import Msg exposing (Msg)
 import Task
-import Types
-    exposing
-        ( Msg(..)
-        )
 
 
 return : a -> List (Cmd b) -> ( a, Cmd b )
