@@ -13,8 +13,9 @@ type alias Game =
     , startTime : Posix
     , elapsedTime : Int
     , phase : Phase
-    , selectedTiles : Maybe (List Tile)
-    , availableTiles : Maybe (List Tile)
+    , round : Int
+    , selectedTiles : List Tile
+    , availableTiles : List Tile
     , answerString : Maybe String
     , totalScore : Int
     }
@@ -32,11 +33,13 @@ initGame =
     , startTime = Time.millisToPosix 0
     , elapsedTime = 0
     , phase = TileSelection
-    , selectedTiles = Nothing
-    , availableTiles = Nothing
+    , round = 1
+    , selectedTiles = []
+    , availableTiles = []
     , answerString = Nothing
     , totalScore = 0
     }
+
 
 type Phase
     = TileSelection
