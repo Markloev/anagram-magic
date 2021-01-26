@@ -1,6 +1,5 @@
 module Game exposing (..)
 
-import Array exposing (Array)
 import Time exposing (Posix)
 
 
@@ -15,8 +14,8 @@ type alias Game =
     , elapsedTime : Int
     , phase : Phase
     , round : Int
-    , selectedTiles : Array Tile
-    , availableTiles : Array Tile
+    , selectedTiles : List Tile
+    , availableTiles : List Tile
     , answerString : Maybe String
     , totalScore : Int
     }
@@ -25,7 +24,7 @@ type alias Game =
 type alias Tile =
     { letter : Char
     , value : Int
-    , availableIndex : Int
+    , originalIndex : Int
     , hidden : Bool
     }
 
@@ -37,8 +36,8 @@ initGame =
     , elapsedTime = 0
     , phase = TileSelection
     , round = 1
-    , selectedTiles = Array.empty
-    , availableTiles = Array.empty
+    , selectedTiles = []
+    , availableTiles = []
     , answerString = Nothing
     , totalScore = 0
     }

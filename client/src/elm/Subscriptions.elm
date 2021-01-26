@@ -1,6 +1,5 @@
 module Subscriptions exposing (subscriptions)
 
-import Array exposing (Array)
 import Constants exposing (timeInterval)
 import Game exposing (GameState(..), Tile, isRunning)
 import Json.Decode as Decode
@@ -37,7 +36,7 @@ decodeTile =
             Decode.int
         )
         (Decode.field
-            "availableIndex"
+            "originalIndex"
             Decode.int
         )
         (Decode.field
@@ -46,9 +45,9 @@ decodeTile =
         )
 
 
-decodeListTiles : Decode.Value -> Result Decode.Error (Array Tile)
+decodeListTiles : Decode.Value -> Result Decode.Error (List Tile)
 decodeListTiles =
-    Decode.array decodeTile |> Decode.decodeValue
+    Decode.list decodeTile |> Decode.decodeValue
 
 
 decodeChar : Decode.Value -> Result Decode.Error Char

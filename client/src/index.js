@@ -38,13 +38,13 @@ function getRandomTiles() {
 
 function getRandomConsonant(tiles) {
   var randomConsonant = Math.floor(Math.random() * 20);
-  var tile = { letter: consonants[randomConsonant], value: 1, availableIndex: tiles.length, hidden: false };
+  var tile = { letter: consonants[randomConsonant], value: 1, originalIndex: tiles.length, hidden: false };
   tiles.push(tile);
 }
 
 function getRandomVowel(tiles) {
   var randomVowel = Math.floor(Math.random() * 5);
-  var tile = { letter: vowels[randomVowel], value: 1, availableIndex: tiles.length, hidden: false };
+  var tile = { letter: vowels[randomVowel], value: 1, originalIndex: tiles.length, hidden: false };
   tiles.push(tile);
 }
 
@@ -80,13 +80,11 @@ function hasMaxVowels(tiles) {
 
 function setMultipliers(tiles) {
   var threeTimesIndex = Math.floor(Math.random() * 9);
-  console.log("Index: " + threeTimesIndex);
   var twoTimesIndex = Math.floor(Math.random() * 9);
   while (twoTimesIndex === threeTimesIndex) {
     twoTimesIndex = Math.floor(Math.random() * 9);
   }
   var threeTimesTile = tiles[threeTimesIndex];
-  console.log(threeTimesIndex);
   threeTimesTile.value = 3;
   var twoTimesTile = tiles[twoTimesIndex];
   twoTimesTile.value = 2;
@@ -105,7 +103,6 @@ function shuffle(array) {
     // And swap it with the current element.
     temporaryValue = array[currentIndex];
     array[currentIndex] = array[randomIndex];
-    array[currentIndex].availableIndex = currentIndex;
     array[randomIndex] = temporaryValue;
   }
 
