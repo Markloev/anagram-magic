@@ -9,8 +9,7 @@ type GameState
 
 
 type alias Game =
-    { currentTime : Posix
-    , startTime : Posix
+    { startTime : Posix
     , elapsedTime : Int
     , phase : Phase
     , round : Int
@@ -18,6 +17,7 @@ type alias Game =
     , availableTiles : List Tile
     , answerString : Maybe String
     , totalScore : Int
+    , isSubmitted : Bool
     }
 
 
@@ -31,8 +31,7 @@ type alias Tile =
 
 initGame : Game
 initGame =
-    { currentTime = Time.millisToPosix 0
-    , startTime = Time.millisToPosix 0
+    { startTime = Time.millisToPosix 0
     , elapsedTime = 0
     , phase = TileSelection
     , round = 1
@@ -40,6 +39,7 @@ initGame =
     , availableTiles = []
     , answerString = Nothing
     , totalScore = 0
+    , isSubmitted = False
     }
 
 
@@ -47,6 +47,7 @@ type Phase
     = TileSelection
     | RegularRound
     | FinalRound
+    | Completed
 
 
 isRunning : GameState -> Bool

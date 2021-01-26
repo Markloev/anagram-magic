@@ -11,6 +11,9 @@ type Msg
     | FocusOn String
     | FocusResult (Result Dom.Error ())
     | Tick Time.Posix
+    | KeyPressed GameState String
+    | KeyCharPressed Game Char
+    | RemoveTileBackspace Game
     | StartGame
     | GetConsonant Game
     | GetVowel Game
@@ -20,3 +23,4 @@ type Msg
     | ReceiveShuffledTiles GameState (Result Decode.Error (List Tile))
     | SelectTile Game Int Tile
     | RemoveTile Game Int Int
+    | Submit Game

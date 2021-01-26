@@ -1,9 +1,9 @@
 module Subscriptions exposing (subscriptions)
 
+import Browser.Events
 import Constants exposing (timeInterval)
 import Game exposing (GameState(..), Tile, isRunning)
 import Json.Decode as Decode
-import Json.Helpers exposing (required)
 import Msg exposing (Msg(..))
 import Ports
 import Prelude exposing (iff)
@@ -15,6 +15,7 @@ subscriptions : Model -> Sub Msg
 subscriptions { gameState } =
     Sub.batch
         [ iff (isRunning gameState) tick Sub.none
+        , Browser.Events.onKeyUp (Decode.map (KeyPressed gameState) keyDecoder)
         , Ports.receiveRandomTiles (decodeListTiles >> ReceiveRandomTiles gameState)
         , Ports.receiveShuffledTiles (decodeListTiles >> ReceiveShuffledTiles gameState)
         ]
@@ -50,6 +51,6 @@ decodeListTiles =
     Decode.list decodeTile |> Decode.decodeValue
 
 
-decodeChar : Decode.Value -> Result Decode.Error Char
-decodeChar =
-    Decode.int |> Decode.map Char.fromCode |> Decode.decodeValue
+keyDecoder : Decode.Decoder String
+keyDecoder =
+    Decode.field "key" Decode.string

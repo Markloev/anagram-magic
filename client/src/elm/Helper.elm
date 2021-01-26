@@ -24,14 +24,13 @@ mkCmd msg =
 
 onRightClick : a -> Html.Attribute a
 onRightClick message =
-    Html.Events.custom
-        "contextmenu"
-    <|
-        Json.succeed
-            { message = message
-            , stopPropagation = False
-            , preventDefault = True
-            }
+    Json.succeed
+        { message = message
+        , stopPropagation = False
+        , preventDefault = True
+        }
+        |> Html.Events.custom
+            "contextmenu"
 
 
 whenJust : (a -> Element msg) -> Maybe a -> Element msg
@@ -103,3 +102,17 @@ hasMaxConsonants tiles =
 hasMaxVowels : List Tile -> Bool
 hasMaxVowels tiles =
     List.length (List.filter (\isVowel -> isVowel == True) (List.map (\tile -> List.member tile.letter vowels) tiles)) >= maxConsonantOrVowel
+
+
+toLetter : String -> Maybe Char
+toLetter str =
+    case String.uncons str of
+        Just ( c, "" ) ->
+            if Char.isAlpha c then
+                Just (Char.toUpper c)
+
+            else
+                Nothing
+
+        _ ->
+            Nothing

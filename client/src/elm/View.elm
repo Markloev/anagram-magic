@@ -40,6 +40,9 @@ gameView game =
 
                 FinalRound ->
                     finalRound game
+
+                Completed ->
+                    completed game
     in
     gameContent
 
@@ -75,12 +78,18 @@ regularRound game =
         [ button [ onClick <| ShuffleTiles game, class "button" ] [ text "Shuffle" ]
         , availableTiles game
         , selectedTiles game
+        , button [ onClick <| Submit game, class "button" ] [ text "Submit" ]
         ]
 
 
 finalRound : Game -> Html Msg
 finalRound game =
     div [] [ text "Final Round" ]
+
+
+completed : Game -> Html Msg
+completed game =
+    div [] [ text "Completed Game" ]
 
 
 availableTiles : Game -> Html Msg
