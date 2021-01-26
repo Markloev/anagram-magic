@@ -1,12 +1,11 @@
 module Update exposing (update)
 
 import Browser.Dom as Dom
-import Constants exposing (maxConsonantOrVowel)
-import Game exposing (GameState(..), Phase(..), Tile, initGame)
-import Helper exposing (consonants, generatedConsonant, generatedTile, generatedVowel, hasMaxConsonants, hasMaxVowels, indexPair, return, vowels)
+import Game exposing (GameState(..), Phase(..), initGame)
+import List.Extra as LE
 import Msg exposing (Msg(..))
+import Ports exposing (encodeListTiles, getRandomConsonant, getRandomTiles, getRandomVowel, shuffleTiles)
 import Prelude exposing (iff)
-import Random
 import Task
 import Time
 import Types exposing (Model)
@@ -16,7 +15,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         DoNothing ->
-            return model []
+            ( model, Cmd.none )
 
         FocusOn id ->
             ( model, Dom.focus id |> Task.attempt FocusResult )
@@ -50,93 +49,94 @@ update msg model =
             ( { model | gameState = Started initGame }, Cmd.none )
 
         GetConsonant game ->
-            let
-                cmd =
-                    Random.generate (GenerateRandomConsonant game) (Random.int 0 20)
-            in
-            ( model, cmd )
+            ( model, getRandomConsonant <| encodeListTiles game.availableTiles )
 
         GetVowel game ->
-            let
-                cmd =
-                    Random.generate (GenerateRandomVowel game) (Random.int 0 5)
-            in
-            ( model, cmd )
+            ( model, getRandomVowel <| encodeListTiles game.availableTiles )
 
-        GetRandom game ->
-            let
-                newRound =
-                    game.round + 1
+        GetRandom ->
+            ( model, getRandomTiles () )
 
-                updatedGameState =
-                    { game
-                        | selectedTiles = []
-                        , round = newRound
-                        , phase =
-                            if newRound < 5 then
-                                RegularRound
+        ShuffleTiles game ->
+            ( model, shuffleTiles <| encodeListTiles game.availableTiles )
 
-                            else
-                                FinalRound
-                    }
-
-                cmd =
-                    Random.generate (GenerateRandomLetter updatedGameState) indexPair
-            in
-            ( model, cmd )
-
-        GenerateRandomLetter game indexes ->
+        ReceiveRandomTiles gameState tiles ->
             let
                 updatedGameState =
-                    { game | selectedTiles = generatedTile game.selectedTiles indexes :: game.selectedTiles }
+                    case gameState of
+                        Started game ->
+                            case tiles of
+                                Ok tilesResult ->
+                                    let
+                                        newRound =
+                                            game.round + 1
 
-                cmd =
-                    if List.length updatedGameState.selectedTiles < 9 then
-                        Random.generate (GenerateRandomLetter updatedGameState) indexPair
+                                        newGameState =
+                                            if List.length tilesResult == 9 then
+                                                Started
+                                                    { game
+                                                        | round = newRound
+                                                        , phase =
+                                                            if newRound < 5 then
+                                                                RegularRound
 
-                    else
-                        Cmd.none
+                                                            else
+                                                                FinalRound
+                                                        , availableTiles = tilesResult
+                                                    }
+
+                                            else
+                                                Started { game | availableTiles = tilesResult }
+                                    in
+                                    newGameState
+
+                                Err _ ->
+                                    gameState
+
+                        NotStarted ->
+                            gameState
             in
-            ( { model | gameState = Started updatedGameState }, cmd )
+            ( { model | gameState = updatedGameState }, Cmd.none )
 
-        GenerateRandomConsonant game index ->
+        ReceiveShuffledTiles gameState tiles ->
             let
                 updatedGameState =
-                    { game | selectedTiles = generatedConsonant index :: game.selectedTiles, round = game.round + 1 }
+                    case gameState of
+                        Started game ->
+                            case tiles of
+                                Ok tilesResult ->
+                                    Started { game | availableTiles = tilesResult }
 
-                finalGameState =
-                    if List.length updatedGameState.selectedTiles == 9 then
-                        { updatedGameState
-                            | phase =
-                                if updatedGameState.round < 5 then
-                                    RegularRound
+                                Err _ ->
+                                    gameState
 
-                                else
-                                    FinalRound
-                        }
-
-                    else
-                        updatedGameState
+                        NotStarted ->
+                            gameState
             in
-            ( { model | gameState = Started finalGameState }, Cmd.none )
+            ( { model | gameState = updatedGameState }, Cmd.none )
 
-        GenerateRandomVowel game index ->
+        SelectTile game idx ->
             let
+                updatedSelectedTiles =
+                    game.selectedTiles ++ [ Maybe.withDefault { letter = 'A', value = 1 } (LE.getAt idx game.availableTiles) ]
+
+                updatedAvailableTiles =
+                    LE.removeAt idx game.availableTiles
+
                 updatedGameState =
-                    { game | selectedTiles = generatedVowel index :: game.selectedTiles, round = game.round + 1 }
-
-                finalGameState =
-                    if List.length updatedGameState.selectedTiles == 9 then
-                        { updatedGameState
-                            | phase =
-                                if updatedGameState.round < 5 then
-                                    RegularRound
-
-                                else
-                                    FinalRound
-                        }
-
-                    else
-                        updatedGameState
+                    Started { game | selectedTiles = updatedSelectedTiles, availableTiles = updatedAvailableTiles }
             in
-            ( { model | gameState = Started finalGameState }, Cmd.none )
+            ( { model | gameState = updatedGameState }, Cmd.none )
+
+        RemoveTile game idx ->
+            let
+                updatedAvailableTiles =
+                    game.availableTiles ++ [ Maybe.withDefault { letter = 'A', value = 1 } (LE.getAt idx game.selectedTiles) ]
+
+                updatedSelectedTiles =
+                    LE.removeAt idx game.selectedTiles
+
+                updatedGameState =
+                    Started { game | selectedTiles = updatedSelectedTiles, availableTiles = updatedAvailableTiles }
+            in
+            ( { model | gameState = updatedGameState }, Cmd.none )

@@ -1,7 +1,8 @@
-module Msg exposing (..)
+module Msg exposing (Msg(..))
 
 import Browser.Dom as Dom
-import Game exposing (Game)
+import Game exposing (Game, GameState, Tile)
+import Json.Decode as Decode
 import Time
 
 
@@ -11,9 +12,11 @@ type Msg
     | FocusResult (Result Dom.Error ())
     | Tick Time.Posix
     | StartGame
-    | GetConsonant Game 
+    | GetConsonant Game
     | GetVowel Game
-    | GetRandom Game
-    | GenerateRandomLetter Game (Int, Int)
-    | GenerateRandomConsonant Game Int
-    | GenerateRandomVowel Game Int
+    | GetRandom
+    | ShuffleTiles Game
+    | ReceiveRandomTiles GameState (Result Decode.Error (List Tile))
+    | ReceiveShuffledTiles GameState (Result Decode.Error (List Tile))
+    | SelectTile Game Int
+    | RemoveTile Game Int

@@ -48,14 +48,14 @@ tileSelection : Game -> Html Msg
 tileSelection game =
     let
         getConsonantsButton =
-            if List.length game.selectedTiles >= 9 || hasMaxConsonants game.selectedTiles then
+            if List.length game.availableTiles >= 9 || hasMaxConsonants game.availableTiles then
                 button [ onClick <| GetConsonant game, disabled True, class "button" ] [ text "Consonant" ]
 
             else
                 button [ onClick <| GetConsonant game, class "button" ] [ text "Consonant" ]
 
         getVowelsButton =
-            if List.length game.selectedTiles >= 9 || hasMaxVowels game.selectedTiles then
+            if List.length game.availableTiles >= 9 || hasMaxVowels game.availableTiles then
                 button [ onClick <| GetVowel game, disabled True, class "button" ] [ text "Vowel" ]
 
             else
@@ -64,27 +64,50 @@ tileSelection game =
     div [ tailwind [ flex, flex_col ] ]
         [ getConsonantsButton
         , getVowelsButton
-        , button [ onClick <| GetRandom game, class "button" ] [ text "9 Random Letters" ]
-        , tiles game
+        , button [ onClick <| GetRandom, class "button" ] [ text "9 Random Letters" ]
+        , availableTiles game
         ]
 
 
 regularRound : Game -> Html Msg
 regularRound game =
-    div []
-        [ tiles game
+    div [ tailwind [ flex, flex_row ] ]
+        [ button [ onClick <| ShuffleTiles game, class "button" ] [ text "Shuffle" ]
+        , availableTiles game
+        , selectedTiles game
         ]
 
 
 finalRound : Game -> Html Msg
 finalRound game =
-    div [] [ text " wosh" ]
+    div [] [ text "Final Round" ]
 
 
-tiles : Game -> Html Msg
-tiles game =
+availableTiles : Game -> Html Msg
+availableTiles game =
     let
         tileContent =
-            List.map (\tile -> div [] [ text <| String.fromChar tile.letter ]) game.selectedTiles
+            List.indexedMap
+                (\idx tile ->
+                    div []
+                        [ button [ onClick <| SelectTile game idx, class "button" ] [ text <| String.fromChar tile.letter ++ " " ++ String.fromInt tile.value ]
+                        ]
+                )
+                game.availableTiles
+    in
+    div [] <| tileContent
+
+
+selectedTiles : Game -> Html Msg
+selectedTiles game =
+    let
+        tileContent =
+            List.indexedMap
+                (\idx tile ->
+                    div []
+                        [ button [ onClick <| RemoveTile game idx, class "button" ] [ text <| String.fromChar tile.letter ++ " " ++ String.fromInt tile.value ]
+                        ]
+                )
+                game.selectedTiles
     in
     div [] <| tileContent
