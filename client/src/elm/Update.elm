@@ -1,5 +1,7 @@
 module Update exposing (update)
 
+import Array
+import Array.Extra as AE
 import Browser.Dom as Dom
 import Game exposing (GameState(..), Phase(..), initGame)
 import List.Extra as LE
@@ -72,7 +74,7 @@ update msg model =
                                             game.round + 1
 
                                         newGameState =
-                                            if List.length tilesResult == 9 then
+                                            if Array.length tilesResult == 9 then
                                                 Started
                                                     { game
                                                         | round = newRound
@@ -115,26 +117,26 @@ update msg model =
             in
             ( { model | gameState = updatedGameState }, Cmd.none )
 
-        SelectTile game idx ->
+        SelectTile game selectedIdx tile ->
             let
                 updatedSelectedTiles =
-                    game.selectedTiles ++ [ Maybe.withDefault { letter = 'A', value = 1 } (LE.getAt idx game.availableTiles) ]
+                    Array.push tile game.selectedTiles
 
                 updatedAvailableTiles =
-                    LE.removeAt idx game.availableTiles
+                    Array.set selectedIdx { tile | hidden = True } game.availableTiles
 
                 updatedGameState =
                     Started { game | selectedTiles = updatedSelectedTiles, availableTiles = updatedAvailableTiles }
             in
             ( { model | gameState = updatedGameState }, Cmd.none )
 
-        RemoveTile game idx ->
+        RemoveTile game availableIdx selectedIdx tile ->
             let
                 updatedAvailableTiles =
-                    game.availableTiles ++ [ Maybe.withDefault { letter = 'A', value = 1 } (LE.getAt idx game.selectedTiles) ]
+                    Array.set availableIdx { tile | hidden = False } game.availableTiles
 
                 updatedSelectedTiles =
-                    LE.removeAt idx game.selectedTiles
+                    AE.removeAt selectedIdx game.selectedTiles
 
                 updatedGameState =
                     Started { game | selectedTiles = updatedSelectedTiles, availableTiles = updatedAvailableTiles }

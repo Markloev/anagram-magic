@@ -1,5 +1,6 @@
 module View exposing (view)
 
+import Array exposing (Array)
 import Game exposing (Game, GameState(..), Phase(..))
 import Helper exposing (hasMaxConsonants, hasMaxVowels)
 import Html exposing (Html, button, div, input, label, text)
@@ -48,14 +49,14 @@ tileSelection : Game -> Html Msg
 tileSelection game =
     let
         getConsonantsButton =
-            if List.length game.availableTiles >= 9 || hasMaxConsonants game.availableTiles then
+            if Array.length game.availableTiles >= 9 || hasMaxConsonants game.availableTiles then
                 button [ onClick <| GetConsonant game, disabled True, class "button" ] [ text "Consonant" ]
 
             else
                 button [ onClick <| GetConsonant game, class "button" ] [ text "Consonant" ]
 
         getVowelsButton =
-            if List.length game.availableTiles >= 9 || hasMaxVowels game.availableTiles then
+            if Array.length game.availableTiles >= 9 || hasMaxVowels game.availableTiles then
                 button [ onClick <| GetVowel game, disabled True, class "button" ] [ text "Vowel" ]
 
             else
@@ -87,13 +88,18 @@ availableTiles : Game -> Html Msg
 availableTiles game =
     let
         tileContent =
-            List.indexedMap
-                (\idx tile ->
-                    div []
-                        [ button [ onClick <| SelectTile game idx, class "button" ] [ text <| String.fromChar tile.letter ++ " " ++ String.fromInt tile.value ]
-                        ]
+            Array.indexedMap
+                (\selectedIdx tile ->
+                    if tile.hidden then
+                        div [] [ text "Hidden" ]
+
+                    else
+                        div []
+                            [ button [ onClick <| SelectTile game selectedIdx tile, class "button" ] [ text <| String.fromChar tile.letter ++ " / " ++ String.fromInt tile.availableIndex ]
+                            ]
                 )
                 game.availableTiles
+                |> Array.toList
     in
     div [] <| tileContent
 
@@ -102,12 +108,13 @@ selectedTiles : Game -> Html Msg
 selectedTiles game =
     let
         tileContent =
-            List.indexedMap
-                (\idx tile ->
+            Array.indexedMap
+                (\selectedIdx tile ->
                     div []
-                        [ button [ onClick <| RemoveTile game idx, class "button" ] [ text <| String.fromChar tile.letter ++ " " ++ String.fromInt tile.value ]
+                        [ button [ onClick <| RemoveTile game tile.availableIndex selectedIdx tile, class "button" ] [ text <| String.fromChar tile.letter ++ " / " ++ String.fromInt tile.availableIndex ]
                         ]
                 )
                 game.selectedTiles
+                |> Array.toList
     in
     div [] <| tileContent

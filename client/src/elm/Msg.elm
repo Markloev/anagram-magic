@@ -1,5 +1,6 @@
 module Msg exposing (Msg(..))
 
+import Array exposing (Array)
 import Browser.Dom as Dom
 import Game exposing (Game, GameState, Tile)
 import Json.Decode as Decode
@@ -16,7 +17,7 @@ type Msg
     | GetVowel Game
     | GetRandom
     | ShuffleTiles Game
-    | ReceiveRandomTiles GameState (Result Decode.Error (List Tile))
-    | ReceiveShuffledTiles GameState (Result Decode.Error (List Tile))
-    | SelectTile Game Int
-    | RemoveTile Game Int
+    | ReceiveRandomTiles GameState (Result Decode.Error (Array Tile))
+    | ReceiveShuffledTiles GameState (Result Decode.Error (Array Tile))
+    | SelectTile Game Int Tile
+    | RemoveTile Game Int Int Tile

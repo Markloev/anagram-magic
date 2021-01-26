@@ -1,5 +1,6 @@
 port module Ports exposing (..)
 
+import Array exposing (Array)
 import Game exposing (Tile)
 import Json.Decode as Decode
 import Json.Encode as Encode
@@ -28,9 +29,10 @@ encodeTile tile =
     Encode.object
         [ ( "letter", tile.letter |> Char.toCode |> Encode.int )
         , ( "value", tile.value |> Encode.int )
+        , ( "availableIndex", tile.availableIndex |> Encode.int )
         ]
 
 
-encodeListTiles : List Tile -> Encode.Value
+encodeListTiles : Array Tile -> Encode.Value
 encodeListTiles tiles =
-    tiles |> Encode.list encodeTile
+    tiles |> Encode.array encodeTile

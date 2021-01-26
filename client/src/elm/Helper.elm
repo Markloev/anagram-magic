@@ -1,5 +1,6 @@
 module Helper exposing (..)
 
+import Array exposing (Array)
 import Constants exposing (maxConsonantOrVowel)
 import Element exposing (Attribute, Element)
 import Game exposing (Tile)
@@ -95,11 +96,11 @@ vowels =
     [ 'a', 'e', 'i', 'o', 'u' ]
 
 
-hasMaxConsonants : List Tile -> Bool
+hasMaxConsonants : Array Tile -> Bool
 hasMaxConsonants tiles =
-    List.length (List.filter (\isConsonant -> isConsonant == True) (List.map (\tile -> List.member tile.letter consonants) tiles)) >= maxConsonantOrVowel
+    List.length (List.filter (\isConsonant -> isConsonant == True) (List.map (\tile -> List.member tile.letter consonants) <| Array.toList tiles)) >= maxConsonantOrVowel
 
 
-hasMaxVowels : List Tile -> Bool
+hasMaxVowels : Array Tile -> Bool
 hasMaxVowels tiles =
-    List.length (List.filter (\isVowel -> isVowel == True) (List.map (\tile -> List.member tile.letter vowels) tiles)) >= maxConsonantOrVowel
+    List.length (List.filter (\isVowel -> isVowel == True) (List.map (\tile -> List.member tile.letter vowels) <| Array.toList tiles)) >= maxConsonantOrVowel

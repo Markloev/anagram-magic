@@ -1,5 +1,6 @@
 module Subscriptions exposing (subscriptions)
 
+import Array exposing (Array)
 import Constants exposing (timeInterval)
 import Game exposing (GameState(..), Tile, isRunning)
 import Json.Decode as Decode
@@ -26,13 +27,7 @@ tick =
 
 decodeTile : Decode.Decoder Tile
 decodeTile =
-    -- Decode.succeed
-    --     (\uLetter uValue ->
-    --         { letter = Char.fromCode uLetter, value = uValue }
-    --     )
-    --     |> required "letter" Decode.int
-    --     |> required "value" Decode.int
-    Decode.map2 Tile
+    Decode.map4 Tile
         (Decode.field
             "letter"
             (Decode.int |> Decode.map Char.fromCode)
@@ -41,11 +36,19 @@ decodeTile =
             "value"
             Decode.int
         )
+        (Decode.field
+            "availableIndex"
+            Decode.int
+        )
+        (Decode.field
+            "hidden"
+            Decode.bool
+        )
 
 
-decodeListTiles : Decode.Value -> Result Decode.Error (List Tile)
+decodeListTiles : Decode.Value -> Result Decode.Error (Array Tile)
 decodeListTiles =
-    Decode.list decodeTile |> Decode.decodeValue
+    Decode.array decodeTile |> Decode.decodeValue
 
 
 decodeChar : Decode.Value -> Result Decode.Error Char
