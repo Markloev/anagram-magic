@@ -9,7 +9,8 @@ type GameState
 
 
 type alias Game =
-    { startTime : Posix
+    { currentTime : Posix
+    , startTime : Posix
     , elapsedTime : Int
     , phase : Phase
     , round : Int
@@ -31,7 +32,8 @@ type alias Tile =
 
 initGame : Game
 initGame =
-    { startTime = Time.millisToPosix 0
+    { currentTime = Time.millisToPosix 0
+    , startTime = Time.millisToPosix 0
     , elapsedTime = 0
     , phase = TileSelection
     , round = 1
@@ -48,8 +50,3 @@ type Phase
     | RegularRound
     | FinalRound
     | Completed
-
-
-isRunning : GameState -> Bool
-isRunning gameState =
-    gameState /= NotStarted

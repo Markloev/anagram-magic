@@ -1,16 +1,16 @@
-module Types exposing (Model, emptyModel)
+module Types exposing (Model, initModel)
 
-import Browser.Dom as Dom
 import Game exposing (GameState(..))
-import Time exposing (Posix)
 
 
 type alias Model =
     { gameState : GameState
+    , serverMessage : String
     }
 
 
-emptyModel : Model
-emptyModel =
+initModel : Model
+initModel =
     { gameState = NotStarted
+    , serverMessage = ""
     }

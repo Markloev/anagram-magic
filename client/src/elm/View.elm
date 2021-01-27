@@ -1,14 +1,14 @@
 module View exposing (view)
 
+import Constants exposing (tileListMax)
 import Game exposing (Game, GameState(..), Phase(..))
 import Helper exposing (hasMaxConsonants, hasMaxVowels)
-import Html exposing (Html, button, div, input, label, text)
-import Html.Attributes as Attrs exposing (checked, class, classList, disabled, style, title, type_, value)
-import Html.Events exposing (onCheck, onClick, onInput)
+import Html exposing (Html, button, div, text)
+import Html.Attributes exposing (class, classList, disabled, style)
+import Html.Events exposing (onClick)
 import List
 import Msg exposing (Msg(..))
-import Tailwind exposing (tailwind, withClasses)
-import Tailwind.Classes exposing (border, border_black, content_center, flex, flex_col, flex_row, font_bold, inline_flex, items_center, justify_center, justify_start, m_1, m_10, m_2, m_24, m_5, mb_10, mb_2, mt_2, p_1, p_2, p_3, pb_1, pl_1, pl_2, pr_1, pr_2, pt_1, rounded, text_2xl, text_center, text_justify, text_left, w_16, w_1over4, w_48)
+import Time
 import Types exposing (Model)
 
 
@@ -44,27 +44,35 @@ gameView game =
                 Completed ->
                     completed game
     in
-    gameContent
+    div []
+        [ overview game
+        , gameContent
+        ]
+
+
+overview : Game -> Html Msg
+overview game =
+    div [] [ text <| String.fromInt <| Time.toSecond Time.utc (Time.millisToPosix (Time.posixToMillis game.currentTime - Time.posixToMillis game.startTime)) ]
 
 
 tileSelection : Game -> Html Msg
 tileSelection game =
     let
         getConsonantsButton =
-            if List.length game.availableTiles >= 9 || hasMaxConsonants game.availableTiles then
+            if List.length game.availableTiles >= tileListMax || hasMaxConsonants game.availableTiles then
                 button [ onClick <| GetConsonant game, disabled True, class "button" ] [ text "Consonant" ]
 
             else
                 button [ onClick <| GetConsonant game, class "button" ] [ text "Consonant" ]
 
         getVowelsButton =
-            if List.length game.availableTiles >= 9 || hasMaxVowels game.availableTiles then
+            if List.length game.availableTiles >= tileListMax || hasMaxVowels game.availableTiles then
                 button [ onClick <| GetVowel game, disabled True, class "button" ] [ text "Vowel" ]
 
             else
                 button [ onClick <| GetVowel game, class "button" ] [ text "Vowel" ]
     in
-    div [ tailwind [ flex, flex_col ] ]
+    div [ classList [ ( "flex", True ), ( "flex-col", True ) ] ]
         [ getConsonantsButton
         , getVowelsButton
         , button [ onClick <| GetRandom, class "button" ] [ text "9 Random Letters" ]
@@ -74,7 +82,7 @@ tileSelection game =
 
 regularRound : Game -> Html Msg
 regularRound game =
-    div [ tailwind [ flex, flex_row ] ]
+    div [ classList [ ( "flex", True ), ( "flex-row", True ) ] ]
         [ button [ onClick <| ShuffleTiles game, class "button" ] [ text "Shuffle" ]
         , availableTiles game
         , selectedTiles game

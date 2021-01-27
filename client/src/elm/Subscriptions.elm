@@ -2,25 +2,34 @@ module Subscriptions exposing (subscriptions)
 
 import Browser.Events
 import Constants exposing (timeInterval)
-import Game exposing (GameState(..), Tile, isRunning)
+import Game exposing (GameState(..), Tile)
 import Json.Decode as Decode
 import Msg exposing (Msg(..))
 import Ports
-import Prelude exposing (iff)
 import Time
 import Types exposing (Model)
 
 
 subscriptions : Model -> Sub Msg
 subscriptions { gameState } =
-    Sub.batch
-        [ iff (isRunning gameState) tick Sub.none
-        , Browser.Events.onKeyUp (Decode.map (KeyPressed gameState) keyDecoder)
-        , Ports.receiveRandomTiles (decodeListTiles >> ReceiveRandomTiles gameState)
-        , Ports.receiveShuffledTiles (decodeListTiles >> ReceiveShuffledTiles gameState)
-        ]
+    let
+        subs =
+            case gameState of
+                Started g ->
+                    Sub.batch
+                        [ tick
+                        , Browser.Events.onKeyUp (Decode.map (KeyPressed g) keyDecoder)
+                        , Ports.receiveRandomTiles (decodeListTiles >> ReceiveRandomTiles g)
+                        , Ports.receiveShuffledTiles (decodeListTiles >> ReceiveShuffledTiles g)
+                        ]
+
+                NotStarted ->
+                    Sub.none
+    in
+    subs
 
 
+tick : Sub Msg
 tick =
     Time.every timeInterval Tick
 
