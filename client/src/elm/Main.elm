@@ -1,7 +1,8 @@
 module Main exposing (main)
 
 import Browser
-import Msg exposing (Msg)
+import Http
+import Msg exposing (Msg(..))
 import Subscriptions exposing (subscriptions)
 import Types exposing (Model, initModel)
 import Update exposing (update)
@@ -24,4 +25,9 @@ main =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( initModel, Cmd.none )
+    ( initModel
+    , Http.get
+        { url = "http://localhost:3000"
+        , expect = Http.expectString GotTicket
+        }
+    )

@@ -17,8 +17,8 @@ view model =
     let
         content =
             case model.gameState of
-                NotStarted ->
-                    button [ onClick StartGame, class "button" ] [ text "Start Game" ]
+                NotStarted t ->
+                    button [ onClick StartGame, class "button" ] [ text model.socketMessage ]
 
                 Started g ->
                     gameView g

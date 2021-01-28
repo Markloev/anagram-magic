@@ -3,15 +3,16 @@ module Update exposing (update)
 import Base64
 import Constants exposing (roundTimeSeconds, tileListMax, tileSelectionSeconds, totalRounds)
 import Game exposing (GameState(..), Phase(..), initGame)
-import Helper exposing (fullWord, mkCmd, toLetter)
+import Helper exposing (fullWord, getConnectionTicket, mkCmd, toLetter)
 import List
 import List.Extra as LE
 import Msg exposing (Msg(..))
-import Ports exposing (encodeListTiles, getRandomConsonant, getRandomTiles, getRandomVowel, shuffleTiles)
+import Ports exposing (encodeListTiles, getRandomConsonant, getRandomTiles, getRandomVowel, shuffleTiles, toSocket)
 import Prelude exposing (iff)
 import Rest exposing (getRandomWord, getWordValidity)
 import Time
 import Types exposing (Model)
+import WebSocket exposing (ConnectionInfo, SocketStatus(..))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -24,7 +25,7 @@ update msg model =
             let
                 updatedGameState =
                     case model.gameState of
-                        NotStarted ->
+                        NotStarted t ->
                             model.gameState
 
                         Started g ->
@@ -177,7 +178,8 @@ update msg model =
             ( { model | gameState = updatedGameState }, Cmd.none )
 
         StartGame ->
-            ( { model | gameState = Started initGame }, Cmd.none )
+            -- ( { model | gameState = Started initGame }, Cmd.none )
+            ( model, Cmd.none )
 
         GetConsonant game ->
             ( model, encodeListTiles game.availableTiles |> getRandomConsonant )
@@ -283,18 +285,71 @@ update msg model =
                     case res of
                         Ok encWord ->
                             let
-                                decWord = Base64.decode encWord
+                                decWord =
+                                    Base64.decode encWord
                             in
                             case decWord of
                                 Ok decodedWord ->
                                     decodedWord
-                                
+
                                 Err _ ->
                                     ""
 
                         Err _ ->
                             ""
-                
-                ssdsds = Debug.log "WORD" word
+
+                ssdsds =
+                    Debug.log "WORD" word
+            in
+            ( model, Cmd.none )
+
+        ReceiveSocketMessage message ->
+            ( { model | socketMessage = message }, Cmd.none )
+
+        GotTicket result ->
+            let
+                dsds =
+                    Debug.log "T" "TT"
+
+                newModel =
+                    case result of
+                        Ok ticket ->
+                            { model | socketInfo = Requested ticket }
+
+                        Err _ ->
+                            { model | gameState = NotStarted "Failed to receive ticket from server" }
+            in
+            ( newModel
+            , WebSocket.connect "ws://localhost:3000" []
+            )
+
+        SocketConnect info ->
+            let
+                sds =
+                    Debug.log "HERE" "WE HERE"
+            in
+            ( { model | socketInfo = SocketConnected info }
+            , WebSocket.sendString info (getConnectionTicket model.socketInfo)
+            )
+
+        Msg.SocketClosed code reason ->
+            ( { model
+                | socketInfo = WebSocket.SocketClosed code reason
+                , gameState = NotStarted (Maybe.withDefault "No connection to server..." reason)
+              }
+            , Cmd.none
+            )
+
+        ReceivedString eventMessage ->
+            let
+                sds =
+                    Debug.log "RECEIVED" eventMessage
+            in
+            ( { model | socketMessage = eventMessage }, Cmd.none )
+
+        Error errMsg ->
+            let
+                _ =
+                    Debug.log "Error" errMsg
             in
             ( model, Cmd.none )

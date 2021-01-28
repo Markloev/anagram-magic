@@ -4,6 +4,7 @@ import Game exposing (Game, Tile)
 import Http
 import Json.Decode as Decode
 import Time
+import WebSocket exposing (ConnectionInfo)
 
 
 type Msg
@@ -24,3 +25,9 @@ type Msg
     | Submit Game
     | GetWordValidityResponse (Result Http.Error String)
     | GetRandomWordResponse (Result Http.Error String)
+    | ReceiveSocketMessage String
+    | GotTicket (Result Http.Error String)
+    | SocketConnect ConnectionInfo
+    | SocketClosed Int (Maybe String)
+    | ReceivedString String
+    | Error String
