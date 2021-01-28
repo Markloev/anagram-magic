@@ -1,13 +1,15 @@
 module Update exposing (update)
 
+import Base64
 import Constants exposing (roundTimeSeconds, tileListMax, tileSelectionSeconds, totalRounds)
 import Game exposing (GameState(..), Phase(..), initGame)
-import Helper exposing (mkCmd, toLetter)
+import Helper exposing (fullWord, mkCmd, toLetter)
 import List
 import List.Extra as LE
 import Msg exposing (Msg(..))
 import Ports exposing (encodeListTiles, getRandomConsonant, getRandomTiles, getRandomVowel, shuffleTiles)
 import Prelude exposing (iff)
+import Rest exposing (getRandomWord, getWordValidity)
 import Time
 import Types exposing (Model)
 
@@ -270,4 +272,29 @@ update msg model =
                 updatedGameState =
                     Started { game | isSubmitted = True }
             in
-            ( { model | gameState = updatedGameState }, Cmd.none )
+            ( { model | gameState = updatedGameState }, fullWord game.selectedTiles |> getWordValidity )
+
+        GetWordValidityResponse res ->
+            ( model, Cmd.none )
+
+        GetRandomWordResponse res ->
+            let
+                word =
+                    case res of
+                        Ok encWord ->
+                            let
+                                decWord = Base64.decode encWord
+                            in
+                            case decWord of
+                                Ok decodedWord ->
+                                    decodedWord
+                                
+                                Err _ ->
+                                    ""
+
+                        Err _ ->
+                            ""
+                
+                ssdsds = Debug.log "WORD" word
+            in
+            ( model, Cmd.none )

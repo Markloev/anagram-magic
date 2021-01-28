@@ -1,6 +1,7 @@
 module Msg exposing (Msg(..))
 
 import Game exposing (Game, Tile)
+import Http
 import Json.Decode as Decode
 import Time
 
@@ -21,3 +22,5 @@ type Msg
     | SelectTile Game Int Tile
     | RemoveTile Game Int Int
     | Submit Game
+    | GetWordValidityResponse (Result Http.Error String)
+    | GetRandomWordResponse (Result Http.Error String)

@@ -43,3 +43,21 @@ toLetter str =
 
         _ ->
             Nothing
+
+
+fullWord : List Tile -> String
+fullWord tiles =
+    let
+        wordList =
+            List.map
+                (\tile ->
+                    tile.letter
+                )
+                tiles
+
+        wordString =
+            wordList
+                |> String.fromList
+                |> String.toLower
+    in
+    wordString
