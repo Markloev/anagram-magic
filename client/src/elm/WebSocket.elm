@@ -25,10 +25,6 @@ type alias ConnectionInfo =
 
 connect : String -> List String -> Cmd msg
 connect url protocols =
-    let
-        dsds =
-            Debug.log "Tss" "TTss"
-    in
     message "connect"
         (Encode.object
             [ ( "url", Encode.string url )
@@ -75,7 +71,7 @@ events : (Event -> msg) -> Sub msg
 events msg =
     fromSocket
         (\val ->
-            case Debug.log "EVENT" (Decode.decodeValue eventDecoder val) of
+            case Decode.decodeValue eventDecoder val of
                 Ok event ->
                     msg event
 
@@ -86,10 +82,6 @@ events msg =
 
 eventDecoder : Decoder Event
 eventDecoder =
-    let
-        sdsd =
-            Debug.log "DECODE" "HEY"
-    in
     Decode.field "msgType" Decode.string
         |> Decode.andThen
             (\msgType ->

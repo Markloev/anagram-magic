@@ -173,6 +173,8 @@ function bind(app) {
         }
 
         let toElm = app.ports.fromSocket;
+        console.log(request.url);
+        console.log(request.protocols);
         let socket = new WebSocket(request.url, request.protocols);
 
         socket.onopen = openHandler.bind(null, toElm, socket, request.url);

@@ -178,8 +178,7 @@ update msg model =
             ( { model | gameState = updatedGameState }, Cmd.none )
 
         StartGame ->
-            -- ( { model | gameState = Started initGame }, Cmd.none )
-            ( model, Cmd.none )
+            ( { model | gameState = Started initGame }, Cmd.none )
 
         GetConsonant game ->
             ( model, encodeListTiles game.availableTiles |> getRandomConsonant )
@@ -297,9 +296,6 @@ update msg model =
 
                         Err _ ->
                             ""
-
-                ssdsds =
-                    Debug.log "WORD" word
             in
             ( model, Cmd.none )
 
@@ -308,9 +304,6 @@ update msg model =
 
         GotTicket result ->
             let
-                dsds =
-                    Debug.log "T" "TT"
-
                 newModel =
                     case result of
                         Ok ticket ->
@@ -320,7 +313,7 @@ update msg model =
                             { model | gameState = NotStarted "Failed to receive ticket from server" }
             in
             ( newModel
-            , WebSocket.connect "ws://localhost:3000" []
+            , WebSocket.connect "ws://localhost:8080/sockets" []
             )
 
         SocketConnect info ->
