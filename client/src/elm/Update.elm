@@ -3,7 +3,7 @@ module Update exposing (update)
 import Base64
 import Constants exposing (roundTimeSeconds, tileListMax, tileSelectionSeconds, totalRounds)
 import Game exposing (GameState(..), Phase(..), initGame)
-import Helper exposing (fullWord, getConnectionTicket, mkCmd, toLetter)
+import Helper exposing (fullWord, mkCmd, toLetter)
 import List
 import List.Extra as LE
 import Msg exposing (Msg(..))
@@ -302,27 +302,13 @@ update msg model =
         ReceiveSocketMessage message ->
             ( { model | socketMessage = message }, Cmd.none )
 
-        GotTicket result ->
-            let
-                newModel =
-                    case result of
-                        Ok ticket ->
-                            { model | socketInfo = Requested ticket }
-
-                        Err _ ->
-                            { model | gameState = NotStarted "Failed to receive ticket from server" }
-            in
-            ( newModel
-            , WebSocket.connect "ws://localhost:8080/sockets" []
-            )
-
         SocketConnect info ->
             let
                 sds =
                     Debug.log "HERE" "WE HERE"
             in
             ( { model | socketInfo = SocketConnected info }
-            , WebSocket.sendString info (getConnectionTicket model.socketInfo)
+            , WebSocket.sendString info "TESTING SEND"
             )
 
         Msg.SocketClosed code reason ->
@@ -338,7 +324,7 @@ update msg model =
                 sds =
                     Debug.log "RECEIVED" eventMessage
             in
-            ( { model | socketMessage = eventMessage }, Cmd.none )
+            ( { model | socketMessage = eventMessage, testReceivedString = eventMessage :: model.testReceivedString }, Cmd.none )
 
         Error errMsg ->
             let
@@ -346,3 +332,18 @@ update msg model =
                     Debug.log "Error" errMsg
             in
             ( model, Cmd.none )
+
+        ChangeString text ->
+            ( { model | testString = text }, Cmd.none )
+
+        SendMessage ->
+            let
+                cmd =
+                    case model.socketInfo of
+                        SocketConnected info ->
+                            WebSocket.sendString info model.testString
+
+                        _ ->
+                            Cmd.none
+            in
+            ( { model | testString = "" }, cmd )

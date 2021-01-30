@@ -9,6 +9,8 @@ type alias Model =
     , serverMessage : String
     , socketMessage : String
     , socketInfo : SocketStatus
+    , testString : String
+    , testReceivedString : List String
     }
 
 
@@ -18,4 +20,6 @@ initModel =
     , serverMessage = ""
     , socketMessage = ""
     , socketInfo = Unopened
+    , testString = ""
+    , testReceivedString = []
     }

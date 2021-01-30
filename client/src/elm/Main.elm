@@ -7,6 +7,7 @@ import Subscriptions exposing (subscriptions)
 import Types exposing (Model, initModel)
 import Update exposing (update)
 import View exposing (view)
+import WebSocket
 
 
 main : Program () Model Msg
@@ -25,9 +26,4 @@ main =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( initModel
-    , Http.get
-        { url = "http://localhost:8080/sockets"
-        , expect = Http.expectString GotTicket
-        }
-    )
+    ( initModel, WebSocket.connect "ws://localhost:8080/sockets" [] )

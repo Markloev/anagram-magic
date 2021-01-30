@@ -26,8 +26,9 @@ type Msg
     | GetWordValidityResponse (Result Http.Error String)
     | GetRandomWordResponse (Result Http.Error String)
     | ReceiveSocketMessage String
-    | GotTicket (Result Http.Error String)
     | SocketConnect ConnectionInfo
     | SocketClosed Int (Maybe String)
     | ReceivedString String
     | Error String
+    | ChangeString String
+    | SendMessage

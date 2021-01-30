@@ -4,7 +4,7 @@ import Constants exposing (maxConsonantOrVowel)
 import Game exposing (Tile)
 import Json.Decode as Json
 import Task
-import WebSocket exposing (ConnectionInfo, SocketStatus(..), Ticket)
+import WebSocket exposing (ConnectionInfo, SocketStatus(..))
 
 
 mkCmd : msg -> Cmd msg
@@ -62,16 +62,6 @@ fullWord tiles =
                 |> String.toLower
     in
     wordString
-
-
-getConnectionTicket : SocketStatus -> Ticket
-getConnectionTicket socketInfo =
-    case socketInfo of
-        Requested ticket ->
-            ticket
-
-        _ ->
-            Debug.todo "Not connected to server."
 
 
 getConnectionInfo : SocketStatus -> ConnectionInfo

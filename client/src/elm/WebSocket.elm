@@ -5,13 +5,9 @@ import Json.Encode as Encode exposing (Value)
 import Ports exposing (fromSocket, toSocket)
 
 
-type alias Ticket =
-    String
-
-
 type SocketStatus
     = Unopened
-    | Requested Ticket
+    | Requested
     | SocketConnected ConnectionInfo
     | SocketClosed Int (Maybe String)
 

@@ -186,6 +186,7 @@ function bind(app) {
     }
 
     function closeWebSocket(request) {
+        console.log("CLOSING");
         let socket = sockets[request.url];
         if (!socket) {
             return;
@@ -197,7 +198,7 @@ function bind(app) {
     }
 
     function sendString(request) {
-        console.log("Yo");
+        console.log("Yo: " + request.message);
         let socket = sockets[request.url];
         if (socket) {
             socket.send(request.message);
@@ -222,7 +223,7 @@ function openHandler(toElm, socket, url, event) {
 }
 
 function messageHandler(toElm, socket, url, event) {
-    console.log("Hello from SEND STRING");
+    console.log("Hello from SEND STRING: " + event.data);
     if (typeof event.data === "string") {
         toElm.send({
             msgType: "stringMessage",

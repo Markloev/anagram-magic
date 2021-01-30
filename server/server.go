@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
@@ -19,9 +20,16 @@ import (
 var addr = flag.String("addr", "localhost:8080/sockets", "http service address")
 
 var upgrader = websocket.Upgrader{} // use default options
+var clients = make(map[*websocket.Conn]bool)
+var broadcast = make(chan Message)
+
+type Message struct {
+	messageType int
+	message     []byte
+}
 
 func main() {
-	fmt.Printf("Starting server at port 8080\n")
+	log.Println("Starting server at port 8080\n")
 	flag.Parse()
 	log.SetFlags(0)
 
@@ -31,6 +39,7 @@ func main() {
 	router.HandleFunc("/sockets", http.HandlerFunc(sockets)).Methods("GET")
 	router.HandleFunc("/word", http.HandlerFunc(wordHandler)).Methods("POST")
 	router.HandleFunc("/randomWord", http.HandlerFunc(randomWordHandler)).Methods("GET")
+	go handleMessages()
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},
@@ -43,33 +52,56 @@ func main() {
 	log.Fatal(http.ListenAndServe(":8080", handler))
 }
 
+var count = 0
+
 func sockets(w http.ResponseWriter, req *http.Request) {
-	fmt.Printf("LISTENING!!!\n")
-	u := websocket.Upgrader{
+	log.Println(strconv.Itoa(count) + "\n")
+	count++
+
+	var upgrader = websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
 		CheckOrigin: func(r *http.Request) bool {
 			return true
 		},
 	}
-	// u := websocket.Upgrader{}
-	c, err := u.Upgrade(w, req, nil)
+	client, err := upgrader.Upgrade(w, req, nil)
 	if err != nil {
-		fmt.Printf("FAILED!!!\n")
-		// handle error
+		log.Println("FAILED!!!\n")
 	}
-	fmt.Printf(":D :D :D\n")
+
 	// receive message
-	messageType, message, err := c.ReadMessage()
-	if err != nil {
-		fmt.Printf("READING FAILURE!!!\n")
-		// handle error
+	for {
+		messageType, message, err := client.ReadMessage()
+		if err != nil {
+			delete(clients, client)
+			log.Println("READING FAILURE!!!\n")
+		}
+		var msg Message
+		msg.messageType = messageType
+		msg.message = message
+		broadcast <- msg
+		clients[client] = true
 	}
-	// send message
-	err = c.WriteMessage(messageType, message)
-	if err != nil {
-		fmt.Printf("WRITING FAILURE!!!\n")
-		// handle error
+
+	defer client.Close()
+}
+
+func handleMessages() {
+	log.Println("HANDLING MESSAGE\n")
+	for {
+		// Grab the next message from the broadcast channel
+		params := <-broadcast
+		// Send it out to every client that is currently connected
+		for client := range clients {
+			err := client.WriteMessage(params.messageType, params.message)
+			if err != nil {
+				log.Println("WRITING FAILURE!!!\n")
+				log.Printf("error: %v", err)
+				client.Close()
+				delete(clients, client)
+			}
+		}
 	}
 }
 

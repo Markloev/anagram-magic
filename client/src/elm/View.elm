@@ -4,8 +4,8 @@ import Constants exposing (tileListMax)
 import Game exposing (Game, GameState(..), Phase(..))
 import Helper exposing (hasMaxConsonants, hasMaxVowels)
 import Html exposing (Html, button, div, text)
-import Html.Attributes exposing (class, classList, disabled, style)
-import Html.Events exposing (onClick)
+import Html.Attributes exposing (class, classList, disabled, style, type_)
+import Html.Events exposing (onClick, onInput)
 import List
 import Msg exposing (Msg(..))
 import Time
@@ -18,13 +18,21 @@ view model =
         content =
             case model.gameState of
                 NotStarted t ->
-                    button [ onClick StartGame, class "button" ] [ text "Start Game" ]
+                    button [ onClick StartGame, class "button" ] [ text model.socketMessage ]
 
                 Started g ->
                     gameView g
+
+        msgs =
+            List.map (\msg -> div [] [ text msg ]) model.testReceivedString
     in
-    div [ style "height" "100%", style "width" "100%", class "content-container" ]
-        [ content ]
+    -- div [ style "height" "100%", style "width" "100%", class "content-container" ]
+    --     [ content ]
+    div []
+        [ Html.input [ type_ "text", onInput ChangeString ] [ text model.testString ]
+        , div [] <| msgs
+        , button [ onClick SendMessage, class "button" ] [ text "Send Message" ]
+        ]
 
 
 gameView : Game -> Html Msg
