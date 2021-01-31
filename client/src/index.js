@@ -232,7 +232,6 @@ function openHandler(toElm, socket, url, event) {
 }
 
 function messageHandler(toElm, socket, url, event) {
-    console.log("Hello from SEND STRING: " + event.data);
     if (typeof event.data === "string") {
         toElm.send({
             msgType: "stringMessage",

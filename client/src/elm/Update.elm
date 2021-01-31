@@ -4,9 +4,11 @@ import Base64
 import Constants exposing (roundTimeSeconds, tileListMax, tileSelectionSeconds, totalRounds)
 import Game exposing (GameState(..), Phase(..), initGame)
 import Helper exposing (fullWord, mkCmd, toLetter, getConnectionInfo)
+import Json.Decode as Decode
 import List
 import List.Extra as LE
 import Msg exposing (Msg(..))
+import Multiplayer
 import Ports exposing (encodeListTiles, getRandomConsonant, getRandomTiles, getRandomVowel, shuffleTiles, toSocket)
 import Prelude exposing (iff)
 import Rest exposing (getRandomWord, getWordValidity)
@@ -322,12 +324,27 @@ update msg model =
             , Cmd.none
             )
 
-        ReceivedString eventMessage ->
+        ReceivedString eventObject ->
             let
                 sds =
-                    Debug.log "RECEIVED" eventMessage
+                    Debug.log "RECEIVED" eventObject
+                newModel =
+                    case Decode.decodeString Multiplayer.eventDecoder eventObject of
+                        Err errMsg ->
+                            let
+                                _ = Debug.log "Multiplayer Error" errMsg
+                            in
+                            model
+
+                        Ok event ->
+                            case event of
+                                Multiplayer.PlayerFound player2ID ->
+                                    { model | player2Id = Just player2ID, gameState = Started initGame }
+                                
+                                Multiplayer.Searching ->
+                                    model
             in
-            ( { model | socketMessage = eventMessage, testReceivedString = eventMessage :: model.testReceivedString }, Cmd.none )
+            ( newModel, Cmd.none )
 
         Error errMsg ->
             let

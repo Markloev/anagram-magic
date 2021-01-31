@@ -21,10 +21,19 @@ view model =
                     button [ onClick StartSearch, class "button" ] [ text "Start Search" ]
 
                 Searching ->
-                    button [ onClick StartSearch, class "button" ] [ text "Start Search" ]
+                    button [ onClick StartSearch, class "button" ] [ text "Stop Search" ]
 
                 Started g ->
-                    gameView g
+                    let
+                        player2Id =
+                            case model.player2Id of
+                                Just p2 ->
+                                    p2
+                                
+                                Nothing ->
+                                    ""
+                    in
+                    gameView player2Id g
 
         msgs =
             List.map (\msg -> div [] [ text msg ]) model.testReceivedString
@@ -34,8 +43,8 @@ view model =
     content
 
 
-gameView : Game -> Html Msg
-gameView game =
+gameView : String -> Game -> Html Msg
+gameView player2Id game =
     let
         gameContent =
             case game.phase of
@@ -54,6 +63,7 @@ gameView game =
     div []
         [ overview game
         , gameContent
+        , div [] [ text <| "PLAYER 2: " ++ player2Id]
         ]
 
 
