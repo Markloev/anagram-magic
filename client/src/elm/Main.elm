@@ -26,4 +26,4 @@ main =
 
 init : String -> ( Model, Cmd Msg )
 init playerId =
-    ( initModel playerId, WebSocket.connect "ws://localhost:8080/sockets" [] )
+    ( initModel playerId, WebSocket.connect "ws://localhost:8080/ws" [] )

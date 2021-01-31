@@ -28,32 +28,21 @@ type SearchingReturnData struct {
 //HandleSearch handles return message to player that is searching for a game
 func HandleSearch(paramsData interface{}, clients map[*websocket.Conn]common.Client) {
 	found := false
-	playerID := fmt.Sprintf("%v", paramsData)
+	currentPlayerID := fmt.Sprintf("%v", paramsData)
+	//loop through list of clients and look for another client that is searching
 	for client := range clients {
-		if clients[client].PlayerID != playerID && clients[client].Searching {
+		//if it is another client and they are also searching
+		if clients[client].PlayerID != currentPlayerID && clients[client].Searching {
 			found = true
-			currentPlayerReturnJSON := SearchingReturnMessage{
-				EventType: "playerFound",
-				Data: SearchingReturnData{
-					PlayerID: playerID,
-				},
-			}
-			foundPlayerReturnJSON := SearchingReturnMessage{
-				EventType: "playerFound",
-				Data: SearchingReturnData{
-					PlayerID: clients[client].PlayerID,
-				},
-			}
-			if thisClient, ok := clients[client]; ok {
-				thisClient.Searching = false
-				clients[client] = thisClient
-			}
+			foundPlayerReturnJSON := createSearchingReturnMessageJSON(clients[client].PlayerID)
+			currentPlayerReturnJSON := createSearchingReturnMessageJSON(currentPlayerID)
+			//get current client and update to say they are no longer searching and also return the opposing playerID
 			for client := range clients {
-				if clients[client].PlayerID == playerID {
+				if clients[client].PlayerID == currentPlayerID {
 					if thisClient, ok := clients[client]; ok {
 						thisClient.Searching = false
 						clients[client] = thisClient
-						jsonErr := client.WriteJSON(currentPlayerReturnJSON)
+						jsonErr := client.WriteJSON(foundPlayerReturnJSON)
 						if jsonErr != nil {
 							log.Printf("Error: %v", jsonErr)
 							client.Close()
@@ -62,7 +51,12 @@ func HandleSearch(paramsData interface{}, clients map[*websocket.Conn]common.Cli
 					}
 				}
 			}
-			jsonErr := client.WriteJSON(foundPlayerReturnJSON)
+			//update opponent client to say they are no longer searching and also return the opposing playerID
+			if thisClient, ok := clients[client]; ok {
+				thisClient.Searching = false
+				clients[client] = thisClient
+			}
+			jsonErr := client.WriteJSON(currentPlayerReturnJSON)
 			if jsonErr != nil {
 				log.Printf("Error: %v", jsonErr)
 				client.Close()
@@ -70,9 +64,10 @@ func HandleSearch(paramsData interface{}, clients map[*websocket.Conn]common.Cli
 			}
 		}
 	}
+	//if no other player was found when search is initiated, set the current users searching status to true and return "searching" JSON to current user
 	if !found {
 		for searchingClient := range clients {
-			if clients[searchingClient].PlayerID == playerID {
+			if clients[searchingClient].PlayerID == currentPlayerID {
 				if thisClient, ok := clients[searchingClient]; ok {
 					thisClient.Searching = true
 					clients[searchingClient] = thisClient
@@ -89,4 +84,14 @@ func HandleSearch(paramsData interface{}, clients map[*websocket.Conn]common.Cli
 			}
 		}
 	}
+}
+
+func createSearchingReturnMessageJSON(playerID string) SearchingReturnMessage {
+	returnJSON := SearchingReturnMessage{
+		EventType: "playerFound",
+		Data: SearchingReturnData{
+			PlayerID: playerID,
+		},
+	}
+	return returnJSON
 }
