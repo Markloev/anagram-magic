@@ -11,15 +11,17 @@ type alias Model =
     , socketInfo : SocketStatus
     , testString : String
     , testReceivedString : List String
+    , playerId : String
     }
 
 
-initModel : Model
-initModel =
+initModel : String -> Model
+initModel playerId =
     { gameState = NotStarted ""
     , serverMessage = ""
     , socketMessage = ""
     , socketInfo = Unopened
     , testString = ""
     , testReceivedString = []
+    , playerId = playerId
     }

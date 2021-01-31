@@ -10,7 +10,7 @@ import View exposing (view)
 import WebSocket
 
 
-main : Program () Model Msg
+main : Program String Model Msg
 main =
     Browser.document
         { init = init
@@ -24,6 +24,6 @@ main =
         }
 
 
-init : () -> ( Model, Cmd Msg )
-init _ =
-    ( initModel, WebSocket.connect "ws://localhost:8080/sockets" [] )
+init : String -> ( Model, Cmd Msg )
+init playerId =
+    ( initModel playerId, WebSocket.connect "ws://localhost:8080/sockets" [] )

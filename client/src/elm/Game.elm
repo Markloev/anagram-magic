@@ -5,6 +5,7 @@ import Time exposing (Posix)
 
 type GameState
     = NotStarted String
+    | Searching
     | Started Game
 
 

@@ -3,7 +3,7 @@ module Update exposing (update)
 import Base64
 import Constants exposing (roundTimeSeconds, tileListMax, tileSelectionSeconds, totalRounds)
 import Game exposing (GameState(..), Phase(..), initGame)
-import Helper exposing (fullWord, mkCmd, toLetter)
+import Helper exposing (fullWord, mkCmd, toLetter, getConnectionInfo)
 import List
 import List.Extra as LE
 import Msg exposing (Msg(..))
@@ -26,6 +26,9 @@ update msg model =
                 updatedGameState =
                     case model.gameState of
                         NotStarted t ->
+                            model.gameState
+
+                        Searching ->
                             model.gameState
 
                         Started g ->
@@ -308,7 +311,7 @@ update msg model =
                     Debug.log "HERE" "WE HERE"
             in
             ( { model | socketInfo = SocketConnected info }
-            , WebSocket.sendString info "TESTING SEND"
+            , Cmd.none
             )
 
         Msg.SocketClosed code reason ->
@@ -341,9 +344,16 @@ update msg model =
                 cmd =
                     case model.socketInfo of
                         SocketConnected info ->
-                            WebSocket.sendString info model.testString
+                            WebSocket.sendJSON info model.testString
 
                         _ ->
                             Cmd.none
             in
             ( { model | testString = "" }, cmd )
+
+        StartSearch ->
+            ( { model | gameState = Searching }
+            , WebSocket.sendJsonString
+                (getConnectionInfo model.socketInfo)
+                (WebSocket.searchingEncoder model.playerId)
+            )

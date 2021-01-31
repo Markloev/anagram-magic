@@ -5,9 +5,16 @@ require('./styles/anagram.scss');
 
 const { Elm } = require('./elm/Main.elm');
 const app = Elm.Main.init({
-    node: document.getElementById('main')
+    node: document.getElementById('main'),
+    flags: randomPlayerId(32, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')
 });
 bind(app);
+
+function randomPlayerId(length, chars) {
+    var result = '';
+    for (var i = length; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)];
+    return result;
+}
 
 const maxConsonantOrVowel = 6;
 const tileListMax = 9;
@@ -161,8 +168,8 @@ function bind(app) {
             case "disconnect":
                 closeWebSocket(message.msg);
                 break;
-            case "sendString":
-                sendString(message.msg);
+            case "sendJSON":
+                sendJSON(message.msg);
                 break;
         }
     });
@@ -197,7 +204,7 @@ function bind(app) {
         sockets[request.url] = undefined;
     }
 
-    function sendString(request) {
+    function sendJSON(request) {
         console.log("Yo: " + request.message);
         let socket = sockets[request.url];
         if (socket) {
@@ -209,8 +216,10 @@ function bind(app) {
     }
 }
 
+
 function openHandler(toElm, socket, url, event) {
     console.log("Opened");
+
     toElm.send({
         msgType: "connected",
         msg: {

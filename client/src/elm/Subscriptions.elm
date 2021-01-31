@@ -45,7 +45,7 @@ subscriptions { gameState } =
                         , Ports.receiveShuffledTiles (decodeListTiles >> ReceiveShuffledTiles g)
                         ]
 
-                NotStarted _ ->
+                _ ->
                     webSub
     in
     subs

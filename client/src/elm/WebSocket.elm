@@ -39,9 +39,9 @@ disconnect url =
         |> toSocket
 
 
-sendString : ConnectionInfo -> String -> Cmd msg
-sendString connection text =
-    message "sendString"
+sendJSON : ConnectionInfo -> String -> Cmd msg
+sendJSON connection text =
+    message "sendJSON"
         (Encode.object
             [ ( "url", Encode.string connection.url )
             , ( "message", Encode.string text )
@@ -52,7 +52,7 @@ sendString connection text =
 
 sendJsonString : ConnectionInfo -> Value -> Cmd msg
 sendJsonString connection =
-    sendString connection << Encode.encode 0
+    sendJSON connection << Encode.encode 0
 
 
 type Event
@@ -120,3 +120,15 @@ message msgType msg =
         [ ( "msgType", Encode.string msgType )
         , ( "msg", msg )
         ]
+
+
+eventEncoder : String -> Value -> Value
+eventEncoder eventType data =
+  Encode.object
+    [ ( "eventType", Encode.string eventType )
+    , ( "data", data )
+    ]
+
+searchingEncoder : String -> Value
+searchingEncoder playerId =
+  eventEncoder "searching" (Encode.string playerId)

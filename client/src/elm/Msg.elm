@@ -32,3 +32,4 @@ type Msg
     | Error String
     | ChangeString String
     | SendMessage
+    | StartSearch

@@ -18,7 +18,10 @@ view model =
         content =
             case model.gameState of
                 NotStarted t ->
-                    button [ onClick StartGame, class "button" ] [ text model.socketMessage ]
+                    button [ onClick StartSearch, class "button" ] [ text "Start Search" ]
+
+                Searching ->
+                    button [ onClick StartSearch, class "button" ] [ text "Start Search" ]
 
                 Started g ->
                     gameView g
@@ -28,11 +31,7 @@ view model =
     in
     -- div [ style "height" "100%", style "width" "100%", class "content-container" ]
     --     [ content ]
-    div []
-        [ Html.input [ type_ "text", onInput ChangeString ] [ text model.testString ]
-        , div [] <| msgs
-        , button [ onClick SendMessage, class "button" ] [ text "Send Message" ]
-        ]
+    content
 
 
 gameView : Game -> Html Msg

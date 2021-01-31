@@ -10,7 +10,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
@@ -20,16 +19,24 @@ import (
 var addr = flag.String("addr", "localhost:8080/sockets", "http service address")
 
 var upgrader = websocket.Upgrader{} // use default options
-var clients = make(map[*websocket.Conn]bool)
+var clients = make(map[*websocket.Conn]Client)
+var searchingIDs []string
 var broadcast = make(chan Message)
 
-type Message struct {
-	messageType int
-	message     []byte
+type Client struct {
+	playerID  string
+	searching bool
 }
 
+type Message struct {
+	eventType string
+	data      []byte
+}
+
+type data interface{}
+
 func main() {
-	log.Println("Starting server at port 8080\n")
+	log.Println("Starting server at port 8080")
 	flag.Parse()
 	log.SetFlags(0)
 
@@ -55,9 +62,6 @@ func main() {
 var count = 0
 
 func sockets(w http.ResponseWriter, req *http.Request) {
-	log.Println(strconv.Itoa(count) + "\n")
-	count++
-
 	var upgrader = websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
@@ -67,41 +71,116 @@ func sockets(w http.ResponseWriter, req *http.Request) {
 	}
 	client, err := upgrader.Upgrade(w, req, nil)
 	if err != nil {
-		log.Println("FAILED!!!\n")
+		log.Println("FAILED!!!")
 	}
 
 	// receive message
 	for {
-		messageType, message, err := client.ReadMessage()
-		if err != nil {
-			delete(clients, client)
-			log.Println("READING FAILURE!!!\n")
-		}
 		var msg Message
-		msg.messageType = messageType
-		msg.message = message
+		err := client.ReadJSON(&msg)
+		if err != nil {
+			_, message, errOpen := client.ReadMessage()
+			if errOpen != nil {
+				log.Println("READING FAILURE!!!")
+				delete(clients, client)
+			}
+			msg.eventType = "connected"
+			msg.data = message
+		}
 		broadcast <- msg
-		clients[client] = true
+		var newClient Client
+		newClient.playerID = ""
+		newClient.searching = false
+		clients[client] = newClient
 	}
-
 	defer client.Close()
 }
 
+type SearchingReturnMessage struct {
+	event string
+	data  SearchingReturnData
+}
+
+type SearchingReturnData struct {
+	playerID string
+}
+
 func handleMessages() {
-	log.Println("HANDLING MESSAGE\n")
+	log.Println("HANDLING MESSAGE")
 	for {
 		// Grab the next message from the broadcast channel
 		params := <-broadcast
 		// Send it out to every client that is currently connected
-		for client := range clients {
-			err := client.WriteMessage(params.messageType, params.message)
+		if params.eventType == "searching" {
+			var returnData SearchingReturnData
+			err := json.Unmarshal(params.data, &returnData)
 			if err != nil {
-				log.Println("WRITING FAILURE!!!\n")
-				log.Printf("error: %v", err)
-				client.Close()
-				delete(clients, client)
+				log.Printf("Error parsing search...")
+			} else {
+				searchResult := handleSearching(returnData.playerID)
+				for client := range clients {
+					if !searchResult.searching {
+						if clients[client].playerID == searchResult.playerID || clients[client].playerID == returnData.playerID {
+							m := SearchingReturnMessage{"playerFound", SearchingReturnData{searchResult.playerID}}
+							jsonData, err := json.Marshal(m)
+							if err != nil {
+								log.Printf("Error marshalling return data...")
+							}
+							jsonErr := client.WriteJSON(jsonData)
+							if jsonErr != nil {
+								log.Printf("error: %v", err)
+								client.Close()
+								delete(clients, client)
+							}
+						}
+					} else if clients[client].playerID == returnData.playerID {
+						err := client.WriteJSON("searching")
+						if err != nil {
+							log.Printf("error: %v", err)
+							client.Close()
+							delete(clients, client)
+						}
+					}
+				}
+			}
+		} else {
+			for client := range clients {
+				log.Println("DATA:")
+				log.Println(params.eventType)
+				log.Println(params.data)
+				err := client.WriteJSON(params.data)
+				if err != nil {
+					log.Printf("error: %v", err)
+					client.Close()
+					delete(clients, client)
+				}
 			}
 		}
+	}
+}
+
+func removeSliceElement(s []string, i int) []string {
+	s[len(s)-1], s[i] = s[i], s[len(s)-1]
+	return s[:len(s)-1]
+}
+
+type SearchResult struct {
+	searching bool
+	playerID  string
+}
+
+func handleSearching(playerID string) SearchResult {
+	var searchResult SearchResult
+	if len(searchingIDs) > 0 {
+		searchResult.playerID = searchingIDs[0]
+		searchResult.searching = false
+		searchingIDs = removeSliceElement(searchingIDs, 0)
+		return searchResult
+	} else {
+		searchingIDs = append(searchingIDs, playerID)
+		searchResult.playerID = playerID
+		searchResult.searching = true
+		return searchResult
 	}
 }
 
