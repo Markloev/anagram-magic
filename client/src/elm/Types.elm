@@ -12,7 +12,7 @@ type alias Model =
     , testString : String
     , testReceivedString : List String
     , playerId : String
-    , player2Id : Maybe String
+    , opponentId : Maybe String
     }
 
 
@@ -25,5 +25,5 @@ initModel playerId =
     , testString = ""
     , testReceivedString = []
     , playerId = playerId
-    , player2Id = Nothing
+    , opponentId = Nothing
     }

@@ -25,15 +25,15 @@ view model =
 
                 Started g ->
                     let
-                        player2Id =
-                            case model.player2Id of
+                        opponentId =
+                            case model.opponentId of
                                 Just p2 ->
                                     p2
-                                
+
                                 Nothing ->
                                     ""
                     in
-                    gameView player2Id g
+                    gameView opponentId g
 
         msgs =
             List.map (\msg -> div [] [ text msg ]) model.testReceivedString
@@ -44,7 +44,7 @@ view model =
 
 
 gameView : String -> Game -> Html Msg
-gameView player2Id game =
+gameView opponentId game =
     let
         gameContent =
             case game.phase of
@@ -63,7 +63,7 @@ gameView player2Id game =
     div []
         [ overview game
         , gameContent
-        , div [] [ text <| "PLAYER 2: " ++ player2Id]
+        , div [] [ text <| "PLAYER 2: " ++ opponentId ]
         ]
 
 

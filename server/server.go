@@ -10,7 +10,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	// "reflect"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
@@ -20,16 +19,19 @@ import (
 var addr = flag.String("addr", "localhost:8080/sockets", "http service address")
 
 var upgrader = websocket.Upgrader{} // use default options
-var clients = make(map[*websocket.Conn]Client)
-var searchingIDs []string
-var broadcast = make(chan Message)
 
-type Client struct {
+//Clients stores a list of all clients connected via web socket
+var Clients = make(map[*websocket.Conn]client)
+
+//Broadcast handles messages received through web socket
+var Broadcast = make(chan message)
+
+type client struct {
 	playerID  string
 	searching bool
 }
 
-type Message struct {
+type message struct {
 	eventType string
 	data      data
 }
@@ -70,160 +72,131 @@ func sockets(w http.ResponseWriter, req *http.Request) {
 			return true
 		},
 	}
-	client, err := upgrader.Upgrade(w, req, nil)
+	currentClient, err := upgrader.Upgrade(w, req, nil)
 	if err != nil {
-		log.Println("FAILED!!!")
+		log.Println("Error: %v", err)
 	}
 
 	// receive message
 	for {
 		var incData map[string]interface{}
-		err := client.ReadJSON(&incData)
-		var msg Message
+		err := currentClient.ReadJSON(&incData)
+		var msg message
 		if err != nil {
-			_, message, errOpen := client.ReadMessage()
+			_, currentMessage, errOpen := currentClient.ReadMessage()
 			if errOpen != nil {
-				log.Println("READING FAILURE!!!")
-				delete(clients, client)
+				log.Println("Error: %v", errOpen)
+				delete(Clients, currentClient)
 			}
 			msg.eventType = "connected"
-			msg.data = message
+			msg.data = currentMessage
 		} else {
 			msg.eventType = incData["eventType"].(string)
 			msg.data = incData["data"]
 		}
-		broadcast <- msg
-		var newClient Client
+		Broadcast <- msg
+		var newClient client
 		newClient.playerID = fmt.Sprintf("%v", msg.data)
 		newClient.searching = false
-		clients[client] = newClient
-
-		// var incData map[string]interface{}
-		// err := client.ReadJSON(&incData)
-		// var msg Message
-		// if err != nil {
-		// 	_, message, errOpen := client.ReadMessage()
-		// 	if errOpen != nil {
-		// 		log.Println("READING FAILURE!!!")
-		// 		delete(clients, client)
-		// 	}
-		// 	msg.eventType = "connected"
-		// 	msg.data = message
-		// } else {
-		// 	msg.eventType = incData["eventType"].(string)
-		// 	msg.data = incData["data"]
-		// }
-		// broadcast <- msg
-		// var newClient Client
-		// newClient.playerID = ""
-		// newClient.searching = false
-		// clients[client] = newClient
+		Clients[currentClient] = newClient
 	}
-	defer client.Close()
+	defer currentClient.Close()
 }
 
+//SearchingDefaultMessage returns that the user is still searching
 type SearchingDefaultMessage struct {
 	EventType string
 }
 
+//SearchingReturnMessage returns the opponent a player will match
 type SearchingReturnMessage struct {
 	EventType string
 	Data      SearchingReturnData
 }
 
+//SearchingReturnData stores the opponent PlayerID
 type SearchingReturnData struct {
 	PlayerID string
 }
 
 func handleMessages() {
-	log.Println("HANDLING MESSAGE")
 	for {
 		// Grab the next message from the broadcast channel
-		params := <-broadcast
+		params := <-Broadcast
 		// Send it out to every client that is currently connected
 		found := false
 		if params.eventType == "searching" {
 			playerID := fmt.Sprintf("%v", params.data)
-			for client := range clients {
+			for client := range Clients {
 				log.Println(playerID)
-				log.Println(clients[client].playerID)
-				if clients[client].playerID != playerID && clients[client].searching {
+				log.Println(Clients[client].playerID)
+				if Clients[client].playerID != playerID && Clients[client].searching {
 					found = true
-					currentPlayerReturnJSONPrep := SearchingReturnMessage{
+					currentPlayerReturnJSON := SearchingReturnMessage{
 						EventType: "playerFound",
 						Data: SearchingReturnData{
 							PlayerID: playerID,
 						},
 					}
-					// currentPlayerJSONData, err := json.Marshal(currentPlayerReturnJSONPrep)
-					// log.Printf(string(currentPlayerJSONData))
-
-					// if err != nil {
-					// 	log.Printf("Error marshalling return data...")
-					// }
-					foundPlayerReturnJSONPrep := SearchingReturnMessage{
+					foundPlayerReturnJSON := SearchingReturnMessage{
 						EventType: "playerFound",
 						Data: SearchingReturnData{
-							PlayerID: clients[client].playerID,
+							PlayerID: Clients[client].playerID,
 						},
 					}
-					// foundPlayerJSONData, err := json.Marshal(foundPlayerReturnJSONPrep)
-					// if err != nil {
-					// 	log.Printf("Error marshalling return data...")
-					// }
-					if thisClient, ok := clients[client]; ok {
+					if thisClient, ok := Clients[client]; ok {
 						thisClient.searching = false
-						clients[client] = thisClient
+						Clients[client] = thisClient
 					}
-					for client := range clients {
-						if clients[client].playerID == playerID {
-							if thisClient, ok := clients[client]; ok {
+					for client := range Clients {
+						if Clients[client].playerID == playerID {
+							if thisClient, ok := Clients[client]; ok {
 								thisClient.searching = false
-								clients[client] = thisClient
-								jsonErr := client.WriteJSON(currentPlayerReturnJSONPrep)
+								Clients[client] = thisClient
+								jsonErr := client.WriteJSON(currentPlayerReturnJSON)
 								if jsonErr != nil {
-									log.Printf("error: %v", jsonErr)
+									log.Printf("Error: %v", jsonErr)
 									client.Close()
-									delete(clients, client)
+									delete(Clients, client)
 								}
 							}
 						}
 					}
 					log.Println("Wow, we are here")
-					jsonErr := client.WriteJSON(foundPlayerReturnJSONPrep)
+					jsonErr := client.WriteJSON(foundPlayerReturnJSON)
 					if jsonErr != nil {
-						log.Printf("error: %v", jsonErr)
+						log.Printf("Error: %v", jsonErr)
 						client.Close()
-						delete(clients, client)
+						delete(Clients, client)
 					}
 				}
 			}
 			if !found {
-				for searchingClient := range clients {
-					if clients[searchingClient].playerID == playerID {
-						if thisClient, ok := clients[searchingClient]; ok {
+				for searchingClient := range Clients {
+					if Clients[searchingClient].playerID == playerID {
+						if thisClient, ok := Clients[searchingClient]; ok {
 							thisClient.searching = true
-							clients[searchingClient] = thisClient
+							Clients[searchingClient] = thisClient
 						}
 						searchingJSON := SearchingDefaultMessage{
 							EventType: "searching",
 						}
 						err := searchingClient.WriteJSON(searchingJSON)
 						if err != nil {
-							log.Printf("error: %v", err)
+							log.Printf("Error: %v", err)
 							searchingClient.Close()
-							delete(clients, searchingClient)
+							delete(Clients, searchingClient)
 						}
 					}
 				}
 			}
 		} else {
-			for client := range clients {
+			for client := range Clients {
 				err := client.WriteJSON(params.data)
 				if err != nil {
-					log.Printf("error: %v", err)
+					log.Printf("Error: %v", err)
 					client.Close()
-					delete(clients, client)
+					delete(Clients, client)
 				}
 			}
 		}
