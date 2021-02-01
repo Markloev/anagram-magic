@@ -6,11 +6,13 @@ import Time exposing (Posix)
 type GameState
     = NotStarted String
     | Searching
-    | Started Game SharedGame
+    | Started SharedGame
 
 
 type alias Game =
-    { currentTime : Posix
+    { playerId : String
+    , gameState : GameState
+    , currentTime : Posix
     , startTime : Posix
     , elapsedTime : Int
     , selectedTiles : List Tile
@@ -41,9 +43,11 @@ type alias Tile =
     }
 
 
-initGame : Game
-initGame =
-    { currentTime = Time.millisToPosix 0
+initGame : String -> Game
+initGame playerId =
+    { playerId = playerId
+    , gameState = NotStarted ""
+    , currentTime = Time.millisToPosix 0
     , startTime = Time.millisToPosix 0
     , elapsedTime = 0
     , selectedTiles = []

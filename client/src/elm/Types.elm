@@ -1,19 +1,17 @@
 module Types exposing (Model, initModel)
 
-import Game exposing (GameState(..))
+import Game exposing (Game, GameState(..), SharedGame, initGame)
 import WebSocket exposing (SocketStatus(..))
 
 
 type alias Model =
-    { gameState : GameState
+    { game : Game
     , socketInfo : SocketStatus
-    , playerId : String
     }
 
 
 initModel : String -> Model
 initModel playerId =
-    { gameState = NotStarted ""
+    { game = initGame playerId
     , socketInfo = Unopened
-    , playerId = playerId
     }

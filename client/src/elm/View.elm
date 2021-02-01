@@ -16,15 +16,15 @@ view : Model -> Html Msg
 view model =
     let
         content =
-            case model.gameState of
+            case model.game.gameState of
                 NotStarted t ->
                     button [ onClick StartSearch, class "button" ] [ text "Start Search" ]
 
                 Searching ->
                     button [ onClick StartSearch, class "button" ] [ text "Stop Search" ]
 
-                Started g sg ->
-                    gameView g sg
+                Started sharedGame ->
+                    gameView model.game sharedGame
     in
     div [ style "height" "100%", style "width" "100%", class "content-container" ]
         [ content ]
@@ -72,17 +72,17 @@ tileSelection game sharedGame =
     let
         getConsonantsButton =
             if List.length game.availableTiles >= tileListMax || hasMaxConsonants game.availableTiles then
-                button [ onClick <| GetConsonant game, disabled True, class "button" ] [ text "Consonant" ]
+                button [ onClick <| GetConsonant, disabled True, class "button" ] [ text "Consonant" ]
 
             else
-                button [ onClick <| GetConsonant game, class "button" ] [ text "Consonant" ]
+                button [ onClick <| GetConsonant, class "button" ] [ text "Consonant" ]
 
         getVowelsButton =
             if List.length game.availableTiles >= tileListMax || hasMaxVowels game.availableTiles then
-                button [ onClick <| GetVowel game, disabled True, class "button" ] [ text "Vowel" ]
+                button [ onClick <| GetVowel, disabled True, class "button" ] [ text "Vowel" ]
 
             else
-                button [ onClick <| GetVowel game, class "button" ] [ text "Vowel" ]
+                button [ onClick <| GetVowel, class "button" ] [ text "Vowel" ]
     in
     div [ classList [ ( "flex", True ), ( "flex-col", True ) ] ]
         [ getConsonantsButton
@@ -95,10 +95,10 @@ tileSelection game sharedGame =
 regularRound : Game -> SharedGame -> Html Msg
 regularRound game sharedGame =
     div [ classList [ ( "flex", True ), ( "flex-row", True ) ] ]
-        [ button [ onClick <| ShuffleTiles game, class "button" ] [ text "Shuffle" ]
+        [ button [ onClick <| ShuffleTiles, class "button" ] [ text "Shuffle" ]
         , availableTiles game sharedGame
         , selectedTiles game sharedGame
-        , button [ onClick <| Submit game sharedGame, class "button" ] [ text "Submit" ]
+        , button [ onClick <| Submit, class "button" ] [ text "Submit" ]
         ]
 
 
@@ -123,7 +123,7 @@ availableTiles game sharedGame =
 
                     else
                         div []
-                            [ button [ onClick <| SelectTile game sharedGame idx tile, class "button" ] [ text <| String.fromChar tile.letter ++ " / " ++ String.fromInt tile.value ]
+                            [ button [ onClick <| SelectTile idx tile, class "button" ] [ text <| String.fromChar tile.letter ++ " / " ++ String.fromInt tile.value ]
                             ]
                 )
                 game.availableTiles
@@ -138,7 +138,7 @@ selectedTiles game sharedGame =
             List.indexedMap
                 (\idx tile ->
                     div []
-                        [ button [ onClick <| RemoveTile game sharedGame tile.originalIndex idx, class "button" ] [ text <| String.fromChar tile.letter ++ " / " ++ String.fromInt tile.value ]
+                        [ button [ onClick <| RemoveTile tile.originalIndex idx, class "button" ] [ text <| String.fromChar tile.letter ++ " / " ++ String.fromInt tile.value ]
                         ]
                 )
                 game.selectedTiles

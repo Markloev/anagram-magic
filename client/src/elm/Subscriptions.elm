@@ -12,9 +12,9 @@ import WebSocket exposing (SocketStatus(..))
 
 
 subscriptions : Model -> Sub Msg
-subscriptions { gameState } =
+subscriptions { game } =
     let
-        webSub g sg =
+        webSub =
             WebSocket.events
                 (\event ->
                     case event of
@@ -22,7 +22,7 @@ subscriptions { gameState } =
                             SocketConnect info
 
                         WebSocket.StringMessage info message ->
-                            ReceivedString message g sg
+                            ReceivedString message
 
                         WebSocket.Closed _ unsentBytes reason ->
                             Msg.SocketClosed unsentBytes reason
@@ -35,14 +35,14 @@ subscriptions { gameState } =
                 )
 
         subs =
-            case gameState of
-                Started g sg ->
+            case game.gameState of
+                Started sg ->
                     Sub.batch
                         [ webSub
                         , tick
-                        , Browser.Events.onKeyUp (Decode.map (KeyPressed g sg) keyDecoder)
-                        , Ports.receiveRandomTiles (decodeListTiles >> ReceiveRandomTiles g sg)
-                        , Ports.receiveShuffledTiles (decodeListTiles >> ReceiveShuffledTiles g sg)
+                        , Browser.Events.onKeyUp (Decode.map (KeyPressed sg) keyDecoder)
+                        , Ports.receiveRandomTiles (decodeListTiles >> ReceiveRandomTiles sg)
+                        , Ports.receiveShuffledTiles (decodeListTiles >> ReceiveShuffledTiles)
                         ]
 
                 _ ->
