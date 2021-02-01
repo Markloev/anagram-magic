@@ -1,12 +1,11 @@
 package main
 
 import (
-	mrand "math/rand"
-
 	"bufio"
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 
@@ -76,7 +75,7 @@ func randomWordHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	const nineLetterWords = 57288
-	randomLine := mrand.Intn(nineLetterWords)
+	randomLine := rand.Intn(nineLetterWords)
 	file, err := os.Open("nine_letter_words.txt")
 	if err != nil {
 		log.Fatal(err)
