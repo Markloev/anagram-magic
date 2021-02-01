@@ -1,7 +1,7 @@
 module View exposing (view)
 
 import Constants exposing (tileListMax)
-import Game exposing (Game, GameState(..), Phase(..))
+import Game exposing (Game, GameState(..), Phase(..), SharedGame)
 import Helper exposing (hasMaxConsonants, hasMaxVowels)
 import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (class, classList, disabled, style, type_)
@@ -23,42 +23,38 @@ view model =
                 Searching ->
                     button [ onClick StartSearch, class "button" ] [ text "Stop Search" ]
 
-                Started g ->
-                    let
-                        opponentId =
-                            case model.opponentId of
-                                Just p2 ->
-                                    p2
-
-                                Nothing ->
-                                    ""
-                    in
-                    gameView opponentId g
-
-        msgs =
-            List.map (\msg -> div [] [ text msg ]) model.testReceivedString
+                Started g sg ->
+                    gameView g sg
     in
     -- div [ style "height" "100%", style "width" "100%", class "content-container" ]
     --     [ content ]
     content
 
 
-gameView : String -> Game -> Html Msg
-gameView opponentId game =
+gameView : Game -> Maybe SharedGame -> Html Msg
+gameView game sharedGame =
     let
         gameContent =
             case game.phase of
                 TileSelection ->
-                    tileSelection game
+                    tileSelection game sharedGame
 
                 RegularRound ->
-                    regularRound game
+                    regularRound game sharedGame
 
                 FinalRound ->
                     finalRound game
 
                 Completed ->
                     completed game
+
+        opponentId =
+            case sharedGame of
+                Just sg ->
+                    sg.playerId
+
+                Nothing ->
+                    ""
     in
     div []
         [ overview game
@@ -72,8 +68,8 @@ overview game =
     div [] [ text <| String.fromInt <| Time.toSecond Time.utc (Time.millisToPosix (Time.posixToMillis game.currentTime - Time.posixToMillis game.startTime)) ]
 
 
-tileSelection : Game -> Html Msg
-tileSelection game =
+tileSelection : Game -> Maybe SharedGame -> Html Msg
+tileSelection game sharedGame =
     let
         getConsonantsButton =
             if List.length game.availableTiles >= tileListMax || hasMaxConsonants game.availableTiles then
@@ -93,17 +89,17 @@ tileSelection game =
         [ getConsonantsButton
         , getVowelsButton
         , button [ onClick <| GetRandom, class "button" ] [ text "9 Random Letters" ]
-        , availableTiles game
+        , availableTiles game sharedGame
         ]
 
 
-regularRound : Game -> Html Msg
-regularRound game =
+regularRound : Game -> Maybe SharedGame -> Html Msg
+regularRound game sharedGame =
     div [ classList [ ( "flex", True ), ( "flex-row", True ) ] ]
         [ button [ onClick <| ShuffleTiles game, class "button" ] [ text "Shuffle" ]
-        , availableTiles game
-        , selectedTiles game
-        , button [ onClick <| Submit game, class "button" ] [ text "Submit" ]
+        , availableTiles game sharedGame
+        , selectedTiles game sharedGame
+        , button [ onClick <| Submit game sharedGame, class "button" ] [ text "Submit" ]
         ]
 
 
@@ -117,8 +113,8 @@ completed game =
     div [] [ text "Completed Game" ]
 
 
-availableTiles : Game -> Html Msg
-availableTiles game =
+availableTiles : Game -> Maybe SharedGame -> Html Msg
+availableTiles game sharedGame =
     let
         tileContent =
             List.indexedMap
@@ -128,7 +124,7 @@ availableTiles game =
 
                     else
                         div []
-                            [ button [ onClick <| SelectTile game idx tile, class "button" ] [ text <| String.fromChar tile.letter ++ " / " ++ String.fromInt tile.value ]
+                            [ button [ onClick <| SelectTile game sharedGame idx tile, class "button" ] [ text <| String.fromChar tile.letter ++ " / " ++ String.fromInt tile.value ]
                             ]
                 )
                 game.availableTiles
@@ -136,14 +132,14 @@ availableTiles game =
     div [] <| tileContent
 
 
-selectedTiles : Game -> Html Msg
-selectedTiles game =
+selectedTiles : Game -> Maybe SharedGame -> Html Msg
+selectedTiles game sharedGame =
     let
         tileContent =
             List.indexedMap
                 (\idx tile ->
                     div []
-                        [ button [ onClick <| RemoveTile game tile.originalIndex idx, class "button" ] [ text <| String.fromChar tile.letter ++ " / " ++ String.fromInt tile.value ]
+                        [ button [ onClick <| RemoveTile game sharedGame tile.originalIndex idx, class "button" ] [ text <| String.fromChar tile.letter ++ " / " ++ String.fromInt tile.value ]
                         ]
                 )
                 game.selectedTiles

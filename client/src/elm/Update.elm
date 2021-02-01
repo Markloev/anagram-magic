@@ -2,7 +2,7 @@ module Update exposing (update)
 
 import Base64
 import Constants exposing (roundTimeSeconds, tileListMax, tileSelectionSeconds, totalRounds)
-import Game exposing (GameState(..), Phase(..), initGame)
+import Game exposing (GameState(..), Phase(..), initGame, initSharedGame)
 import Helper exposing (fullWord, getConnectionInfo, mkCmd, toLetter)
 import Json.Decode as Decode
 import List
@@ -33,7 +33,7 @@ update msg model =
                         Searching ->
                             model.gameState
 
-                        Started g ->
+                        Started g sg ->
                             let
                                 isStart =
                                     Time.posixToMillis g.startTime == 0
@@ -91,11 +91,11 @@ update msg model =
                                             in
                                             finalGameState
                             in
-                            Started newGameState
+                            Started newGameState sg
             in
             ( { model | gameState = updatedGameState }, Cmd.none )
 
-        KeyPressed game key ->
+        KeyPressed game sharedGame key ->
             let
                 cmd =
                     if game.phase /= TileSelection then
@@ -104,11 +104,11 @@ update msg model =
                                 |> shuffleTiles
 
                         else if key == "Enter" then
-                            Submit game
+                            Submit game sharedGame
                                 |> mkCmd
 
                         else if key == "Backspace" then
-                            RemoveTileBackspace game
+                            RemoveTileBackspace game sharedGame
                                 |> mkCmd
 
                         else
@@ -116,7 +116,7 @@ update msg model =
                                 characterCmd =
                                     case toLetter key of
                                         Just k ->
-                                            KeyCharPressed game k
+                                            KeyCharPressed game sharedGame k
                                                 |> mkCmd
 
                                         Nothing ->
@@ -129,7 +129,7 @@ update msg model =
             in
             ( model, cmd )
 
-        KeyCharPressed game char ->
+        KeyCharPressed game sharedGame char ->
             let
                 availableTiles =
                     List.filter (\tile -> tile.hidden == False && tile.letter == char) game.availableTiles
@@ -148,14 +148,14 @@ update msg model =
                                     Nothing ->
                                         ( game.selectedTiles, game.availableTiles )
                         in
-                        Started { game | selectedTiles = updatedSelectedTiles, availableTiles = updatedAvailableTiles }
+                        Started { game | selectedTiles = updatedSelectedTiles, availableTiles = updatedAvailableTiles } sharedGame
 
                     else
-                        Started game
+                        Started game sharedGame
             in
             ( { model | gameState = updatedGameState }, Cmd.none )
 
-        RemoveTileBackspace game ->
+        RemoveTileBackspace game sharedGame ->
             let
                 updatedGameState =
                     if List.length game.selectedTiles > 0 then
@@ -175,10 +175,10 @@ update msg model =
                                     Nothing ->
                                         ( game.availableTiles, game.selectedTiles )
                         in
-                        Started { game | availableTiles = updatedAvailableTiles, selectedTiles = updatedSelectedTiles }
+                        Started { game | availableTiles = updatedAvailableTiles, selectedTiles = updatedSelectedTiles } sharedGame
 
                     else
-                        Started game
+                        Started game sharedGame
             in
             ( { model | gameState = updatedGameState }, Cmd.none )
 
@@ -194,7 +194,7 @@ update msg model =
         ShuffleTiles game ->
             ( model, encodeListTiles game.availableTiles |> shuffleTiles )
 
-        ReceiveRandomTiles game tiles ->
+        ReceiveRandomTiles game sharedGame tiles ->
             let
                 updatedGameState =
                     case tiles of
@@ -213,30 +213,31 @@ update msg model =
                                                 , availableTiles = tilesResult
                                                 , isSubmitted = False
                                             }
+                                            sharedGame
 
                                     else
-                                        Started { game | availableTiles = tilesResult }
+                                        Started { game | availableTiles = tilesResult } sharedGame
                             in
                             newGameState
 
                         Err _ ->
-                            Started game
+                            Started game sharedGame
             in
             ( { model | gameState = updatedGameState }, Cmd.none )
 
-        ReceiveShuffledTiles game tiles ->
+        ReceiveShuffledTiles game sharedGame tiles ->
             let
                 updatedGameState =
                     case tiles of
                         Ok tilesResult ->
-                            Started { game | availableTiles = tilesResult }
+                            Started { game | availableTiles = tilesResult } sharedGame
 
                         Err _ ->
-                            Started game
+                            Started game sharedGame
             in
             ( { model | gameState = updatedGameState }, Cmd.none )
 
-        SelectTile game selectedIdx tile ->
+        SelectTile game sharedGame selectedIdx tile ->
             let
                 updatedSelectedTiles =
                     List.append game.selectedTiles [ tile ]
@@ -245,11 +246,11 @@ update msg model =
                     LE.setAt selectedIdx { tile | hidden = True } game.availableTiles
 
                 updatedGameState =
-                    Started { game | selectedTiles = updatedSelectedTiles, availableTiles = updatedAvailableTiles }
+                    Started { game | selectedTiles = updatedSelectedTiles, availableTiles = updatedAvailableTiles } sharedGame
             in
             ( { model | gameState = updatedGameState }, Cmd.none )
 
-        RemoveTile game originalIndex selectedIdx ->
+        RemoveTile game sharedGame originalIndex selectedIdx ->
             let
                 updatedAvailableTiles =
                     List.map
@@ -266,14 +267,14 @@ update msg model =
                     LE.removeAt selectedIdx game.selectedTiles
 
                 updatedGameState =
-                    Started { game | selectedTiles = updatedSelectedTiles, availableTiles = updatedAvailableTiles }
+                    Started { game | selectedTiles = updatedSelectedTiles, availableTiles = updatedAvailableTiles } sharedGame
             in
             ( { model | gameState = updatedGameState }, Cmd.none )
 
-        Submit game ->
+        Submit game sharedGame ->
             let
                 updatedGameState =
-                    Started { game | isSubmitted = True }
+                    Started { game | isSubmitted = True } sharedGame
             in
             ( { model | gameState = updatedGameState }, fullWord game.selectedTiles |> getWordValidity )
 
@@ -329,7 +330,7 @@ update msg model =
                         Ok event ->
                             case event of
                                 Multiplayer.PlayerFound opponentId ->
-                                    { model | opponentId = Just opponentId, gameState = Started initGame }
+                                    { model | gameState = Started initGame (Just (initSharedGame opponentId)) }
 
                                 Multiplayer.Searching ->
                                     model

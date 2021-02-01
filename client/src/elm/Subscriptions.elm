@@ -36,13 +36,13 @@ subscriptions { gameState } =
 
         subs =
             case gameState of
-                Started g ->
+                Started g sg ->
                     Sub.batch
                         [ webSub
                         , tick
-                        , Browser.Events.onKeyUp (Decode.map (KeyPressed g) keyDecoder)
-                        , Ports.receiveRandomTiles (decodeListTiles >> ReceiveRandomTiles g)
-                        , Ports.receiveShuffledTiles (decodeListTiles >> ReceiveShuffledTiles g)
+                        , Browser.Events.onKeyUp (Decode.map (KeyPressed g sg) keyDecoder)
+                        , Ports.receiveRandomTiles (decodeListTiles >> ReceiveRandomTiles g sg)
+                        , Ports.receiveShuffledTiles (decodeListTiles >> ReceiveShuffledTiles g sg)
                         ]
 
                 _ ->
