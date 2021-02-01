@@ -14,7 +14,7 @@ import WebSocket exposing (SocketStatus(..))
 subscriptions : Model -> Sub Msg
 subscriptions { gameState } =
     let
-        webSub =
+        webSub g sg =
             WebSocket.events
                 (\event ->
                     case event of
@@ -22,7 +22,7 @@ subscriptions { gameState } =
                             SocketConnect info
 
                         WebSocket.StringMessage info message ->
-                            ReceivedString message
+                            ReceivedString message g sg
 
                         WebSocket.Closed _ unsentBytes reason ->
                             Msg.SocketClosed unsentBytes reason

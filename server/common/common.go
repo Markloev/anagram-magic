@@ -12,8 +12,9 @@ var Broadcast = make(chan Message)
 
 //Client stores a player's information that is needed for matching player's together
 type Client struct {
-	PlayerID  string
-	Searching bool
+	PlayerID   string
+	OpponentID string
+	Searching  bool
 }
 
 //Message stores the incoming message received from a client

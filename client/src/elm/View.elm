@@ -35,6 +35,9 @@ gameView game sharedGame =
     let
         gameContent =
             case sharedGame.phase of
+                Waiting ->
+                    waiting
+
                 TileSelection ->
                     tileSelection game sharedGame
 
@@ -57,6 +60,11 @@ gameView game sharedGame =
 overview : Game -> Html Msg
 overview game =
     div [] [ text <| String.fromInt <| Time.toSecond Time.utc (Time.millisToPosix (Time.posixToMillis game.currentTime - Time.posixToMillis game.startTime)) ]
+
+
+waiting : Html Msg
+waiting =
+    div [] [ text "Waiting" ]
 
 
 tileSelection : Game -> SharedGame -> Html Msg

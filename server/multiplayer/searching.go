@@ -10,7 +10,8 @@ import (
 )
 
 type searchingReturnData struct {
-	PlayerID string
+	PlayerID          string
+	TileSelectionTurn bool
 }
 
 //HandleSearch handles return message to player that is searching for a game
@@ -22,13 +23,14 @@ func HandleSearch(paramsData interface{}, clients map[*websocket.Conn]common.Cli
 		//if it is another client and they are also searching
 		if clients[client].PlayerID != currentPlayerID && clients[client].Searching {
 			found = true
-			foundPlayerReturnJSON := createSearchingReturnMessageJSON(clients[client].PlayerID)
-			currentPlayerReturnJSON := createSearchingReturnMessageJSON(currentPlayerID)
+			foundPlayerReturnJSON := createSearchingReturnMessageJSON(clients[client].PlayerID, true)
+			currentPlayerReturnJSON := createSearchingReturnMessageJSON(currentPlayerID, false)
 			//get current client and update to say they are no longer searching and also return the opposing playerID
 			for client := range clients {
 				if clients[client].PlayerID == currentPlayerID {
 					if thisClient, ok := clients[client]; ok {
 						thisClient.Searching = false
+						thisClient.OpponentID = clients[client].PlayerID
 						clients[client] = thisClient
 						jsonErr := client.WriteJSON(foundPlayerReturnJSON)
 						if jsonErr != nil {
@@ -42,6 +44,7 @@ func HandleSearch(paramsData interface{}, clients map[*websocket.Conn]common.Cli
 			//update opponent client to say they are no longer searching and also return the opposing playerID
 			if thisClient, ok := clients[client]; ok {
 				thisClient.Searching = false
+				thisClient.OpponentID = currentPlayerID
 				clients[client] = thisClient
 			}
 			jsonErr := client.WriteJSON(currentPlayerReturnJSON)
@@ -65,11 +68,12 @@ func HandleSearch(paramsData interface{}, clients map[*websocket.Conn]common.Cli
 	}
 }
 
-func createSearchingReturnMessageJSON(playerID string) common.DefaultReturnMessage {
+func createSearchingReturnMessageJSON(playerID string, tileSelectionTurn bool) common.DefaultReturnMessage {
 	returnJSON := common.DefaultReturnMessage{
 		EventType: "playerFound",
 		Data: searchingReturnData{
-			PlayerID: playerID,
+			PlayerID:          playerID,
+			TileSelectionTurn: tileSelectionTurn,
 		},
 	}
 	return returnJSON

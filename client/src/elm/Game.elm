@@ -54,10 +54,10 @@ initGame =
     }
 
 
-initSharedGame : String -> SharedGame
-initSharedGame opponentId =
+initSharedGame : String -> Phase -> SharedGame
+initSharedGame opponentId phase =
     { playerId = opponentId
-    , phase = TileSelection
+    , phase = phase
     , round = 1
     , selectedTiles = []
     , availableTiles = []
@@ -68,7 +68,8 @@ initSharedGame opponentId =
 
 
 type Phase
-    = TileSelection
+    = Waiting
+    | TileSelection
     | RegularRound
     | FinalRound
     | Completed

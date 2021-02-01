@@ -44,6 +44,7 @@ func WS(w http.ResponseWriter, req *http.Request) {
 		common.Broadcast <- msg
 		var newClient common.Client
 		newClient.PlayerID = fmt.Sprintf("%v", msg.Data)
+		newClient.OpponentID = ""
 		newClient.Searching = false
 		common.Clients[currentClient] = newClient
 	}
@@ -58,6 +59,8 @@ func HandleMessages() {
 		// Send it out to every client that is currently connected
 		if params.EventType == "searching" {
 			multiplayer.HandleSearch(params.Data, common.Clients)
+		} else if params.EventType == "changePhase" {
+			multiplayer.HandleChangePhase(params.Data, common.Clients)
 		} else {
 			for client := range common.Clients {
 				err := client.WriteJSON(params.Data)

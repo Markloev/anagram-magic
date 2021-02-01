@@ -198,13 +198,13 @@ update msg model =
 
         ReceiveRandomTiles game sharedGame tiles ->
             let
-                updatedGameState =
+                ( updatedGameState, cmd ) =
                     case tiles of
                         Ok tilesResult ->
                             let
-                                newGameState =
+                                ( newGameState, multiplayerPhaseCmd ) =
                                     if List.length tilesResult == tileListMax then
-                                        Started
+                                        ( Started
                                             { game
                                                 | availableTiles = tilesResult
                                             }
@@ -217,16 +217,20 @@ update msg model =
                                                         FinalRound
                                                 , isSubmitted = False
                                             }
+                                        , WebSocket.sendJsonString
+                                            (getConnectionInfo model.socketInfo)
+                                            (Multiplayer.changePhaseEncoder model.playerId)
+                                        )
 
                                     else
-                                        Started { game | availableTiles = tilesResult } sharedGame
+                                        ( Started { game | availableTiles = tilesResult } sharedGame, Cmd.none )
                             in
-                            newGameState
+                            ( newGameState, multiplayerPhaseCmd )
 
                         Err _ ->
-                            Started game sharedGame
+                            ( Started game sharedGame, Cmd.none )
             in
-            ( { model | gameState = updatedGameState }, Cmd.none )
+            ( { model | gameState = updatedGameState }, cmd )
 
         ReceiveShuffledTiles game sharedGame tiles ->
             let
@@ -332,8 +336,38 @@ update msg model =
 
                         Ok event ->
                             case event of
-                                Multiplayer.PlayerFound opponentId ->
-                                    { model | gameState = Started initGame (initSharedGame opponentId) }
+                                Multiplayer.PlayerFound opponentId tileSelectionTurn ->
+                                    let
+                                        updatedPhase =
+                                            if tileSelectionTurn then
+                                                TileSelection
+
+                                            else
+                                                Waiting
+                                    in
+                                    { model | gameState = Started initGame (initSharedGame opponentId updatedPhase) }
+
+                                Multiplayer.ChangePhase ->
+                                    let
+                                        ( newRound, newPhase ) =
+                                            case model.sharedGame.phase of
+                                                Waiting ->
+                                                    if model.sharedGame.round < totalRounds then
+                                                        ( model.sharedGame.round, RegularRound )
+
+                                                    else
+                                                        ( model.sharedGame.round + 1, FinalRound )
+
+                                                _ ->
+                                                    ( model.sharedGame.round, RegularRound )
+
+                                        sharedGame =
+                                            model.sharedGame
+
+                                        updatedSharedGame =
+                                            { sharedGame | round = newRound, phase = newPhase }
+                                    in
+                                    { model | sharedGame = updatedSharedGame }
 
                                 Multiplayer.Searching ->
                                     model
@@ -351,5 +385,5 @@ update msg model =
             ( { model | gameState = Searching }
             , WebSocket.sendJsonString
                 (getConnectionInfo model.socketInfo)
-                (WebSocket.searchingEncoder model.playerId)
+                (Multiplayer.searchingEncoder model.playerId)
             )

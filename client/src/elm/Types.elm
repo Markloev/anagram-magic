@@ -6,7 +6,6 @@ import WebSocket exposing (SocketStatus(..))
 
 type alias Model =
     { gameState : GameState
-    , opponentGameState : Maybe GameState
     , socketInfo : SocketStatus
     , playerId : String
     }
@@ -15,7 +14,6 @@ type alias Model =
 initModel : String -> Model
 initModel playerId =
     { gameState = NotStarted ""
-    , opponentGameState = Nothing
     , socketInfo = Unopened
     , playerId = playerId
     }
