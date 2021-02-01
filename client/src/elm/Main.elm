@@ -1,7 +1,6 @@
 module Main exposing (main)
 
 import Browser
-import Http
 import Msg exposing (Msg(..))
 import Subscriptions exposing (subscriptions)
 import Types exposing (Model, initModel)

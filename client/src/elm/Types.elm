@@ -1,6 +1,6 @@
 module Types exposing (Model, initModel)
 
-import Game exposing (Game, GameState(..), SharedGame, initGame)
+import Game exposing (Game, GameState(..), initGame)
 import WebSocket exposing (SocketStatus(..))
 
 

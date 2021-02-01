@@ -26,7 +26,6 @@ type alias Game =
 type alias SharedGame =
     { playerId : String
     , phase : Phase
-    , round : Int
     , selectedTiles : List Tile
     , availableTiles : List Tile
     , answerString : Maybe String
@@ -62,7 +61,6 @@ initSharedGame : String -> Phase -> SharedGame
 initSharedGame opponentId phase =
     { playerId = opponentId
     , phase = phase
-    , round = 1
     , selectedTiles = []
     , availableTiles = []
     , answerString = Nothing
@@ -72,8 +70,15 @@ initSharedGame opponentId phase =
 
 
 type Phase
-    = Waiting
-    | TileSelection
-    | RegularRound
-    | FinalRound
+    = Waiting SpecificRound
+    | TileSelection SpecificRound
+    | Round SpecificRound
     | Completed
+
+
+type SpecificRound
+    = FirstRound
+    | SecondRound
+    | ThirdRound
+    | FourthRound
+    | FinalRound

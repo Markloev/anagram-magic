@@ -11,8 +11,8 @@ type Msg
     = DoNothing
     | Tick Time.Posix
     | KeyPressed SharedGame String
-    | KeyCharPressed SharedGame Char
-    | RemoveTileBackspace SharedGame
+    | KeyCharPressed Char
+    | RemoveTileBackspace
     | GetConsonant
     | GetVowel
     | GetRandom

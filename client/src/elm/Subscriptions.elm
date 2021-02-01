@@ -21,7 +21,7 @@ subscriptions { game } =
                         WebSocket.Connected info ->
                             SocketConnect info
 
-                        WebSocket.StringMessage info message ->
+                        WebSocket.StringMessage _ message ->
                             ReceivedString message
 
                         WebSocket.Closed _ unsentBytes reason ->

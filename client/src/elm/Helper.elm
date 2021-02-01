@@ -1,8 +1,7 @@
 module Helper exposing (..)
 
 import Constants exposing (maxConsonantOrVowel)
-import Game exposing (Tile)
-import Json.Decode as Json
+import Game exposing (Phase(..), SpecificRound(..), Tile)
 import Task
 import WebSocket exposing (ConnectionInfo, SocketStatus(..))
 
@@ -72,3 +71,61 @@ getConnectionInfo socketInfo =
 
         _ ->
             Debug.todo "Not connected to server."
+
+
+setNextPhase : Phase -> Phase
+setNextPhase phase =
+    case phase of
+        Waiting round ->
+            case round of
+                FirstRound ->
+                    Round FirstRound
+
+                SecondRound ->
+                    Round SecondRound
+
+                ThirdRound ->
+                    Round ThirdRound
+
+                FourthRound ->
+                    Round FourthRound
+
+                FinalRound ->
+                    Round FinalRound
+
+        TileSelection round ->
+            case round of
+                FirstRound ->
+                    Round FirstRound
+
+                SecondRound ->
+                    Round SecondRound
+
+                ThirdRound ->
+                    Round ThirdRound
+
+                FourthRound ->
+                    Round FourthRound
+
+                FinalRound ->
+                    Round FinalRound
+
+        Round round ->
+            case round of
+                FirstRound ->
+                    Round SecondRound
+
+                SecondRound ->
+                    Round ThirdRound
+
+                ThirdRound ->
+                    Round FourthRound
+
+                FourthRound ->
+                    Round FinalRound
+
+                FinalRound ->
+                    Completed
+
+        Completed ->
+            Completed

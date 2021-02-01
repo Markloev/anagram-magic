@@ -1,11 +1,11 @@
 module View exposing (view)
 
 import Constants exposing (tileListMax)
-import Game exposing (Game, GameState(..), Phase(..), SharedGame)
+import Game exposing (Game, GameState(..), Phase(..), SharedGame, SpecificRound(..))
 import Helper exposing (hasMaxConsonants, hasMaxVowels)
 import Html exposing (Html, button, div, text)
-import Html.Attributes exposing (class, classList, disabled, style, type_)
-import Html.Events exposing (onClick, onInput)
+import Html.Attributes exposing (class, classList, disabled, style)
+import Html.Events exposing (onClick)
 import List
 import Msg exposing (Msg(..))
 import Time
@@ -17,7 +17,7 @@ view model =
     let
         content =
             case model.game.gameState of
-                NotStarted t ->
+                NotStarted _ ->
                     button [ onClick StartSearch, class "button" ] [ text "Start Search" ]
 
                 Searching ->
@@ -35,17 +35,19 @@ gameView game sharedGame =
     let
         gameContent =
             case sharedGame.phase of
-                Waiting ->
+                Waiting _ ->
                     waiting
 
-                TileSelection ->
-                    tileSelection game sharedGame
+                TileSelection _ ->
+                    tileSelection game
 
-                RegularRound ->
-                    regularRound game sharedGame
+                Round round ->
+                    case round of
+                        FinalRound ->
+                            finalRound game
 
-                FinalRound ->
-                    finalRound game
+                        _ ->
+                            regularRound game
 
                 Completed ->
                     completed game
@@ -67,8 +69,8 @@ waiting =
     div [] [ text "Waiting" ]
 
 
-tileSelection : Game -> SharedGame -> Html Msg
-tileSelection game sharedGame =
+tileSelection : Game -> Html Msg
+tileSelection game =
     let
         getConsonantsButton =
             if List.length game.availableTiles >= tileListMax || hasMaxConsonants game.availableTiles then
@@ -88,32 +90,32 @@ tileSelection game sharedGame =
         [ getConsonantsButton
         , getVowelsButton
         , button [ onClick <| GetRandom, class "button" ] [ text "9 Random Letters" ]
-        , availableTiles game sharedGame
+        , availableTiles game
         ]
 
 
-regularRound : Game -> SharedGame -> Html Msg
-regularRound game sharedGame =
+regularRound : Game -> Html Msg
+regularRound game =
     div [ classList [ ( "flex", True ), ( "flex-row", True ) ] ]
         [ button [ onClick <| ShuffleTiles, class "button" ] [ text "Shuffle" ]
-        , availableTiles game sharedGame
-        , selectedTiles game sharedGame
+        , availableTiles game
+        , selectedTiles game
         , button [ onClick <| Submit, class "button" ] [ text "Submit" ]
         ]
 
 
 finalRound : Game -> Html Msg
-finalRound game =
+finalRound _ =
     div [] [ text "Final Round" ]
 
 
 completed : Game -> Html Msg
-completed game =
+completed _ =
     div [] [ text "Completed Game" ]
 
 
-availableTiles : Game -> SharedGame -> Html Msg
-availableTiles game sharedGame =
+availableTiles : Game -> Html Msg
+availableTiles game =
     let
         tileContent =
             List.indexedMap
@@ -131,8 +133,8 @@ availableTiles game sharedGame =
     div [] <| tileContent
 
 
-selectedTiles : Game -> SharedGame -> Html Msg
-selectedTiles game sharedGame =
+selectedTiles : Game -> Html Msg
+selectedTiles game =
     let
         tileContent =
             List.indexedMap
