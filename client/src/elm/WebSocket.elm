@@ -32,7 +32,7 @@ connect url protocols =
 
 disconnect : String -> Cmd msg
 disconnect url =
-    message "connect"
+    message "disconnect"
         (Encode.object
             [ ( "url", Encode.string url ) ]
         )
@@ -124,11 +124,12 @@ message msgType msg =
 
 eventEncoder : String -> Value -> Value
 eventEncoder eventType data =
-  Encode.object
-    [ ( "eventType", Encode.string eventType )
-    , ( "data", data )
-    ]
+    Encode.object
+        [ ( "eventType", Encode.string eventType )
+        , ( "data", data )
+        ]
+
 
 searchingEncoder : String -> Value
 searchingEncoder playerId =
-  eventEncoder "searching" (Encode.string playerId)
+    eventEncoder "searching" (Encode.string playerId)

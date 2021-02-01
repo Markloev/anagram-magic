@@ -26,9 +26,8 @@ view model =
                 Started g sg ->
                     gameView g sg
     in
-    -- div [ style "height" "100%", style "width" "100%", class "content-container" ]
-    --     [ content ]
-    content
+    div [ style "height" "100%", style "width" "100%", class "content-container" ]
+        [ content ]
 
 
 gameView : Game -> SharedGame -> Html Msg
