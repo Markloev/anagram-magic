@@ -1,14 +1,16 @@
 module Main exposing (main)
 
 import Browser
-import Msg exposing (Msg)
+import Http
+import Msg exposing (Msg(..))
 import Subscriptions exposing (subscriptions)
 import Types exposing (Model, initModel)
 import Update exposing (update)
 import View exposing (view)
+import WebSocket
 
 
-main : Program () Model Msg
+main : Program String Model Msg
 main =
     Browser.document
         { init = init
@@ -22,6 +24,6 @@ main =
         }
 
 
-init : () -> ( Model, Cmd Msg )
-init _ =
-    ( initModel, Cmd.none )
+init : String -> ( Model, Cmd Msg )
+init playerId =
+    ( initModel playerId, WebSocket.connect "ws://localhost:8080/ws" [] )

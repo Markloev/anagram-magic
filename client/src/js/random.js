@@ -1,12 +1,41 @@
-'use strict';
+export function randomPlayerId(length, chars) {
+    var result = '';
+    for (var i = length; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)];
+    return result;
+}
 
-import "./styles/tailwind.css";
-require('./styles/anagram.scss');
+export function bindRandomizers(app) {
+    app.ports.getRandomTiles.subscribe(function () {
+        getRandomTiles();
+        setMultipliers(tiles);
+        app.ports.receiveRandomTiles.send(tiles);
+    });
 
-const { Elm } = require('./elm/Main.elm');
-const app = Elm.Main.init({
-    node: document.getElementById('main')
-});
+    app.ports.getRandomConsonant.subscribe(function (tiles) {
+        if (tiles.length < tileListMax && !hasMaxConsonants(tiles)) {
+            getRandomConsonant(tiles);
+        }
+        if (tiles.length == tileListMax) {
+            setMultipliers(tiles);
+        }
+        app.ports.receiveRandomTiles.send(tiles);
+    });
+
+    app.ports.getRandomVowel.subscribe(function (tiles) {
+        if (tiles.length < tileListMax && !hasMaxVowels(tiles)) {
+            getRandomVowel(tiles);
+        }
+        if (tiles.length == tileListMax) {
+            setMultipliers(tiles);
+        }
+        app.ports.receiveRandomTiles.send(tiles);
+    });
+
+    app.ports.shuffleTiles.subscribe(function (tiles) {
+        shuffle(tiles);
+        app.ports.receiveShuffledTiles.send(tiles);
+    });
+}
 
 const maxConsonantOrVowel = 6;
 const tileListMax = 9;
@@ -109,36 +138,3 @@ function shuffle(array) {
 
     return array;
 }
-
-app.ports.getRandomTiles.subscribe(function () {
-    getRandomTiles();
-    setMultipliers(tiles);
-    console.log(tiles);
-    app.ports.receiveRandomTiles.send(tiles);
-});
-
-app.ports.getRandomConsonant.subscribe(function (tiles) {
-    if (tiles.length < tileListMax && !hasMaxConsonants(tiles)) {
-        getRandomConsonant(tiles);
-    }
-    if (tiles.length == tileListMax) {
-        setMultipliers(tiles);
-    }
-    app.ports.receiveRandomTiles.send(tiles);
-});
-
-app.ports.getRandomVowel.subscribe(function (tiles) {
-    if (tiles.length < tileListMax && !hasMaxVowels(tiles)) {
-        getRandomVowel(tiles);
-    }
-    if (tiles.length == tileListMax) {
-        setMultipliers(tiles);
-    }
-    app.ports.receiveRandomTiles.send(tiles);
-});
-
-app.ports.shuffleTiles.subscribe(function (tiles) {
-    console.log(tiles);
-    shuffle(tiles);
-    app.ports.receiveShuffledTiles.send(tiles);
-});

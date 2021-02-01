@@ -1,26 +1,30 @@
 package main
 
 import (
-	mrand "math/rand"
-
 	"bufio"
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
+
+	"./websocket"
 )
 
 func main() {
-	fmt.Printf("Starting server at port 8080\n")
+	log.Println("Starting server at port 8080")
+
 	router := mux.NewRouter()
 
 	// Only log requests to our admin dashboard to stdout
+	router.HandleFunc("/ws", http.HandlerFunc(websocket.WS)).Methods("GET")
 	router.HandleFunc("/word", http.HandlerFunc(wordHandler)).Methods("POST")
 	router.HandleFunc("/randomWord", http.HandlerFunc(randomWordHandler)).Methods("GET")
+	go websocket.HandleMessages()
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},
@@ -71,7 +75,7 @@ func randomWordHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	const nineLetterWords = 57288
-	randomLine := mrand.Intn(nineLetterWords)
+	randomLine := rand.Intn(nineLetterWords)
 	file, err := os.Open("nine_letter_words.txt")
 	if err != nil {
 		log.Fatal(err)

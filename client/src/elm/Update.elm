@@ -2,16 +2,19 @@ module Update exposing (update)
 
 import Base64
 import Constants exposing (roundTimeSeconds, tileListMax, tileSelectionSeconds, totalRounds)
-import Game exposing (GameState(..), Phase(..), initGame)
-import Helper exposing (fullWord, mkCmd, toLetter)
+import Game exposing (GameState(..), Phase(..), initGame, initSharedGame)
+import Helper exposing (fullWord, getConnectionInfo, mkCmd, toLetter)
+import Json.Decode as Decode
 import List
 import List.Extra as LE
 import Msg exposing (Msg(..))
-import Ports exposing (encodeListTiles, getRandomConsonant, getRandomTiles, getRandomVowel, shuffleTiles)
+import Multiplayer
+import Ports exposing (encodeListTiles, getRandomConsonant, getRandomTiles, getRandomVowel, shuffleTiles, toSocket)
 import Prelude exposing (iff)
 import Rest exposing (getRandomWord, getWordValidity)
 import Time
 import Types exposing (Model)
+import WebSocket exposing (ConnectionInfo, SocketStatus(..))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -24,10 +27,13 @@ update msg model =
             let
                 updatedGameState =
                     case model.gameState of
-                        NotStarted ->
+                        NotStarted t ->
                             model.gameState
 
-                        Started g ->
+                        Searching ->
+                            model.gameState
+
+                        Started g sg ->
                             let
                                 isStart =
                                     Time.posixToMillis g.startTime == 0
@@ -35,40 +41,43 @@ update msg model =
                                 secondsPassed =
                                     Time.toSecond Time.utc (Time.millisToPosix (Time.posixToMillis g.currentTime - Time.posixToMillis g.startTime))
 
-                                newGameState =
-                                    case g.phase of
+                                ( newGameState, newSharedGameState ) =
+                                    case sg.phase of
                                         TileSelection ->
                                             let
                                                 finalGameState =
                                                     if secondsPassed == tileSelectionSeconds then
-                                                        { g
+                                                        ( { g
+                                                            | currentTime = posix
+                                                            , startTime = posix
+                                                          }
+                                                        , { sg
                                                             | phase =
-                                                                if g.round < totalRounds then
+                                                                if sg.round < totalRounds then
                                                                     RegularRound
 
                                                                 else
                                                                     FinalRound
-
-                                                            -- , availableTiles =
-                                                            --     if g.round < totalRounds then
-                                                            --         if List.length g.availableTiles < tileListMax then
-                                                            , currentTime = posix
-                                                            , startTime = posix
-                                                        }
+                                                          }
+                                                        )
 
                                                     else
-                                                        { g | currentTime = posix, startTime = iff isStart posix g.startTime }
+                                                        ( { g | currentTime = posix, startTime = iff isStart posix g.startTime }, sg )
                                             in
                                             finalGameState
 
                                         _ ->
                                             let
                                                 newRound =
-                                                    g.round + 1
+                                                    sg.round + 1
 
                                                 finalGameState =
                                                     if secondsPassed == roundTimeSeconds then
-                                                        { g
+                                                        ( { g
+                                                            | currentTime = posix
+                                                            , startTime = posix
+                                                          }
+                                                        , { sg
                                                             | round = newRound
                                                             , phase =
                                                                 if newRound < totalRounds then
@@ -76,33 +85,32 @@ update msg model =
 
                                                                 else
                                                                     Completed
-                                                            , currentTime = posix
-                                                            , startTime = posix
-                                                        }
+                                                          }
+                                                        )
 
                                                     else
-                                                        { g | currentTime = posix, startTime = iff isStart posix g.startTime }
+                                                        ( { g | currentTime = posix, startTime = iff isStart posix g.startTime }, sg )
                                             in
                                             finalGameState
                             in
-                            Started newGameState
+                            Started newGameState sg
             in
             ( { model | gameState = updatedGameState }, Cmd.none )
 
-        KeyPressed game key ->
+        KeyPressed game sharedGame key ->
             let
                 cmd =
-                    if game.phase /= TileSelection then
+                    if sharedGame.phase /= TileSelection then
                         if key == " " then
                             encodeListTiles game.availableTiles
                                 |> shuffleTiles
 
                         else if key == "Enter" then
-                            Submit game
+                            Submit game sharedGame
                                 |> mkCmd
 
                         else if key == "Backspace" then
-                            RemoveTileBackspace game
+                            RemoveTileBackspace game sharedGame
                                 |> mkCmd
 
                         else
@@ -110,7 +118,7 @@ update msg model =
                                 characterCmd =
                                     case toLetter key of
                                         Just k ->
-                                            KeyCharPressed game k
+                                            KeyCharPressed game sharedGame k
                                                 |> mkCmd
 
                                         Nothing ->
@@ -123,7 +131,7 @@ update msg model =
             in
             ( model, cmd )
 
-        KeyCharPressed game char ->
+        KeyCharPressed game sharedGame char ->
             let
                 availableTiles =
                     List.filter (\tile -> tile.hidden == False && tile.letter == char) game.availableTiles
@@ -142,14 +150,14 @@ update msg model =
                                     Nothing ->
                                         ( game.selectedTiles, game.availableTiles )
                         in
-                        Started { game | selectedTiles = updatedSelectedTiles, availableTiles = updatedAvailableTiles }
+                        Started { game | selectedTiles = updatedSelectedTiles, availableTiles = updatedAvailableTiles } sharedGame
 
                     else
-                        Started game
+                        Started game sharedGame
             in
             ( { model | gameState = updatedGameState }, Cmd.none )
 
-        RemoveTileBackspace game ->
+        RemoveTileBackspace game sharedGame ->
             let
                 updatedGameState =
                     if List.length game.selectedTiles > 0 then
@@ -169,15 +177,12 @@ update msg model =
                                     Nothing ->
                                         ( game.availableTiles, game.selectedTiles )
                         in
-                        Started { game | availableTiles = updatedAvailableTiles, selectedTiles = updatedSelectedTiles }
+                        Started { game | availableTiles = updatedAvailableTiles, selectedTiles = updatedSelectedTiles } sharedGame
 
                     else
-                        Started game
+                        Started game sharedGame
             in
             ( { model | gameState = updatedGameState }, Cmd.none )
-
-        StartGame ->
-            ( { model | gameState = Started initGame }, Cmd.none )
 
         GetConsonant game ->
             ( model, encodeListTiles game.availableTiles |> getRandomConsonant )
@@ -191,7 +196,7 @@ update msg model =
         ShuffleTiles game ->
             ( model, encodeListTiles game.availableTiles |> shuffleTiles )
 
-        ReceiveRandomTiles game tiles ->
+        ReceiveRandomTiles game sharedGame tiles ->
             let
                 updatedGameState =
                     case tiles of
@@ -201,39 +206,41 @@ update msg model =
                                     if List.length tilesResult == tileListMax then
                                         Started
                                             { game
+                                                | availableTiles = tilesResult
+                                            }
+                                            { sharedGame
                                                 | phase =
-                                                    if game.round < totalRounds then
+                                                    if sharedGame.round < totalRounds then
                                                         RegularRound
 
                                                     else
                                                         FinalRound
-                                                , availableTiles = tilesResult
                                                 , isSubmitted = False
                                             }
 
                                     else
-                                        Started { game | availableTiles = tilesResult }
+                                        Started { game | availableTiles = tilesResult } sharedGame
                             in
                             newGameState
 
                         Err _ ->
-                            Started game
+                            Started game sharedGame
             in
             ( { model | gameState = updatedGameState }, Cmd.none )
 
-        ReceiveShuffledTiles game tiles ->
+        ReceiveShuffledTiles game sharedGame tiles ->
             let
                 updatedGameState =
                     case tiles of
                         Ok tilesResult ->
-                            Started { game | availableTiles = tilesResult }
+                            Started { game | availableTiles = tilesResult } sharedGame
 
                         Err _ ->
-                            Started game
+                            Started game sharedGame
             in
             ( { model | gameState = updatedGameState }, Cmd.none )
 
-        SelectTile game selectedIdx tile ->
+        SelectTile game sharedGame selectedIdx tile ->
             let
                 updatedSelectedTiles =
                     List.append game.selectedTiles [ tile ]
@@ -242,11 +249,11 @@ update msg model =
                     LE.setAt selectedIdx { tile | hidden = True } game.availableTiles
 
                 updatedGameState =
-                    Started { game | selectedTiles = updatedSelectedTiles, availableTiles = updatedAvailableTiles }
+                    Started { game | selectedTiles = updatedSelectedTiles, availableTiles = updatedAvailableTiles } sharedGame
             in
             ( { model | gameState = updatedGameState }, Cmd.none )
 
-        RemoveTile game originalIndex selectedIdx ->
+        RemoveTile game sharedGame originalIndex selectedIdx ->
             let
                 updatedAvailableTiles =
                     List.map
@@ -263,14 +270,14 @@ update msg model =
                     LE.removeAt selectedIdx game.selectedTiles
 
                 updatedGameState =
-                    Started { game | selectedTiles = updatedSelectedTiles, availableTiles = updatedAvailableTiles }
+                    Started { game | selectedTiles = updatedSelectedTiles, availableTiles = updatedAvailableTiles } sharedGame
             in
             ( { model | gameState = updatedGameState }, Cmd.none )
 
-        Submit game ->
+        Submit game sharedGame ->
             let
                 updatedGameState =
-                    Started { game | isSubmitted = True }
+                    Started { game | isSubmitted = True } sharedGame
             in
             ( { model | gameState = updatedGameState }, fullWord game.selectedTiles |> getWordValidity )
 
@@ -283,18 +290,66 @@ update msg model =
                     case res of
                         Ok encWord ->
                             let
-                                decWord = Base64.decode encWord
+                                decWord =
+                                    Base64.decode encWord
                             in
                             case decWord of
                                 Ok decodedWord ->
                                     decodedWord
-                                
+
                                 Err _ ->
                                     ""
 
                         Err _ ->
                             ""
-                
-                ssdsds = Debug.log "WORD" word
             in
             ( model, Cmd.none )
+
+        SocketConnect info ->
+            ( { model | socketInfo = SocketConnected info }, Cmd.none )
+
+        Msg.SocketClosed code reason ->
+            ( { model
+                | socketInfo = WebSocket.SocketClosed code reason
+                , gameState = NotStarted (Maybe.withDefault "No connection to server..." reason)
+              }
+            , Cmd.none
+            )
+
+        ReceivedString eventObject ->
+            let
+                sds =
+                    Debug.log "RECEIVED" eventObject
+
+                newModel =
+                    case Decode.decodeString Multiplayer.eventDecoder eventObject of
+                        Err errMsg ->
+                            let
+                                _ =
+                                    Debug.log "Multiplayer Error" errMsg
+                            in
+                            model
+
+                        Ok event ->
+                            case event of
+                                Multiplayer.PlayerFound opponentId ->
+                                    { model | gameState = Started initGame (initSharedGame opponentId) }
+
+                                Multiplayer.Searching ->
+                                    model
+            in
+            ( newModel, Cmd.none )
+
+        Error errMsg ->
+            let
+                _ =
+                    Debug.log "Error" errMsg
+            in
+            ( model, Cmd.none )
+
+        StartSearch ->
+            ( { model | gameState = Searching }
+            , WebSocket.sendJsonString
+                (getConnectionInfo model.socketInfo)
+                (WebSocket.searchingEncoder model.playerId)
+            )

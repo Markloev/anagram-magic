@@ -2,6 +2,7 @@ const path = require('path');
 
 const { merge } = require('webpack-merge');
 const common = require('./webpack.common.js');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 
 const dev = {
@@ -17,10 +18,26 @@ const dev = {
         before(app) {
             // on port 3000
             app.get("/test", function (req, res) {
-                res.json({result: "OK"});
+                res.json({ result: "OK" });
             });
         }
     },
+    plugins: [
+        new HtmlWebpackPlugin({
+            inject: 'body',
+            filename: 'index.html',
+            template: require('html-webpack-template'),
+            appMountId: 'main',
+            mobile: true,
+            lang: 'en-US',
+            title: 'Anagram Magic',
+            links: [],
+            xhtml: true,
+            hash: false,
+            chunks: ['main'],
+            favicon: '../client/src/assets/images/favicon.ico'
+        }),
+    ]
 };
 
 module.exports = env => {

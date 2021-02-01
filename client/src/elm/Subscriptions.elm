@@ -8,23 +8,45 @@ import Msg exposing (Msg(..))
 import Ports
 import Time
 import Types exposing (Model)
+import WebSocket exposing (SocketStatus(..))
 
 
 subscriptions : Model -> Sub Msg
 subscriptions { gameState } =
     let
+        webSub =
+            WebSocket.events
+                (\event ->
+                    case event of
+                        WebSocket.Connected info ->
+                            SocketConnect info
+
+                        WebSocket.StringMessage info message ->
+                            ReceivedString message
+
+                        WebSocket.Closed _ unsentBytes reason ->
+                            Msg.SocketClosed unsentBytes reason
+
+                        WebSocket.Error _ ->
+                            Msg.Error "WebSocket Error"
+
+                        WebSocket.BadMessage error ->
+                            Msg.Error error
+                )
+
         subs =
             case gameState of
-                Started g ->
+                Started g sg ->
                     Sub.batch
-                        [ tick
-                        , Browser.Events.onKeyUp (Decode.map (KeyPressed g) keyDecoder)
-                        , Ports.receiveRandomTiles (decodeListTiles >> ReceiveRandomTiles g)
-                        , Ports.receiveShuffledTiles (decodeListTiles >> ReceiveShuffledTiles g)
+                        [ webSub
+                        , tick
+                        , Browser.Events.onKeyUp (Decode.map (KeyPressed g sg) keyDecoder)
+                        , Ports.receiveRandomTiles (decodeListTiles >> ReceiveRandomTiles g sg)
+                        , Ports.receiveShuffledTiles (decodeListTiles >> ReceiveShuffledTiles g sg)
                         ]
 
-                NotStarted ->
-                    Sub.none
+                _ ->
+                    webSub
     in
     subs
 

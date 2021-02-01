@@ -4,14 +4,25 @@ import Time exposing (Posix)
 
 
 type GameState
-    = NotStarted
-    | Started Game
+    = NotStarted String
+    | Searching
+    | Started Game SharedGame
 
 
 type alias Game =
     { currentTime : Posix
     , startTime : Posix
     , elapsedTime : Int
+    , selectedTiles : List Tile
+    , availableTiles : List Tile
+    , answerString : Maybe String
+    , totalScore : Int
+    , isSubmitted : Bool
+    }
+
+
+type alias SharedGame =
+    { playerId : String
     , phase : Phase
     , round : Int
     , selectedTiles : List Tile
@@ -35,6 +46,17 @@ initGame =
     { currentTime = Time.millisToPosix 0
     , startTime = Time.millisToPosix 0
     , elapsedTime = 0
+    , selectedTiles = []
+    , availableTiles = []
+    , answerString = Nothing
+    , totalScore = 0
+    , isSubmitted = False
+    }
+
+
+initSharedGame : String -> SharedGame
+initSharedGame opponentId =
+    { playerId = opponentId
     , phase = TileSelection
     , round = 1
     , selectedTiles = []
