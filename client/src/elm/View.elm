@@ -49,7 +49,15 @@ gameView game sharedGame =
                         _ ->
                             regularRound game
 
-                Completed ->
+                CompletedRound round ->
+                    case round of
+                        FinalRound ->
+                            finalRoundResults game
+
+                        _ ->
+                            regularRoundResults game
+
+                CompletedGame ->
                     completed game
     in
     div []
@@ -112,6 +120,16 @@ finalRound _ =
 completed : Game -> Html Msg
 completed _ =
     div [] [ text "Completed Game" ]
+
+
+regularRoundResults : Game -> Html Msg
+regularRoundResults _ =
+    div [] [ text "Regular Round Results" ]
+
+
+finalRoundResults : Game -> Html Msg
+finalRoundResults _ =
+    div [] [ text "Final Round Results" ]
 
 
 availableTiles : Game -> Html Msg

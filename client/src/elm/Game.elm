@@ -12,6 +12,7 @@ type GameState
 type alias Game =
     { playerId : String
     , gameState : GameState
+    , tileSelectionTurn : Bool
     , currentTime : Posix
     , startTime : Posix
     , elapsedTime : Int
@@ -46,6 +47,7 @@ initGame : String -> Game
 initGame playerId =
     { playerId = playerId
     , gameState = NotStarted ""
+    , tileSelectionTurn = False
     , currentTime = Time.millisToPosix 0
     , startTime = Time.millisToPosix 0
     , elapsedTime = 0
@@ -73,7 +75,8 @@ type Phase
     = Waiting SpecificRound
     | TileSelection SpecificRound
     | Round SpecificRound
-    | Completed
+    | CompletedRound SpecificRound
+    | CompletedGame
 
 
 type SpecificRound

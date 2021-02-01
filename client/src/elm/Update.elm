@@ -50,7 +50,7 @@ update msg model =
                                                             , gameState =
                                                                 Started
                                                                     { sharedGame
-                                                                        | phase = setNextPhase sharedGame.phase
+                                                                        | phase = setNextPhase model.game.tileSelectionTurn sharedGame.phase
                                                                     }
                                                         }
 
@@ -69,7 +69,7 @@ update msg model =
                                                             , gameState =
                                                                 Started
                                                                     { sharedGame
-                                                                        | phase = setNextPhase sharedGame.phase
+                                                                        | phase = setNextPhase model.game.tileSelectionTurn sharedGame.phase
                                                                     }
                                                         }
 
@@ -207,7 +207,7 @@ update msg model =
                                             , gameState =
                                                 Started
                                                     { sharedGame
-                                                        | phase = setNextPhase sharedGame.phase
+                                                        | phase = setNextPhase model.game.tileSelectionTurn sharedGame.phase
                                                         , isSubmitted = False
                                                     }
                                           }
@@ -374,7 +374,7 @@ update msg model =
                                         updatedGame =
                                             case model.game.gameState of
                                                 Started sharedGameState ->
-                                                    { game | gameState = Started { sharedGameState | phase = setNextPhase sharedGameState.phase } }
+                                                    { game | gameState = Started { sharedGameState | phase = setNextPhase model.game.tileSelectionTurn sharedGameState.phase } }
 
                                                 _ ->
                                                     model.game

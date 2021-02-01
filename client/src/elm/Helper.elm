@@ -73,8 +73,16 @@ getConnectionInfo socketInfo =
             Debug.todo "Not connected to server."
 
 
-setNextPhase : Phase -> Phase
-setNextPhase phase =
+setNextPhase : Bool -> Phase -> Phase
+setNextPhase tileSelectionTurn phase =
+    let
+        selectionPhase =
+            if tileSelectionTurn then
+                TileSelection
+
+            else
+                Waiting
+    in
     case phase of
         Waiting round ->
             case round of
@@ -113,19 +121,36 @@ setNextPhase phase =
         Round round ->
             case round of
                 FirstRound ->
-                    Round SecondRound
+                    CompletedRound FirstRound
 
                 SecondRound ->
-                    Round ThirdRound
+                    CompletedRound SecondRound
 
                 ThirdRound ->
-                    Round FourthRound
+                    CompletedRound ThirdRound
 
                 FourthRound ->
-                    Round FinalRound
+                    CompletedRound FourthRound
 
                 FinalRound ->
-                    Completed
+                    CompletedRound FinalRound
 
-        Completed ->
-            Completed
+        CompletedRound round ->
+            case round of
+                FirstRound ->
+                    selectionPhase SecondRound
+
+                SecondRound ->
+                    selectionPhase ThirdRound
+
+                ThirdRound ->
+                    selectionPhase FourthRound
+
+                FourthRound ->
+                    selectionPhase FinalRound
+
+                FinalRound ->
+                    CompletedGame
+
+        CompletedGame ->
+            CompletedGame
