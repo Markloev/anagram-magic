@@ -121,7 +121,6 @@ function shuffle(array) {
 app.ports.getRandomTiles.subscribe(function () {
     getRandomTiles();
     setMultipliers(tiles);
-    console.log(tiles);
     app.ports.receiveRandomTiles.send(tiles);
 });
 
@@ -146,7 +145,6 @@ app.ports.getRandomVowel.subscribe(function (tiles) {
 });
 
 app.ports.shuffleTiles.subscribe(function (tiles) {
-    console.log(tiles);
     shuffle(tiles);
     app.ports.receiveShuffledTiles.send(tiles);
 });
@@ -160,7 +158,6 @@ function bind(app) {
     let sockets = {};
 
     app.ports.toSocket.subscribe(message => {
-        console.log("MESSAGE TYPE: " + message.msgType);
         switch (message.msgType) {
             case "connect":
                 openWebSocket(message.msg);
@@ -180,8 +177,6 @@ function bind(app) {
         }
 
         let toElm = app.ports.fromSocket;
-        console.log(request.url);
-        console.log(request.protocols);
         let socket = new WebSocket(request.url, request.protocols);
 
         socket.onopen = openHandler.bind(null, toElm, socket, request.url);
@@ -193,7 +188,6 @@ function bind(app) {
     }
 
     function closeWebSocket(request) {
-        console.log("CLOSING");
         let socket = sockets[request.url];
         if (!socket) {
             return;
@@ -205,7 +199,6 @@ function bind(app) {
     }
 
     function sendJSON(request) {
-        console.log("Yo: " + request.message);
         let socket = sockets[request.url];
         if (socket) {
             socket.send(request.message);
@@ -218,8 +211,6 @@ function bind(app) {
 
 
 function openHandler(toElm, socket, url, event) {
-    console.log("Opened");
-
     toElm.send({
         msgType: "connected",
         msg: {
@@ -245,7 +236,7 @@ function messageHandler(toElm, socket, url, event) {
         });
     }
     else {
-        console.log(`Binary message handling not supported.`);
+        console.log("Binary message handling not supported");
     }
 }
 
