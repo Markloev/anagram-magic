@@ -182,9 +182,6 @@ update msg model =
             in
             ( { model | gameState = updatedGameState }, Cmd.none )
 
-        StartGame ->
-            ( { model | gameState = Started initGame }, Cmd.none )
-
         GetConsonant game ->
             ( model, encodeListTiles game.availableTiles |> getRandomConsonant )
 
@@ -304,17 +301,8 @@ update msg model =
             in
             ( model, Cmd.none )
 
-        ReceiveSocketMessage message ->
-            ( { model | socketMessage = message }, Cmd.none )
-
         SocketConnect info ->
-            let
-                sds =
-                    Debug.log "HERE" "WE HERE"
-            in
-            ( { model | socketInfo = SocketConnected info }
-            , Cmd.none
-            )
+            ( { model | socketInfo = SocketConnected info }, Cmd.none )
 
         Msg.SocketClosed code reason ->
             ( { model
@@ -354,21 +342,6 @@ update msg model =
                     Debug.log "Error" errMsg
             in
             ( model, Cmd.none )
-
-        ChangeString text ->
-            ( { model | testString = text }, Cmd.none )
-
-        SendMessage ->
-            let
-                cmd =
-                    case model.socketInfo of
-                        SocketConnected info ->
-                            WebSocket.sendJSON info model.testString
-
-                        _ ->
-                            Cmd.none
-            in
-            ( { model | testString = "" }, cmd )
 
         StartSearch ->
             ( { model | gameState = Searching }

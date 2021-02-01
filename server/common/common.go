@@ -19,7 +19,11 @@ type Client struct {
 //Message stores the incoming message received from a client
 type Message struct {
 	EventType string
-	Data      data
+	Data      interface{}
 }
 
-type data interface{}
+//DefaultReturnMessage holds the JSON object that will be returned to the user via web sockets
+type DefaultReturnMessage struct {
+	EventType string
+	Data      interface{}
+}

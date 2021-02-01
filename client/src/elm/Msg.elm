@@ -13,7 +13,6 @@ type Msg
     | KeyPressed Game String
     | KeyCharPressed Game Char
     | RemoveTileBackspace Game
-    | StartGame
     | GetConsonant Game
     | GetVowel Game
     | GetRandom
@@ -25,11 +24,8 @@ type Msg
     | Submit Game
     | GetWordValidityResponse (Result Http.Error String)
     | GetRandomWordResponse (Result Http.Error String)
-    | ReceiveSocketMessage String
     | SocketConnect ConnectionInfo
     | SocketClosed Int (Maybe String)
     | ReceivedString String
     | Error String
-    | ChangeString String
-    | SendMessage
     | StartSearch

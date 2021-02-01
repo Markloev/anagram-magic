@@ -5,27 +5,19 @@ import (
 
 	"bufio"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 
 	"github.com/gorilla/mux"
-	gorillawebsocket "github.com/gorilla/websocket"
 	"github.com/rs/cors"
 
 	"./websocket"
 )
 
-var addr = flag.String("addr", "localhost:8080/sockets", "http service address")
-
-var upgrader = gorillawebsocket.Upgrader{} // use default options
-
 func main() {
 	log.Println("Starting server at port 8080")
-	flag.Parse()
-	log.SetFlags(0)
 
 	router := mux.NewRouter()
 

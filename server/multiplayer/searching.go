@@ -9,19 +9,7 @@ import (
 	"../common"
 )
 
-//SearchingDefaultMessage returns that the user is still searching
-type SearchingDefaultMessage struct {
-	EventType string
-}
-
-//SearchingReturnMessage returns the opponent a player will match
-type SearchingReturnMessage struct {
-	EventType string
-	Data      SearchingReturnData
-}
-
-//SearchingReturnData stores the opponent PlayerID
-type SearchingReturnData struct {
+type searchingReturnData struct {
 	PlayerID string
 }
 
@@ -77,10 +65,10 @@ func HandleSearch(paramsData interface{}, clients map[*websocket.Conn]common.Cli
 	}
 }
 
-func createSearchingReturnMessageJSON(playerID string) SearchingReturnMessage {
-	returnJSON := SearchingReturnMessage{
+func createSearchingReturnMessageJSON(playerID string) common.DefaultReturnMessage {
+	returnJSON := common.DefaultReturnMessage{
 		EventType: "playerFound",
-		Data: SearchingReturnData{
+		Data: searchingReturnData{
 			PlayerID: playerID,
 		},
 	}
