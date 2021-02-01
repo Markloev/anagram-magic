@@ -64,22 +64,13 @@ func HandleSearch(paramsData interface{}, clients map[*websocket.Conn]common.Cli
 			}
 		}
 	}
-	//if no other player was found when search is initiated, set the current users searching status to true and return "searching" JSON to current user
+	//if no other player was found when search is initiated, set the current users searching status to true
 	if !found {
 		for searchingClient := range clients {
 			if clients[searchingClient].PlayerID == currentPlayerID {
 				if thisClient, ok := clients[searchingClient]; ok {
 					thisClient.Searching = true
 					clients[searchingClient] = thisClient
-				}
-				searchingJSON := SearchingDefaultMessage{
-					EventType: "searching",
-				}
-				err := searchingClient.WriteJSON(searchingJSON)
-				if err != nil {
-					log.Printf("Error: %v", err)
-					searchingClient.Close()
-					delete(clients, searchingClient)
 				}
 			}
 		}
