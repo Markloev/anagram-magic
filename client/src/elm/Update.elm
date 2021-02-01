@@ -41,40 +41,43 @@ update msg model =
                                 secondsPassed =
                                     Time.toSecond Time.utc (Time.millisToPosix (Time.posixToMillis g.currentTime - Time.posixToMillis g.startTime))
 
-                                newGameState =
-                                    case g.phase of
+                                ( newGameState, newSharedGameState ) =
+                                    case sg.phase of
                                         TileSelection ->
                                             let
                                                 finalGameState =
                                                     if secondsPassed == tileSelectionSeconds then
-                                                        { g
+                                                        ( { g
+                                                            | currentTime = posix
+                                                            , startTime = posix
+                                                          }
+                                                        , { sg
                                                             | phase =
-                                                                if g.round < totalRounds then
+                                                                if sg.round < totalRounds then
                                                                     RegularRound
 
                                                                 else
                                                                     FinalRound
-
-                                                            -- , availableTiles =
-                                                            --     if g.round < totalRounds then
-                                                            --         if List.length g.availableTiles < tileListMax then
-                                                            , currentTime = posix
-                                                            , startTime = posix
-                                                        }
+                                                          }
+                                                        )
 
                                                     else
-                                                        { g | currentTime = posix, startTime = iff isStart posix g.startTime }
+                                                        ( { g | currentTime = posix, startTime = iff isStart posix g.startTime }, sg )
                                             in
                                             finalGameState
 
                                         _ ->
                                             let
                                                 newRound =
-                                                    g.round + 1
+                                                    sg.round + 1
 
                                                 finalGameState =
                                                     if secondsPassed == roundTimeSeconds then
-                                                        { g
+                                                        ( { g
+                                                            | currentTime = posix
+                                                            , startTime = posix
+                                                          }
+                                                        , { sg
                                                             | round = newRound
                                                             , phase =
                                                                 if newRound < totalRounds then
@@ -82,12 +85,11 @@ update msg model =
 
                                                                 else
                                                                     Completed
-                                                            , currentTime = posix
-                                                            , startTime = posix
-                                                        }
+                                                          }
+                                                        )
 
                                                     else
-                                                        { g | currentTime = posix, startTime = iff isStart posix g.startTime }
+                                                        ( { g | currentTime = posix, startTime = iff isStart posix g.startTime }, sg )
                                             in
                                             finalGameState
                             in
@@ -98,7 +100,7 @@ update msg model =
         KeyPressed game sharedGame key ->
             let
                 cmd =
-                    if game.phase /= TileSelection then
+                    if sharedGame.phase /= TileSelection then
                         if key == " " then
                             encodeListTiles game.availableTiles
                                 |> shuffleTiles
@@ -204,16 +206,17 @@ update msg model =
                                     if List.length tilesResult == tileListMax then
                                         Started
                                             { game
+                                                | availableTiles = tilesResult
+                                            }
+                                            { sharedGame
                                                 | phase =
-                                                    if game.round < totalRounds then
+                                                    if sharedGame.round < totalRounds then
                                                         RegularRound
 
                                                     else
                                                         FinalRound
-                                                , availableTiles = tilesResult
                                                 , isSubmitted = False
                                             }
-                                            sharedGame
 
                                     else
                                         Started { game | availableTiles = tilesResult } sharedGame
@@ -330,7 +333,7 @@ update msg model =
                         Ok event ->
                             case event of
                                 Multiplayer.PlayerFound opponentId ->
-                                    { model | gameState = Started initGame (Just (initSharedGame opponentId)) }
+                                    { model | gameState = Started initGame (initSharedGame opponentId) }
 
                                 Multiplayer.Searching ->
                                     model

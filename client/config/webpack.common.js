@@ -1,8 +1,6 @@
 const path = require('path');
 
-const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-
 
 module.exports = (withDebug) => {
     return {
@@ -16,7 +14,6 @@ module.exports = (withDebug) => {
             extensions: [".elm", ".js"]
         },
         plugins: [
-            new HtmlWebpackPlugin(),
             new CleanWebpackPlugin(),
         ],
         optimization: {
@@ -25,6 +22,11 @@ module.exports = (withDebug) => {
         },
         module: {
             rules: [
+                {
+                    test: /\.js$/,
+                    enforce: 'pre',
+                    use: ['source-map-loader'],
+                },
                 {
                     test: /\.elm$/,
                     use: [

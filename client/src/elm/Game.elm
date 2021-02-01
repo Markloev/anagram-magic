@@ -6,15 +6,13 @@ import Time exposing (Posix)
 type GameState
     = NotStarted String
     | Searching
-    | Started Game (Maybe SharedGame)
+    | Started Game SharedGame
 
 
 type alias Game =
     { currentTime : Posix
     , startTime : Posix
     , elapsedTime : Int
-    , phase : Phase
-    , round : Int
     , selectedTiles : List Tile
     , availableTiles : List Tile
     , answerString : Maybe String
@@ -48,8 +46,6 @@ initGame =
     { currentTime = Time.millisToPosix 0
     , startTime = Time.millisToPosix 0
     , elapsedTime = 0
-    , phase = TileSelection
-    , round = 1
     , selectedTiles = []
     , availableTiles = []
     , answerString = Nothing

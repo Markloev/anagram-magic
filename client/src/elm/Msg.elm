@@ -10,18 +10,18 @@ import WebSocket exposing (ConnectionInfo)
 type Msg
     = DoNothing
     | Tick Time.Posix
-    | KeyPressed Game (Maybe SharedGame) String
-    | KeyCharPressed Game (Maybe SharedGame) Char
-    | RemoveTileBackspace Game (Maybe SharedGame)
+    | KeyPressed Game SharedGame String
+    | KeyCharPressed Game SharedGame Char
+    | RemoveTileBackspace Game SharedGame
     | GetConsonant Game
     | GetVowel Game
     | GetRandom
     | ShuffleTiles Game
-    | ReceiveRandomTiles Game (Maybe SharedGame) (Result Decode.Error (List Tile))
-    | ReceiveShuffledTiles Game (Maybe SharedGame) (Result Decode.Error (List Tile))
-    | SelectTile Game (Maybe SharedGame) Int Tile
-    | RemoveTile Game (Maybe SharedGame) Int Int
-    | Submit Game (Maybe SharedGame)
+    | ReceiveRandomTiles Game SharedGame (Result Decode.Error (List Tile))
+    | ReceiveShuffledTiles Game SharedGame (Result Decode.Error (List Tile))
+    | SelectTile Game SharedGame Int Tile
+    | RemoveTile Game SharedGame Int Int
+    | Submit Game SharedGame
     | GetWordValidityResponse (Result Http.Error String)
     | GetRandomWordResponse (Result Http.Error String)
     | SocketConnect ConnectionInfo

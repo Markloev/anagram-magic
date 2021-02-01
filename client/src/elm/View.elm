@@ -31,11 +31,11 @@ view model =
     content
 
 
-gameView : Game -> Maybe SharedGame -> Html Msg
+gameView : Game -> SharedGame -> Html Msg
 gameView game sharedGame =
     let
         gameContent =
-            case game.phase of
+            case sharedGame.phase of
                 TileSelection ->
                     tileSelection game sharedGame
 
@@ -47,19 +47,11 @@ gameView game sharedGame =
 
                 Completed ->
                     completed game
-
-        opponentId =
-            case sharedGame of
-                Just sg ->
-                    sg.playerId
-
-                Nothing ->
-                    ""
     in
     div []
         [ overview game
         , gameContent
-        , div [] [ text <| "PLAYER 2: " ++ opponentId ]
+        , div [] [ text <| "PLAYER 2: " ++ sharedGame.playerId ]
         ]
 
 
@@ -68,7 +60,7 @@ overview game =
     div [] [ text <| String.fromInt <| Time.toSecond Time.utc (Time.millisToPosix (Time.posixToMillis game.currentTime - Time.posixToMillis game.startTime)) ]
 
 
-tileSelection : Game -> Maybe SharedGame -> Html Msg
+tileSelection : Game -> SharedGame -> Html Msg
 tileSelection game sharedGame =
     let
         getConsonantsButton =
@@ -93,7 +85,7 @@ tileSelection game sharedGame =
         ]
 
 
-regularRound : Game -> Maybe SharedGame -> Html Msg
+regularRound : Game -> SharedGame -> Html Msg
 regularRound game sharedGame =
     div [ classList [ ( "flex", True ), ( "flex-row", True ) ] ]
         [ button [ onClick <| ShuffleTiles game, class "button" ] [ text "Shuffle" ]
@@ -113,7 +105,7 @@ completed game =
     div [] [ text "Completed Game" ]
 
 
-availableTiles : Game -> Maybe SharedGame -> Html Msg
+availableTiles : Game -> SharedGame -> Html Msg
 availableTiles game sharedGame =
     let
         tileContent =
@@ -132,7 +124,7 @@ availableTiles game sharedGame =
     div [] <| tileContent
 
 
-selectedTiles : Game -> Maybe SharedGame -> Html Msg
+selectedTiles : Game -> SharedGame -> Html Msg
 selectedTiles game sharedGame =
     let
         tileContent =
