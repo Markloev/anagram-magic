@@ -258,7 +258,11 @@ update msg model =
                 updatedGame =
                     { game | selectedTiles = updatedSelectedTiles, availableTiles = updatedAvailableTiles }
             in
-            ( { model | game = updatedGame }, Cmd.none )
+            ( { model | game = updatedGame }
+            , WebSocket.sendJsonString
+                (getConnectionInfo model.socketInfo)
+                (Multiplayer.sharedTilesEncoder updatedSelectedTiles model.game.playerId)
+            )
 
         RemoveTile originalIndex selectedIdx ->
             let
@@ -282,7 +286,11 @@ update msg model =
                 updatedGame =
                     { game | selectedTiles = updatedSelectedTiles, availableTiles = updatedAvailableTiles }
             in
-            ( { model | game = updatedGame }, Cmd.none )
+            ( { model | game = updatedGame }
+            , WebSocket.sendJsonString
+                (getConnectionInfo model.socketInfo)
+                (Multiplayer.sharedTilesEncoder updatedSelectedTiles model.game.playerId)
+            )
 
         Submit ->
             let
@@ -378,6 +386,21 @@ update msg model =
                                             case model.game.gameState of
                                                 Started sharedGameState ->
                                                     { game | availableTiles = availableTiles, gameState = Started { sharedGameState | phase = setNextPhase model.game.tileSelectionTurn sharedGameState.phase } }
+
+                                                _ ->
+                                                    model.game
+                                    in
+                                    { model | game = updatedGame }
+
+                                Multiplayer.ChangeTiles selectedTiles ->
+                                    let
+                                        game =
+                                            model.game
+
+                                        updatedGame =
+                                            case model.game.gameState of
+                                                Started sharedGameState ->
+                                                    { game | gameState = Started { sharedGameState | selectedTiles = selectedTiles } }
 
                                                 _ ->
                                                     model.game

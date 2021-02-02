@@ -47,7 +47,7 @@ gameView game sharedGame =
                             finalRound game
 
                         _ ->
-                            regularRound game
+                            regularRound game sharedGame
 
                 CompletedRound round ->
                     case round of
@@ -102,12 +102,13 @@ tileSelection game =
         ]
 
 
-regularRound : Game -> Html Msg
-regularRound game =
+regularRound : Game -> SharedGame -> Html Msg
+regularRound game sharedGame =
     div [ classList [ ( "flex", True ), ( "flex-row", True ) ] ]
         [ button [ onClick <| ShuffleTiles, class "button" ] [ text "Shuffle" ]
         , availableTiles game
         , selectedTiles game
+        , opponentSelectedTiles sharedGame
         , button [ onClick <| Submit, class "button" ] [ text "Submit" ]
         ]
 
@@ -162,5 +163,19 @@ selectedTiles game =
                         ]
                 )
                 game.selectedTiles
+    in
+    div [] <| tileContent
+
+
+opponentSelectedTiles : SharedGame -> Html Msg
+opponentSelectedTiles sharedGame =
+    let
+        tileContent =
+            List.map
+                (\tile ->
+                    div []
+                        [ text <| String.fromChar tile.letter ++ " / " ++ String.fromInt tile.value ]
+                )
+                sharedGame.selectedTiles
     in
     div [] <| tileContent

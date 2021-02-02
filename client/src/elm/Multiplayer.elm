@@ -10,6 +10,7 @@ type Event
     = Searching
     | PlayerFound String Bool
     | ChangePhase (List Tile)
+    | ChangeTiles (List Tile)
 
 
 eventDecoder : Decoder Event
@@ -25,6 +26,10 @@ eventDecoder =
 
                     "changePhase" ->
                         Decode.map ChangePhase
+                            (Decode.at [ "Data", "tiles" ] listTilesDecoder)
+
+                    "changeTiles" ->
+                        Decode.map ChangeTiles
                             (Decode.at [ "Data", "tiles" ] listTilesDecoder)
 
                     _ ->
@@ -44,6 +49,15 @@ changePhaseEncoder tiles playerId =
         , ( "tiles", listTilesEncoder tiles )
         ]
         |> WebSocket.eventEncoder "changePhase"
+
+
+sharedTilesEncoder : List Tile -> String -> Value
+sharedTilesEncoder tiles playerId =
+    Encode.object
+        [ ( "playerId", Encode.string playerId )
+        , ( "tiles", listTilesEncoder tiles )
+        ]
+        |> WebSocket.eventEncoder "changeTiles"
 
 
 tileEncoder : Tile -> Encode.Value

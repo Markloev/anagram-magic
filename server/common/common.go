@@ -30,3 +30,17 @@ type DefaultReturnMessage struct {
 	EventType string
 	Data      interface{}
 }
+
+//TileData holds the player ID and list of selected tiles
+type TileData struct {
+	PlayerID string `json:"playerId"`
+	Tiles    []Tile `json:"tiles"`
+}
+
+//Tile hold the tile object
+type Tile struct {
+	Letter        int  `json:"letter"`
+	Value         int  `json:"value"`
+	OriginalIndex int  `json:"originalIndex"`
+	Hidden        bool `json:"hidden"`
+}

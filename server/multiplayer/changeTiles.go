@@ -9,8 +9,8 @@ import (
 	"../common"
 )
 
-//HandleChangePhase handles notifying the opponent that a phase change is happening
-func HandleChangePhase(paramsData []byte, clients map[*websocket.Conn]common.Client) {
+//HandleChangeTiles handles sending the updated list of selected tiles to the opponent
+func HandleChangeTiles(paramsData []byte, clients map[*websocket.Conn]common.Client) {
 	var data common.TileData
 	jsonErr := json.Unmarshal(paramsData, &data)
 	if jsonErr != nil {
@@ -20,8 +20,8 @@ func HandleChangePhase(paramsData []byte, clients map[*websocket.Conn]common.Cli
 	for client := range clients {
 		//if other client is matched against current client
 		if clients[client].OpponentID == data.PlayerID {
-			opponentPlayerReturnJSON := createChangePhaseReturnMessageJSON(clients[client].PlayerID, data.Tiles)
-			//update opponent client of phase change
+			opponentPlayerReturnJSON := createChangeTilesReturnMessageJSON(clients[client].PlayerID, data.Tiles)
+			//update opponent client of newly selected tiles by opposite player
 			err := client.WriteJSON(opponentPlayerReturnJSON)
 			if err != nil {
 				log.Printf("Error: %v", err)
@@ -32,9 +32,9 @@ func HandleChangePhase(paramsData []byte, clients map[*websocket.Conn]common.Cli
 	}
 }
 
-func createChangePhaseReturnMessageJSON(playerID string, tiles []common.Tile) common.DefaultReturnMessage {
+func createChangeTilesReturnMessageJSON(playerID string, tiles []common.Tile) common.DefaultReturnMessage {
 	returnJSON := common.DefaultReturnMessage{
-		EventType: "changePhase",
+		EventType: "changeTiles",
 		Data: common.TileData{
 			PlayerID: playerID,
 			Tiles:    tiles,

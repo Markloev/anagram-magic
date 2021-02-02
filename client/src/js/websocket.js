@@ -65,7 +65,7 @@ function openHandler(toElm, socket, url, event) {
             url: url,
             binaryType: socket.binaryType,
             extensions: socket.extensions,
-            protocol: socket.protocol
+            protocol: socket.protocol,
         }
     });
 }

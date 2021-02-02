@@ -1,7 +1,6 @@
 package websocket
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 
@@ -16,6 +15,9 @@ type incomingMessage struct {
 	data      []byte `json:"data"`
 }
 
+var test struct {
+}
+
 //WS handles opening of web socket
 func WS(w http.ResponseWriter, req *http.Request) {
 	var upgrader = websocket.Upgrader{
@@ -27,39 +29,32 @@ func WS(w http.ResponseWriter, req *http.Request) {
 	}
 	currentClient, err := upgrader.Upgrade(w, req, nil)
 	if err != nil {
-		log.Println("Error: %v", err)
+		log.Fatal("Error: %v", err)
 	}
+	defer currentClient.Close()
+	playerID, ok := req.URL.Query()["playerId"]
+	if !ok || len(playerID[0]) < 1 {
+		log.Println("Url Param 'playerId' is missing")
+		return
+	}
+	var newClient common.Client
+	newClient.PlayerID = playerID[0]
+	newClient.OpponentID = ""
+	newClient.Searching = false
+	common.Clients[currentClient] = newClient
 
 	for {
 		var incMessage common.Message
 		err := currentClient.ReadJSON(&incMessage)
-		var msg common.Message
-		var currentPlayerID string
 		if err != nil {
-			_, currentMessage, errOpen := currentClient.ReadMessage()
-			if errOpen != nil {
-				log.Println("Error: %v", errOpen)
-				delete(common.Clients, currentClient)
-			}
-			msg.EventType = "connected"
-			msg.Data = currentMessage
-		} else {
-			msg.EventType = incMessage.EventType
-			msg.Data = incMessage.Data
+			log.Println("Error: %v", err)
+			delete(common.Clients, currentClient)
+			break
 		}
+		var msg common.Message
+		msg.EventType = incMessage.EventType
+		msg.Data = incMessage.Data
 		common.Broadcast <- msg
-		// if msg.EventType == "searching" {
-		var newClient common.Client
-		jsonErr := json.Unmarshal(msg.Data, &currentPlayerID)
-		if jsonErr != nil {
-			log.Printf("Error: %v", jsonErr)
-		}
-		newClient.PlayerID = currentPlayerID
-		newClient.OpponentID = ""
-		newClient.Searching = false
-		defer currentClient.Close()
-		common.Clients[currentClient] = newClient
-		// }
 	}
 }
 
@@ -73,6 +68,8 @@ func HandleMessages() {
 			multiplayer.HandleSearch(params.Data, common.Clients)
 		} else if params.EventType == "changePhase" {
 			multiplayer.HandleChangePhase(params.Data, common.Clients)
+		} else if params.EventType == "changeTiles" {
+			multiplayer.HandleChangeTiles(params.Data, common.Clients)
 		} else {
 			for client := range common.Clients {
 				err := client.WriteJSON(params.Data)
