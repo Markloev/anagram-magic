@@ -5,6 +5,7 @@ import Constants exposing (timeInterval)
 import Game exposing (GameState(..), Tile)
 import Json.Decode as Decode
 import Msg exposing (Msg(..))
+import Multiplayer exposing (listTilesDecoderResult)
 import Ports
 import Time
 import Types exposing (Model)
@@ -41,8 +42,8 @@ subscriptions { game } =
                         [ webSub
                         , tick
                         , Browser.Events.onKeyUp (Decode.map (KeyPressed sg) keyDecoder)
-                        , Ports.receiveRandomTiles (decodeListTiles >> ReceiveRandomTiles sg)
-                        , Ports.receiveShuffledTiles (decodeListTiles >> ReceiveShuffledTiles)
+                        , Ports.receiveRandomTiles (listTilesDecoderResult >> ReceiveRandomTiles sg)
+                        , Ports.receiveShuffledTiles (listTilesDecoderResult >> ReceiveShuffledTiles)
                         ]
 
                 _ ->
@@ -54,32 +55,6 @@ subscriptions { game } =
 tick : Sub Msg
 tick =
     Time.every timeInterval Tick
-
-
-decodeTile : Decode.Decoder Tile
-decodeTile =
-    Decode.map4 Tile
-        (Decode.field
-            "letter"
-            (Decode.int |> Decode.map Char.fromCode)
-        )
-        (Decode.field
-            "value"
-            Decode.int
-        )
-        (Decode.field
-            "originalIndex"
-            Decode.int
-        )
-        (Decode.field
-            "hidden"
-            Decode.bool
-        )
-
-
-decodeListTiles : Decode.Value -> Result Decode.Error (List Tile)
-decodeListTiles =
-    Decode.list decodeTile |> Decode.decodeValue
 
 
 keyDecoder : Decode.Decoder String

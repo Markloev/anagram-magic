@@ -200,6 +200,9 @@ update msg model =
                                 game =
                                     model.game
 
+                                sdsd =
+                                    Debug.log "test" tilesResult
+
                                 ( newGameState, multiplayerPhaseCmd ) =
                                     if List.length tilesResult == tileListMax then
                                         ( { game
@@ -213,7 +216,7 @@ update msg model =
                                           }
                                         , WebSocket.sendJsonString
                                             (getConnectionInfo model.socketInfo)
-                                            (Multiplayer.changePhaseEncoder model.game.playerId)
+                                            (Multiplayer.changePhaseEncoder tilesResult model.game.playerId)
                                         )
 
                                     else
@@ -366,7 +369,7 @@ update msg model =
                                     in
                                     { model | game = updatedGame }
 
-                                Multiplayer.ChangePhase ->
+                                Multiplayer.ChangePhase availableTiles ->
                                     let
                                         game =
                                             model.game
@@ -374,7 +377,7 @@ update msg model =
                                         updatedGame =
                                             case model.game.gameState of
                                                 Started sharedGameState ->
-                                                    { game | gameState = Started { sharedGameState | phase = setNextPhase model.game.tileSelectionTurn sharedGameState.phase } }
+                                                    { game | availableTiles = availableTiles, gameState = Started { sharedGameState | phase = setNextPhase model.game.tileSelectionTurn sharedGameState.phase } }
 
                                                 _ ->
                                                     model.game

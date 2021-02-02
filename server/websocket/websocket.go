@@ -1,7 +1,7 @@
 package websocket
 
 import (
-	"fmt"
+	"encoding/json"
 	"log"
 	"net/http"
 
@@ -10,6 +10,11 @@ import (
 	"../common"
 	"../multiplayer"
 )
+
+type incomingMessage struct {
+	eventType string `json:"eventType"`
+	data      []byte `json:"data"`
+}
 
 //WS handles opening of web socket
 func WS(w http.ResponseWriter, req *http.Request) {
@@ -26,9 +31,10 @@ func WS(w http.ResponseWriter, req *http.Request) {
 	}
 
 	for {
-		var incData map[string]interface{}
-		err := currentClient.ReadJSON(&incData)
+		var incMessage common.Message
+		err := currentClient.ReadJSON(&incMessage)
 		var msg common.Message
+		var currentPlayerID string
 		if err != nil {
 			_, currentMessage, errOpen := currentClient.ReadMessage()
 			if errOpen != nil {
@@ -38,17 +44,23 @@ func WS(w http.ResponseWriter, req *http.Request) {
 			msg.EventType = "connected"
 			msg.Data = currentMessage
 		} else {
-			msg.EventType = incData["eventType"].(string)
-			msg.Data = incData["data"]
+			msg.EventType = incMessage.EventType
+			msg.Data = incMessage.Data
 		}
 		common.Broadcast <- msg
+		// if msg.EventType == "searching" {
 		var newClient common.Client
-		newClient.PlayerID = fmt.Sprintf("%v", msg.Data)
+		jsonErr := json.Unmarshal(msg.Data, &currentPlayerID)
+		if jsonErr != nil {
+			log.Printf("Error: %v", jsonErr)
+		}
+		newClient.PlayerID = currentPlayerID
 		newClient.OpponentID = ""
 		newClient.Searching = false
+		defer currentClient.Close()
 		common.Clients[currentClient] = newClient
+		// }
 	}
-	defer currentClient.Close()
 }
 
 //HandleMessages handles all incoming web socket messages

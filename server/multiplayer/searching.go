@@ -1,7 +1,7 @@
 package multiplayer
 
 import (
-	"fmt"
+	"encoding/json"
 	"log"
 
 	"github.com/gorilla/websocket"
@@ -15,11 +15,18 @@ type searchingReturnData struct {
 }
 
 //HandleSearch handles return message to player that is searching for a game
-func HandleSearch(paramsData interface{}, clients map[*websocket.Conn]common.Client) {
+func HandleSearch(paramsData []byte, clients map[*websocket.Conn]common.Client) {
 	found := false
-	currentPlayerID := fmt.Sprintf("%v", paramsData)
+	var currentPlayerID string
+	jsonErr := json.Unmarshal(paramsData, &currentPlayerID)
+	log.Println(paramsData)
+	log.Println("Current: " + currentPlayerID)
+	if jsonErr != nil {
+		log.Printf("Error: %v", jsonErr)
+	}
 	//loop through list of clients and look for another client that is searching
 	for client := range clients {
+		log.Println("ID: " + clients[client].PlayerID)
 		//if it is another client and they are also searching
 		if clients[client].PlayerID != currentPlayerID && clients[client].Searching {
 			found = true

@@ -1,6 +1,8 @@
 package common
 
 import (
+	"encoding/json"
+
 	"github.com/gorilla/websocket"
 )
 
@@ -19,8 +21,8 @@ type Client struct {
 
 //Message stores the incoming message received from a client
 type Message struct {
-	EventType string
-	Data      interface{}
+	EventType string          `json:"eventType"`
+	Data      json.RawMessage `json:"data"`
 }
 
 //DefaultReturnMessage holds the JSON object that will be returned to the user via web sockets
