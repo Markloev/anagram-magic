@@ -21,6 +21,7 @@ type alias Game =
     , answerString : Maybe String
     , totalScore : Int
     , turnSubmitted : Bool
+    , validWord : Bool
     }
 
 
@@ -32,6 +33,7 @@ type alias SharedGame =
     , answerString : Maybe String
     , totalScore : Int
     , turnSubmitted : Bool
+    , validWord : Bool
     }
 
 
@@ -56,6 +58,7 @@ initGame playerId =
     , answerString = Nothing
     , totalScore = 0
     , turnSubmitted = False
+    , validWord = False
     }
 
 
@@ -68,6 +71,7 @@ initSharedGame opponentId phase =
     , answerString = Nothing
     , totalScore = 0
     , turnSubmitted = False
+    , validWord = False
     }
 
 

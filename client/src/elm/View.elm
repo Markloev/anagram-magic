@@ -52,10 +52,10 @@ gameView game sharedGame =
                 CompletedRound round ->
                     case round of
                         FinalRound ->
-                            finalRoundResults game
+                            finalRoundResults game sharedGame
 
                         _ ->
-                            regularRoundResults game
+                            regularRoundResults game sharedGame
 
                 CompletedGame ->
                     completed game
@@ -123,13 +123,16 @@ completed _ =
     div [] [ text "Completed Game" ]
 
 
-regularRoundResults : Game -> Html Msg
-regularRoundResults _ =
-    div [] [ text "Regular Round Results" ]
+regularRoundResults : Game -> SharedGame -> Html Msg
+regularRoundResults game sharedGame =
+    div []
+        [ div [] [ text <| "Your score: " ++ String.fromInt game.totalScore ]
+        , div [] [ text <| "Opponent score: " ++ String.fromInt sharedGame.totalScore ]
+        ]
 
 
-finalRoundResults : Game -> Html Msg
-finalRoundResults _ =
+finalRoundResults : Game -> SharedGame -> Html Msg
+finalRoundResults game sharedGame =
     div [] [ text "Final Round Results" ]
 
 

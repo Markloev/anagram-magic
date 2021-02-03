@@ -3,7 +3,7 @@ module Update exposing (update)
 import Base64
 import Constants exposing (roundTimeSeconds, tileListMax, tileSelectionSeconds)
 import Game exposing (GameState(..), Phase(..), SpecificRound(..), initSharedGame)
-import Helper exposing (fullWord, getConnectionInfo, mkCmd, setNextPhase, toLetter)
+import Helper exposing (fullWord, getConnectionInfo, getScore, mkCmd, setNextPhase, toLetter)
 import Json.Decode as Decode
 import List
 import List.Extra as LE
@@ -301,10 +301,9 @@ update msg model =
                     { game | turnSubmitted = True }
             in
             ( { model | game = updatedGame }
-              -- , fullWord game.selectedTiles |> getWordValidity
             , WebSocket.sendJsonString
                 (getConnectionInfo model.socketInfo)
-                (Multiplayer.submitTurnEncoder model.game.playerId)
+                (Multiplayer.submitTurnEncoder model.game.selectedTiles model.game.playerId)
             )
 
         GetWordValidityResponse res ->
@@ -412,15 +411,43 @@ update msg model =
                                     in
                                     { model | game = updatedGame }
 
-                                Multiplayer.ChangePhase ->
+                                Multiplayer.SubmitTurnComplete playerValidWord opponentValidWord ->
                                     let
                                         game =
                                             model.game
 
+                                        ( playerTotalScore, opponentTotalScore ) =
+                                            case game.gameState of
+                                                Started sharedGame ->
+                                                    ( if playerValidWord then
+                                                        game.totalScore + getScore game.selectedTiles
+
+                                                      else
+                                                        game.totalScore
+                                                    , if opponentValidWord then
+                                                        sharedGame.totalScore + getScore sharedGame.selectedTiles
+
+                                                      else
+                                                        sharedGame.totalScore
+                                                    )
+
+                                                _ ->
+                                                    ( 0, 0 )
+
                                         updatedGame =
                                             case model.game.gameState of
                                                 Started sharedGameState ->
-                                                    { game | gameState = Started { sharedGameState | phase = setNextPhase model.game.tileSelectionTurn sharedGameState.phase } }
+                                                    { game
+                                                        | validWord = playerValidWord
+                                                        , totalScore = playerTotalScore
+                                                        , gameState =
+                                                            Started
+                                                                { sharedGameState
+                                                                    | validWord = opponentValidWord
+                                                                    , totalScore = opponentTotalScore
+                                                                    , phase = setNextPhase model.game.tileSelectionTurn sharedGameState.phase
+                                                                }
+                                                    }
 
                                                 _ ->
                                                     model.game

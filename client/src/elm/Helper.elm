@@ -154,3 +154,8 @@ setNextPhase tileSelectionTurn phase =
 
         CompletedGame ->
             CompletedGame
+
+
+getScore : List Tile -> Int
+getScore tiles =
+    List.sum (List.map (\tile -> tile.value) tiles)

@@ -59,7 +59,7 @@ func HandleSearch(paramsData []byte, clients map[*websocket.Conn]common.Client) 
 			}
 		}
 	}
-	//if no other player was found when search is initiated, set the current users searching status to true
+	//if no other player was found when search is initiated, set the current userss searching status to true
 	if !found {
 		for searchingClient := range clients {
 			if clients[searchingClient].PlayerID == currentPlayerID {

@@ -34,6 +34,7 @@ func WS(w http.ResponseWriter, req *http.Request) {
 	newClient.OpponentID = ""
 	newClient.Searching = false
 	newClient.TurnSubmitted = false
+	newClient.Tiles = nil
 	common.Clients[currentClient] = newClient
 
 	for {

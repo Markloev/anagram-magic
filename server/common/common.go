@@ -18,6 +18,7 @@ type Client struct {
 	OpponentID    string
 	Searching     bool
 	TurnSubmitted bool
+	Tiles         []Tile
 }
 
 //Message stores the incoming message received from a client

@@ -10,7 +10,7 @@ type Event
     = PlayerFound String Bool
     | ReceiveTiles (List Tile)
     | ChangeTiles (List Tile)
-    | ChangePhase
+    | SubmitTurnComplete Bool Bool
     | SubmitTurn
 
 
@@ -33,8 +33,10 @@ eventDecoder =
                         Decode.map ChangeTiles
                             (Decode.at [ "Data", "tiles" ] listTilesDecoder)
 
-                    "changePhase" ->
-                        Decode.succeed ChangePhase
+                    "submitTurnComplete" ->
+                        Decode.map2 SubmitTurnComplete
+                            (Decode.at [ "Data", "playerValidWord" ] Decode.bool)
+                            (Decode.at [ "Data", "opponentValidWord" ] Decode.bool)
 
                     "submitTurn" ->
                         Decode.succeed SubmitTurn
@@ -58,9 +60,13 @@ receiveTilesEncoder tiles playerId =
         |> WebSocket.eventEncoder "receiveTiles"
 
 
-submitTurnEncoder : String -> Value
-submitTurnEncoder playerId =
-    WebSocket.eventEncoder "submitTurn" (Encode.string playerId)
+submitTurnEncoder : List Tile -> String -> Value
+submitTurnEncoder tiles playerId =
+    Encode.object
+        [ ( "playerId", Encode.string playerId )
+        , ( "tiles", listTilesEncoder tiles )
+        ]
+        |> WebSocket.eventEncoder "submitTurn"
 
 
 sharedTilesEncoder : List Tile -> String -> Value
