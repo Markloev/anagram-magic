@@ -21,7 +21,7 @@ type Msg
     | ReceiveShuffledTiles (Result Decode.Error (List Tile))
     | SelectTile Int Tile
     | RemoveTile Int Int
-    | Submit
+    | Submit SharedGame
     | GetWordValidityResponse (Result Http.Error String)
     | GetRandomWordResponse (Result Http.Error String)
     | SocketConnect ConnectionInfo

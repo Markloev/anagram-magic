@@ -95,7 +95,7 @@ update msg model =
                                     |> shuffleTiles
 
                             else if key == "Enter" then
-                                Submit
+                                Submit sharedGame
                                     |> mkCmd
 
                             else if key == "Backspace" then
@@ -211,12 +211,12 @@ update msg model =
                                                 Started
                                                     { sharedGame
                                                         | phase = setNextPhase model.game.tileSelectionTurn sharedGame.phase
-                                                        , isSubmitted = False
+                                                        , turnSubmitted = False
                                                     }
                                           }
                                         , WebSocket.sendJsonString
                                             (getConnectionInfo model.socketInfo)
-                                            (Multiplayer.changePhaseEncoder tilesResult model.game.playerId)
+                                            (Multiplayer.receiveTilesEncoder tilesResult model.game.playerId)
                                         )
 
                                     else
@@ -292,15 +292,20 @@ update msg model =
                 (Multiplayer.sharedTilesEncoder updatedSelectedTiles model.game.playerId)
             )
 
-        Submit ->
+        Submit sharedGame ->
             let
                 game =
                     model.game
 
                 updatedGame =
-                    { game | isSubmitted = True }
+                    { game | turnSubmitted = True }
             in
-            ( { model | game = updatedGame }, fullWord game.selectedTiles |> getWordValidity )
+            ( { model | game = updatedGame }
+              -- , fullWord game.selectedTiles |> getWordValidity
+            , WebSocket.sendJsonString
+                (getConnectionInfo model.socketInfo)
+                (Multiplayer.submitTurnEncoder model.game.playerId)
+            )
 
         GetWordValidityResponse res ->
             ( model, Cmd.none )
@@ -377,7 +382,7 @@ update msg model =
                                     in
                                     { model | game = updatedGame }
 
-                                Multiplayer.ChangePhase availableTiles ->
+                                Multiplayer.ReceiveTiles availableTiles ->
                                     let
                                         game =
                                             model.game
@@ -407,8 +412,35 @@ update msg model =
                                     in
                                     { model | game = updatedGame }
 
-                                Multiplayer.Searching ->
-                                    model
+                                Multiplayer.ChangePhase ->
+                                    let
+                                        game =
+                                            model.game
+
+                                        updatedGame =
+                                            case model.game.gameState of
+                                                Started sharedGameState ->
+                                                    { game | gameState = Started { sharedGameState | phase = setNextPhase model.game.tileSelectionTurn sharedGameState.phase } }
+
+                                                _ ->
+                                                    model.game
+                                    in
+                                    { model | game = updatedGame }
+
+                                Multiplayer.SubmitTurn ->
+                                    let
+                                        game =
+                                            model.game
+
+                                        updatedGame =
+                                            case model.game.gameState of
+                                                Started sharedGameState ->
+                                                    { game | gameState = Started { sharedGameState | turnSubmitted = True } }
+
+                                                _ ->
+                                                    model.game
+                                    in
+                                    { model | game = updatedGame }
             in
             ( newModel, Cmd.none )
 

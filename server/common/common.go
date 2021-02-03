@@ -14,9 +14,10 @@ var Broadcast = make(chan Message)
 
 //Client stores a player's information that is needed for matching player's together
 type Client struct {
-	PlayerID   string
-	OpponentID string
-	Searching  bool
+	PlayerID      string
+	OpponentID    string
+	Searching     bool
+	TurnSubmitted bool
 }
 
 //Message stores the incoming message received from a client
@@ -43,4 +44,13 @@ type Tile struct {
 	Value         int  `json:"value"`
 	OriginalIndex int  `json:"originalIndex"`
 	Hidden        bool `json:"hidden"`
+}
+
+//CreateBasicReturnMessageJSON creates a simple JSON object with an event type that is returned to the user
+func CreateBasicReturnMessageJSON(eventType string) DefaultReturnMessage {
+	returnJSON := DefaultReturnMessage{
+		EventType: eventType,
+		Data:      nil,
+	}
+	return returnJSON
 }

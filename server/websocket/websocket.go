@@ -10,14 +10,6 @@ import (
 	"../multiplayer"
 )
 
-type incomingMessage struct {
-	eventType string `json:"eventType"`
-	data      []byte `json:"data"`
-}
-
-var test struct {
-}
-
 //WS handles opening of web socket
 func WS(w http.ResponseWriter, req *http.Request) {
 	var upgrader = websocket.Upgrader{
@@ -34,20 +26,21 @@ func WS(w http.ResponseWriter, req *http.Request) {
 	defer currentClient.Close()
 	playerID, ok := req.URL.Query()["playerId"]
 	if !ok || len(playerID[0]) < 1 {
-		log.Println("Url Param 'playerId' is missing")
+		log.Printf("Url Param 'playerId' is missing")
 		return
 	}
 	var newClient common.Client
 	newClient.PlayerID = playerID[0]
 	newClient.OpponentID = ""
 	newClient.Searching = false
+	newClient.TurnSubmitted = false
 	common.Clients[currentClient] = newClient
 
 	for {
 		var incMessage common.Message
 		err := currentClient.ReadJSON(&incMessage)
 		if err != nil {
-			log.Println("Error: %v", err)
+			log.Printf("Error: %v", err)
 			delete(common.Clients, currentClient)
 			break
 		}
@@ -66,8 +59,10 @@ func HandleMessages() {
 		// Send it out to every client that is currently connected
 		if params.EventType == "searching" {
 			multiplayer.HandleSearch(params.Data, common.Clients)
-		} else if params.EventType == "changePhase" {
-			multiplayer.HandleChangePhase(params.Data, common.Clients)
+		} else if params.EventType == "receiveTiles" {
+			multiplayer.HandleReceiveTiles(params.Data, common.Clients)
+		} else if params.EventType == "submitTurn" {
+			multiplayer.HandleSubmitTurn(params.Data, common.Clients)
 		} else if params.EventType == "changeTiles" {
 			multiplayer.HandleChangeTiles(params.Data, common.Clients)
 		} else {

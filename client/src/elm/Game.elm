@@ -20,7 +20,7 @@ type alias Game =
     , availableTiles : List Tile
     , answerString : Maybe String
     , totalScore : Int
-    , isSubmitted : Bool
+    , turnSubmitted : Bool
     }
 
 
@@ -31,7 +31,7 @@ type alias SharedGame =
     , availableTiles : List Tile
     , answerString : Maybe String
     , totalScore : Int
-    , isSubmitted : Bool
+    , turnSubmitted : Bool
     }
 
 
@@ -55,7 +55,7 @@ initGame playerId =
     , availableTiles = []
     , answerString = Nothing
     , totalScore = 0
-    , isSubmitted = False
+    , turnSubmitted = False
     }
 
 
@@ -67,7 +67,7 @@ initSharedGame opponentId phase =
     , availableTiles = []
     , answerString = Nothing
     , totalScore = 0
-    , isSubmitted = False
+    , turnSubmitted = False
     }
 
 

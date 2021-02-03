@@ -7,10 +7,11 @@ import WebSocket
 
 
 type Event
-    = Searching
-    | PlayerFound String Bool
-    | ChangePhase (List Tile)
+    = PlayerFound String Bool
+    | ReceiveTiles (List Tile)
     | ChangeTiles (List Tile)
+    | ChangePhase
+    | SubmitTurn
 
 
 eventDecoder : Decoder Event
@@ -24,13 +25,19 @@ eventDecoder =
                             (Decode.at [ "Data", "PlayerID" ] Decode.string)
                             (Decode.at [ "Data", "TileSelectionTurn" ] Decode.bool)
 
-                    "changePhase" ->
-                        Decode.map ChangePhase
+                    "receiveTiles" ->
+                        Decode.map ReceiveTiles
                             (Decode.at [ "Data", "tiles" ] listTilesDecoder)
 
                     "changeTiles" ->
                         Decode.map ChangeTiles
                             (Decode.at [ "Data", "tiles" ] listTilesDecoder)
+
+                    "changePhase" ->
+                        Decode.succeed ChangePhase
+
+                    "submitTurn" ->
+                        Decode.succeed SubmitTurn
 
                     _ ->
                         Decode.fail "Unknown server event: "
@@ -42,13 +49,18 @@ searchingEncoder playerId =
     WebSocket.eventEncoder "searching" (Encode.string playerId)
 
 
-changePhaseEncoder : List Tile -> String -> Value
-changePhaseEncoder tiles playerId =
+receiveTilesEncoder : List Tile -> String -> Value
+receiveTilesEncoder tiles playerId =
     Encode.object
         [ ( "playerId", Encode.string playerId )
         , ( "tiles", listTilesEncoder tiles )
         ]
-        |> WebSocket.eventEncoder "changePhase"
+        |> WebSocket.eventEncoder "receiveTiles"
+
+
+submitTurnEncoder : String -> Value
+submitTurnEncoder playerId =
+    WebSocket.eventEncoder "submitTurn" (Encode.string playerId)
 
 
 sharedTilesEncoder : List Tile -> String -> Value

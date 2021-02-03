@@ -109,7 +109,7 @@ regularRound game sharedGame =
         , availableTiles game
         , selectedTiles game
         , opponentSelectedTiles sharedGame
-        , button [ onClick <| Submit, class "button" ] [ text "Submit" ]
+        , button [ onClick <| Submit sharedGame, class "button" ] [ text "Submit" ]
         ]
 
 
