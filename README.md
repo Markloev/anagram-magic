@@ -2,20 +2,20 @@
 
 Remake of the legendary and now removed Miniclip game of the past: Anagram Magic (in Elm/Go)
 
-# Setup (devs)
+## Setup (devs)
 
-## Terminal One
+### Terminal One
 
 1. cd server
 2. go run main.go
 
-## Terminal Two
+### Terminal Two
 
 1. cd client
 2. npm install
 3. npm run dev
 
-# How to Play
+## How to Play
 
 1. Start search
 2. Wait for another player to begin searching
