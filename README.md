@@ -4,12 +4,12 @@ Remake of the legendary and now removed Miniclip game of the past: Anagram Magic
 
 ## Setup (devs)
 
-### Terminal One
+### Server
 
 1. cd server
 2. go run main.go
 
-### Terminal Two
+### Client
 
 1. cd client
 2. npm install
