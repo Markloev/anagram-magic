@@ -200,9 +200,6 @@ update msg model =
                                 game =
                                     model.game
 
-                                sdsd =
-                                    Debug.log "test" tilesResult
-
                                 ( newGameState, multiplayerPhaseCmd ) =
                                     if List.length tilesResult == tileListMax then
                                         ( { game
@@ -350,9 +347,6 @@ update msg model =
 
         ReceivedString eventObject ->
             let
-                _ =
-                    Debug.log "RECEIVED" eventObject
-
                 newModel =
                     case Decode.decodeString Multiplayer.eventDecoder eventObject of
                         Err errMsg ->
