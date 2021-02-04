@@ -6,30 +6,34 @@ import Time exposing (Posix)
 type GameState
     = NotStarted String
     | Searching
-    | Started Game SharedGame
+    | Started SharedGame
 
 
 type alias Game =
-    { currentTime : Posix
+    { playerId : String
+    , gameState : GameState
+    , tileSelectionTurn : Bool
+    , currentTime : Posix
     , startTime : Posix
     , elapsedTime : Int
     , selectedTiles : List Tile
     , availableTiles : List Tile
     , answerString : Maybe String
     , totalScore : Int
-    , isSubmitted : Bool
+    , turnSubmitted : Bool
+    , validWord : Bool
     }
 
 
 type alias SharedGame =
     { playerId : String
     , phase : Phase
-    , round : Int
     , selectedTiles : List Tile
     , availableTiles : List Tile
     , answerString : Maybe String
     , totalScore : Int
-    , isSubmitted : Bool
+    , turnSubmitted : Bool
+    , validWord : Bool
     }
 
 
@@ -41,34 +45,47 @@ type alias Tile =
     }
 
 
-initGame : Game
-initGame =
-    { currentTime = Time.millisToPosix 0
+initGame : String -> Game
+initGame playerId =
+    { playerId = playerId
+    , gameState = NotStarted ""
+    , tileSelectionTurn = False
+    , currentTime = Time.millisToPosix 0
     , startTime = Time.millisToPosix 0
     , elapsedTime = 0
     , selectedTiles = []
     , availableTiles = []
     , answerString = Nothing
     , totalScore = 0
-    , isSubmitted = False
+    , turnSubmitted = False
+    , validWord = False
     }
 
 
-initSharedGame : String -> SharedGame
-initSharedGame opponentId =
+initSharedGame : String -> Phase -> SharedGame
+initSharedGame opponentId phase =
     { playerId = opponentId
-    , phase = TileSelection
-    , round = 1
+    , phase = phase
     , selectedTiles = []
     , availableTiles = []
     , answerString = Nothing
     , totalScore = 0
-    , isSubmitted = False
+    , turnSubmitted = False
+    , validWord = False
     }
 
 
 type Phase
-    = TileSelection
-    | RegularRound
+    = Waiting SpecificRound
+    | TileSelection SpecificRound
+    | Round SpecificRound
+    | CompletedRound SpecificRound
+    | CompletedGame
+
+
+type SpecificRound
+    = FirstRound
+    | SecondRound
+    | ThirdRound
+    | FourthRound
     | FinalRound
-    | Completed

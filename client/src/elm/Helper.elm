@@ -1,8 +1,7 @@
 module Helper exposing (..)
 
 import Constants exposing (maxConsonantOrVowel)
-import Game exposing (Tile)
-import Json.Decode as Json
+import Game exposing (Phase(..), SpecificRound(..), Tile)
 import Task
 import WebSocket exposing (ConnectionInfo, SocketStatus(..))
 
@@ -72,3 +71,91 @@ getConnectionInfo socketInfo =
 
         _ ->
             Debug.todo "Not connected to server."
+
+
+setNextPhase : Bool -> Phase -> Phase
+setNextPhase tileSelectionTurn phase =
+    let
+        selectionPhase =
+            if tileSelectionTurn then
+                TileSelection
+
+            else
+                Waiting
+    in
+    case phase of
+        Waiting round ->
+            case round of
+                FirstRound ->
+                    Round FirstRound
+
+                SecondRound ->
+                    Round SecondRound
+
+                ThirdRound ->
+                    Round ThirdRound
+
+                FourthRound ->
+                    Round FourthRound
+
+                FinalRound ->
+                    Round FinalRound
+
+        TileSelection round ->
+            case round of
+                FirstRound ->
+                    Round FirstRound
+
+                SecondRound ->
+                    Round SecondRound
+
+                ThirdRound ->
+                    Round ThirdRound
+
+                FourthRound ->
+                    Round FourthRound
+
+                FinalRound ->
+                    Round FinalRound
+
+        Round round ->
+            case round of
+                FirstRound ->
+                    CompletedRound FirstRound
+
+                SecondRound ->
+                    CompletedRound SecondRound
+
+                ThirdRound ->
+                    CompletedRound ThirdRound
+
+                FourthRound ->
+                    CompletedRound FourthRound
+
+                FinalRound ->
+                    CompletedRound FinalRound
+
+        CompletedRound round ->
+            case round of
+                FirstRound ->
+                    selectionPhase SecondRound
+
+                SecondRound ->
+                    selectionPhase ThirdRound
+
+                ThirdRound ->
+                    selectionPhase FourthRound
+
+                FourthRound ->
+                    selectionPhase FinalRound
+
+                FinalRound ->
+                    CompletedGame
+
+        CompletedGame ->
+            CompletedGame
+
+
+getScore : List Tile -> Int
+getScore tiles =
+    List.sum (List.map (\tile -> tile.value) tiles)

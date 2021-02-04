@@ -128,8 +128,3 @@ eventEncoder eventType data =
         [ ( "eventType", Encode.string eventType )
         , ( "data", data )
         ]
-
-
-searchingEncoder : String -> Value
-searchingEncoder playerId =
-    eventEncoder "searching" (Encode.string playerId)

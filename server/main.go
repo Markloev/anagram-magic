@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"encoding/json"
 	"fmt"
 	"log"
 	"math/rand"
@@ -22,7 +21,6 @@ func main() {
 
 	// Only log requests to our admin dashboard to stdout
 	router.HandleFunc("/ws", http.HandlerFunc(websocket.WS)).Methods("GET")
-	router.HandleFunc("/word", http.HandlerFunc(wordHandler)).Methods("POST")
 	router.HandleFunc("/randomWord", http.HandlerFunc(randomWordHandler)).Methods("GET")
 	go websocket.HandleMessages()
 
@@ -35,37 +33,6 @@ func main() {
 
 	// Wrap our server with our gzip handler to gzip compress all responses.
 	log.Fatal(http.ListenAndServe(":8080", handler))
-}
-
-func wordHandler(w http.ResponseWriter, req *http.Request) {
-	if err := req.ParseForm(); err != nil {
-		fmt.Fprintf(w, "Error parsing request: %v", err)
-		return
-	}
-
-	var word string
-	err := json.NewDecoder(req.Body).Decode(&word)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	file, err := os.Open("words.txt")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
-
-	validity := "invalid"
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		if word == scanner.Text() {
-			validity = "valid"
-			break
-		}
-	}
-
-	fmt.Fprintf(w, validity)
 }
 
 func randomWordHandler(w http.ResponseWriter, req *http.Request) {

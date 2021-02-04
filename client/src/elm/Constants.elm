@@ -11,11 +11,6 @@ maxConsonantOrVowel =
     6
 
 
-totalRounds : Int
-totalRounds =
-    5
-
-
 tileSelectionSeconds : Int
 tileSelectionSeconds =
     10

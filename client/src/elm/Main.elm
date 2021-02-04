@@ -1,7 +1,6 @@
 module Main exposing (main)
 
 import Browser
-import Http
 import Msg exposing (Msg(..))
 import Subscriptions exposing (subscriptions)
 import Types exposing (Model, initModel)
@@ -26,4 +25,4 @@ main =
 
 init : String -> ( Model, Cmd Msg )
 init playerId =
-    ( initModel playerId, WebSocket.connect "ws://localhost:8080/ws" [] )
+    ( initModel playerId, WebSocket.connect ("ws://localhost:8080/ws?playerId=" ++ playerId) [] )

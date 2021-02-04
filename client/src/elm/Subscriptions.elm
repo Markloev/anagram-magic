@@ -5,6 +5,7 @@ import Constants exposing (timeInterval)
 import Game exposing (GameState(..), Tile)
 import Json.Decode as Decode
 import Msg exposing (Msg(..))
+import Multiplayer exposing (listTilesDecoderResult)
 import Ports
 import Time
 import Types exposing (Model)
@@ -12,7 +13,7 @@ import WebSocket exposing (SocketStatus(..))
 
 
 subscriptions : Model -> Sub Msg
-subscriptions { gameState } =
+subscriptions { game } =
     let
         webSub =
             WebSocket.events
@@ -21,7 +22,7 @@ subscriptions { gameState } =
                         WebSocket.Connected info ->
                             SocketConnect info
 
-                        WebSocket.StringMessage info message ->
+                        WebSocket.StringMessage _ message ->
                             ReceivedString message
 
                         WebSocket.Closed _ unsentBytes reason ->
@@ -35,14 +36,15 @@ subscriptions { gameState } =
                 )
 
         subs =
-            case gameState of
-                Started g sg ->
+            case game.gameState of
+                Started sg ->
                     Sub.batch
                         [ webSub
-                        , tick
-                        , Browser.Events.onKeyUp (Decode.map (KeyPressed g sg) keyDecoder)
-                        , Ports.receiveRandomTiles (decodeListTiles >> ReceiveRandomTiles g sg)
-                        , Ports.receiveShuffledTiles (decodeListTiles >> ReceiveShuffledTiles g sg)
+
+                        -- , tick
+                        , Browser.Events.onKeyUp (Decode.map (KeyPressed sg) keyDecoder)
+                        , Ports.receiveRandomTiles (listTilesDecoderResult >> ReceiveRandomTiles sg)
+                        , Ports.receiveShuffledTiles (listTilesDecoderResult >> ReceiveShuffledTiles)
                         ]
 
                 _ ->
@@ -54,32 +56,6 @@ subscriptions { gameState } =
 tick : Sub Msg
 tick =
     Time.every timeInterval Tick
-
-
-decodeTile : Decode.Decoder Tile
-decodeTile =
-    Decode.map4 Tile
-        (Decode.field
-            "letter"
-            (Decode.int |> Decode.map Char.fromCode)
-        )
-        (Decode.field
-            "value"
-            Decode.int
-        )
-        (Decode.field
-            "originalIndex"
-            Decode.int
-        )
-        (Decode.field
-            "hidden"
-            Decode.bool
-        )
-
-
-decodeListTiles : Decode.Value -> Result Decode.Error (List Tile)
-decodeListTiles =
-    Decode.list decodeTile |> Decode.decodeValue
 
 
 keyDecoder : Decode.Decoder String

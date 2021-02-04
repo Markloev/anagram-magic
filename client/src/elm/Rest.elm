@@ -1,7 +1,6 @@
 module Rest exposing (..)
 
 import Http
-import Json.Decode as JD
 import Json.Encode as JE
 import Msg exposing (Msg(..))
 
