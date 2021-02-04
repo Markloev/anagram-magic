@@ -2,7 +2,7 @@
 
 Remake of the legendary and now removed Miniclip game of the past: Anagram Magic (in Elm/Go)
 
-## Setup (devs)
+## Setup
 
 ### Server
 
