@@ -60,6 +60,5 @@ func randomWordHandler(w http.ResponseWriter, req *http.Request) {
 		count++
 	}
 
-	// Do something with the Person struct...
 	fmt.Fprintf(w, word)
 }
