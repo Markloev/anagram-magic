@@ -8,6 +8,7 @@ import WebSocket exposing (ConnectionInfo)
 
 type Msg
     = StartSearch
+    | StopSearch
     | Tick Time.Posix
     | KeyPressed SharedGame String
     | KeyCharPressed Char

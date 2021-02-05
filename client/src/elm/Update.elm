@@ -29,7 +29,21 @@ update msg model =
             ( { model | game = updatedGame }
             , WebSocket.sendJsonString
                 (getConnectionInfo model.socketInfo)
-                (Multiplayer.basicEncoder "searching" model.game.playerId)
+                (Multiplayer.basicEncoder "startSearch" model.game.playerId)
+            )
+
+        StopSearch ->
+            let
+                game =
+                    model.game
+
+                updatedGame =
+                    { game | gameState = NotStarted }
+            in
+            ( { model | game = updatedGame }
+            , WebSocket.sendJsonString
+                (getConnectionInfo model.socketInfo)
+                (Multiplayer.basicEncoder "stopSearch" model.game.playerId)
             )
 
         Tick posix ->
@@ -388,7 +402,7 @@ update msg model =
                     model.game
 
                 updatedGame =
-                    { game | gameState = NotStarted (Maybe.withDefault "No connection to server..." reason) }
+                    { game | gameState = NotStarted }
             in
             ( { model
                 | socketInfo = WebSocket.SocketClosed code reason

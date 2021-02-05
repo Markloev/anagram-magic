@@ -59,8 +59,10 @@ func HandleMessages() {
 		// Grab the next message from the broadcast channel
 		params := <-common.Broadcast
 		// Send it out to every client that is currently connected
-		if params.EventType == "searching" {
+		if params.EventType == "startSearch" {
 			multiplayer.HandleSearch(params.Data, common.Clients)
+		} else if params.EventType == "stopSearch" {
+			multiplayer.HandleStopSearch(params.Data, common.Clients)
 		} else if params.EventType == "receiveTiles" {
 			multiplayer.HandleReceiveTiles(params.Data, common.Clients)
 		} else if params.EventType == "submitTurn" {

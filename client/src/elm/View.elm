@@ -17,11 +17,11 @@ view model =
     let
         content =
             case model.game.gameState of
-                NotStarted _ ->
-                    button [ onClick StartSearch, class "button" ] [ text "Start Search" ]
+                NotStarted ->
+                    button [ onClick StartSearch, class "p-2 my-2 bg-blue-400 text-white rounded-md focus:outline-none focus:ring-2 ring-blue-200" ] [ text "Start Search" ]
 
                 Searching ->
-                    button [ onClick StartSearch, class "button" ] [ text "Stop Search" ]
+                    button [ onClick StopSearch, class "button" ] [ text "Stop Search" ]
 
                 Started sharedGame ->
                     gameView model.game sharedGame

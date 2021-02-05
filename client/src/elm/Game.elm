@@ -4,7 +4,7 @@ import Time exposing (Posix)
 
 
 type GameState
-    = NotStarted String
+    = NotStarted
     | Searching
     | Started SharedGame
 
@@ -48,7 +48,7 @@ type alias Tile =
 initGame : String -> Game
 initGame playerId =
     { playerId = playerId
-    , gameState = NotStarted ""
+    , gameState = NotStarted
     , tileSelectionTurn = False
     , currentTime = Time.millisToPosix 0
     , startedTime = Time.millisToPosix 0
