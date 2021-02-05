@@ -69,7 +69,7 @@ gameView game sharedGame =
 
 overview : Game -> Html Msg
 overview game =
-    div [] [ text <| String.fromInt <| Time.toSecond Time.utc (Time.millisToPosix (Time.posixToMillis game.currentTime - Time.posixToMillis game.startTime)) ]
+    div [] [ text <| String.fromInt <| Time.toSecond Time.utc (Time.millisToPosix (Time.posixToMillis game.currentTime - Time.posixToMillis game.startedTime)) ]
 
 
 waiting : Html Msg
@@ -82,22 +82,22 @@ tileSelection game =
     let
         getConsonantsButton =
             if List.length game.availableTiles >= tileListMax || hasMaxConsonants game.availableTiles then
-                button [ onClick <| GetConsonant, disabled True, class "button" ] [ text "Consonant" ]
+                button [ onClick GetConsonant, disabled True, class "button" ] [ text "Consonant" ]
 
             else
-                button [ onClick <| GetConsonant, class "button" ] [ text "Consonant" ]
+                button [ onClick GetConsonant, class "button" ] [ text "Consonant" ]
 
         getVowelsButton =
             if List.length game.availableTiles >= tileListMax || hasMaxVowels game.availableTiles then
-                button [ onClick <| GetVowel, disabled True, class "button" ] [ text "Vowel" ]
+                button [ onClick GetVowel, disabled True, class "button" ] [ text "Vowel" ]
 
             else
-                button [ onClick <| GetVowel, class "button" ] [ text "Vowel" ]
+                button [ onClick GetVowel, class "button" ] [ text "Vowel" ]
     in
     div [ classList [ ( "flex", True ), ( "flex-col", True ) ] ]
         [ getConsonantsButton
         , getVowelsButton
-        , button [ onClick <| GetRandom, class "button" ] [ text "9 Random Letters" ]
+        , button [ onClick GetRandom, class "button" ] [ text "9 Random Letters" ]
         , availableTiles game
         ]
 
@@ -105,11 +105,11 @@ tileSelection game =
 regularRound : Game -> SharedGame -> Html Msg
 regularRound game sharedGame =
     div [ classList [ ( "flex", True ), ( "flex-row", True ) ] ]
-        [ button [ onClick <| ShuffleTiles, class "button" ] [ text "Shuffle" ]
+        [ button [ onClick ShuffleTiles, class "button" ] [ text "Shuffle" ]
         , availableTiles game
         , selectedTiles game
         , opponentSelectedTiles sharedGame
-        , button [ onClick <| Submit sharedGame, class "button" ] [ text "Submit" ]
+        , button [ onClick Submit, class "button" ] [ text "Submit" ]
         ]
 
 
@@ -128,6 +128,7 @@ regularRoundResults game sharedGame =
     div []
         [ div [] [ text <| "Your score: " ++ String.fromInt game.totalScore ]
         , div [] [ text <| "Opponent score: " ++ String.fromInt sharedGame.totalScore ]
+        , button [ onClick NextRound, class "button" ] [ text "Next Round" ]
         ]
 
 

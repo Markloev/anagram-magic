@@ -9,7 +9,7 @@ import (
 	"../common"
 )
 
-//HandleReceiveTiles handles notifying the opponent that tiles for the round have been selected by the opponent
+//HandleReceiveTiles handles notifying the opponent that tiles for the round have been selected by the current player
 func HandleReceiveTiles(paramsData []byte, clients map[*websocket.Conn]common.Client) {
 	var data common.TileData
 	jsonErr := json.Unmarshal(paramsData, &data)

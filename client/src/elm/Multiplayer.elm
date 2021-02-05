@@ -8,6 +8,7 @@ import WebSocket
 
 type Event
     = PlayerFound String Bool
+    | RoundComplete
     | ReceiveTiles (List Tile)
     | ChangeTiles (List Tile)
     | SubmitTurnComplete Bool Bool
@@ -24,6 +25,9 @@ eventDecoder =
                         Decode.map2 PlayerFound
                             (Decode.at [ "Data", "PlayerID" ] Decode.string)
                             (Decode.at [ "Data", "TileSelectionTurn" ] Decode.bool)
+
+                    "roundComplete" ->
+                        Decode.succeed RoundComplete
 
                     "receiveTiles" ->
                         Decode.map ReceiveTiles
@@ -46,9 +50,9 @@ eventDecoder =
             )
 
 
-searchingEncoder : String -> Value
-searchingEncoder playerId =
-    WebSocket.eventEncoder "searching" (Encode.string playerId)
+basicEncoder : String -> String -> Value
+basicEncoder eventType playerId =
+    WebSocket.eventEncoder eventType (Encode.string playerId)
 
 
 receiveTilesEncoder : List Tile -> String -> Value
@@ -121,4 +125,5 @@ listTilesDecoder =
 
 listTilesDecoderResult : Decode.Value -> Result Decode.Error (List Tile)
 listTilesDecoderResult =
-    Decode.list tileDecoder |> Decode.decodeValue
+    Decode.list tileDecoder
+        |> Decode.decodeValue

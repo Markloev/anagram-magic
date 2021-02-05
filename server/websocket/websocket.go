@@ -34,6 +34,7 @@ func WS(w http.ResponseWriter, req *http.Request) {
 	newClient.OpponentID = ""
 	newClient.Searching = false
 	newClient.TurnSubmitted = false
+	newClient.NextRound = false
 	newClient.Tiles = nil
 	common.Clients[currentClient] = newClient
 
@@ -66,6 +67,8 @@ func HandleMessages() {
 			multiplayer.HandleSubmitTurn(params.Data, common.Clients)
 		} else if params.EventType == "changeTiles" {
 			multiplayer.HandleChangeTiles(params.Data, common.Clients)
+		} else if params.EventType == "roundComplete" {
+			multiplayer.HandleRoundComplete(params.Data, common.Clients)
 		} else {
 			for client := range common.Clients {
 				err := client.WriteJSON(params.Data)

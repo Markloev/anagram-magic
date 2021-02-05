@@ -14,7 +14,8 @@ type alias Game =
     , gameState : GameState
     , tileSelectionTurn : Bool
     , currentTime : Posix
-    , startTime : Posix
+    , startedTime : Posix
+    , timeInterval : Int
     , elapsedTime : Int
     , selectedTiles : List Tile
     , availableTiles : List Tile
@@ -50,7 +51,8 @@ initGame playerId =
     , gameState = NotStarted ""
     , tileSelectionTurn = False
     , currentTime = Time.millisToPosix 0
-    , startTime = Time.millisToPosix 0
+    , startedTime = Time.millisToPosix 0
+    , timeInterval = 0
     , elapsedTime = 0
     , selectedTiles = []
     , availableTiles = []

@@ -18,6 +18,7 @@ type Client struct {
 	OpponentID    string
 	Searching     bool
 	TurnSubmitted bool
+	NextRound     bool
 	Tiles         []Tile
 }
 
