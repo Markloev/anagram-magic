@@ -18,9 +18,6 @@ import WebSocket exposing (SocketStatus(..))
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        DoNothing ->
-            ( model, Cmd.none )
-
         StartSearch ->
             let
                 game =
@@ -92,7 +89,9 @@ update msg model =
                         _ ->
                             ( model, Cmd.none )
             in
-            ( updatedModel, cmd )
+            ( updatedModel
+            , cmd
+            )
 
         KeyPressed sharedGame key ->
             let
@@ -127,12 +126,18 @@ update msg model =
                         _ ->
                             Cmd.none
             in
-            ( model, cmd )
+            ( model
+            , cmd
+            )
 
         KeyCharPressed char ->
             let
                 availableTiles =
-                    List.filter (\tile -> tile.hidden == False && tile.letter == char) model.game.availableTiles
+                    List.filter
+                        (\tile ->
+                            tile.hidden == False && tile.letter == char
+                        )
+                        model.game.availableTiles
 
                 game =
                     model.game
@@ -141,31 +146,57 @@ update msg model =
                     if List.length availableTiles > 0 then
                         let
                             possibleTiles =
-                                List.sortBy (\tile -> tile.value) availableTiles
+                                List.sortBy
+                                    (\tile -> tile.value)
+                                    availableTiles
 
                             ( updatedSelectedTiles, updatedAvailableTiles ) =
                                 case List.reverse possibleTiles |> List.head of
                                     Just t ->
-                                        ( List.append model.game.selectedTiles [ t ], LE.setIf (\tile -> tile.originalIndex == t.originalIndex) { t | hidden = True } model.game.availableTiles )
+                                        ( List.append
+                                            model.game.selectedTiles
+                                            [ t ]
+                                        , LE.setIf
+                                            (\tile ->
+                                                tile.originalIndex == t.originalIndex
+                                            )
+                                            { t | hidden = True }
+                                            model.game.availableTiles
+                                        )
 
                                     Nothing ->
-                                        ( model.game.selectedTiles, model.game.availableTiles )
+                                        ( model.game.selectedTiles
+                                        , model.game.availableTiles
+                                        )
                         in
-                        { game | selectedTiles = updatedSelectedTiles, availableTiles = updatedAvailableTiles }
+                        { game
+                            | selectedTiles = updatedSelectedTiles
+                            , availableTiles = updatedAvailableTiles
+                        }
 
                     else
                         game
             in
-            ( { model | game = updatedGame }, Cmd.none )
+            ( { model | game = updatedGame }
+            , Cmd.none
+            )
 
         GetConsonant ->
-            ( model, encodeListTiles model.game.availableTiles |> getRandomConsonant )
+            ( model
+            , encodeListTiles model.game.availableTiles
+                |> getRandomConsonant
+            )
 
         GetVowel ->
-            ( model, encodeListTiles model.game.availableTiles |> getRandomVowel )
+            ( model
+            , encodeListTiles model.game.availableTiles
+                |> getRandomVowel
+            )
 
         GetRandom ->
-            ( model, getRandomTiles () )
+            ( model
+            , getRandomTiles ()
+            )
 
         ReceiveRandomTiles sharedGame tiles ->
             let
@@ -204,7 +235,10 @@ update msg model =
             ( { model | game = updatedGame }, cmd )
 
         ShuffleTiles ->
-            ( model, encodeListTiles model.game.availableTiles |> shuffleTiles )
+            ( model
+            , encodeListTiles model.game.availableTiles
+                |> shuffleTiles
+            )
 
         ReceiveShuffledTiles tiles ->
             let
@@ -219,7 +253,9 @@ update msg model =
                         Err _ ->
                             game
             in
-            ( { model | game = updatedGame }, Cmd.none )
+            ( { model | game = updatedGame }
+            , Cmd.none
+            )
 
         RemoveTileBackspace ->
             let
@@ -237,19 +273,31 @@ update msg model =
                             ( updatedAvailableTiles, updatedSelectedTiles ) =
                                 case tile of
                                     Just t ->
-                                        ( LE.setAt t.originalIndex { t | hidden = False } model.game.availableTiles
-                                        , LE.removeAt (List.length model.game.selectedTiles - 1) model.game.selectedTiles
+                                        ( LE.setAt
+                                            t.originalIndex
+                                            { t | hidden = False }
+                                            model.game.availableTiles
+                                        , LE.removeAt
+                                            (List.length model.game.selectedTiles - 1)
+                                            model.game.selectedTiles
                                         )
 
                                     Nothing ->
-                                        ( model.game.availableTiles, model.game.selectedTiles )
+                                        ( model.game.availableTiles
+                                        , model.game.selectedTiles
+                                        )
                         in
-                        { game | availableTiles = updatedAvailableTiles, selectedTiles = updatedSelectedTiles }
+                        { game
+                            | availableTiles = updatedAvailableTiles
+                            , selectedTiles = updatedSelectedTiles
+                        }
 
                     else
                         game
             in
-            ( { model | game = updatedGame }, Cmd.none )
+            ( { model | game = updatedGame }
+            , Cmd.none
+            )
 
         SelectTile selectedIdx tile ->
             let
@@ -257,13 +305,21 @@ update msg model =
                     model.game
 
                 updatedSelectedTiles =
-                    List.append model.game.selectedTiles [ tile ]
+                    List.append
+                        model.game.selectedTiles
+                        [ tile ]
 
                 updatedAvailableTiles =
-                    LE.setAt selectedIdx { tile | hidden = True } model.game.availableTiles
+                    LE.setAt
+                        selectedIdx
+                        { tile | hidden = True }
+                        model.game.availableTiles
 
                 updatedGame =
-                    { game | selectedTiles = updatedSelectedTiles, availableTiles = updatedAvailableTiles }
+                    { game
+                        | selectedTiles = updatedSelectedTiles
+                        , availableTiles = updatedAvailableTiles
+                    }
             in
             ( { model | game = updatedGame }
             , WebSocket.sendJsonString
@@ -291,7 +347,10 @@ update msg model =
                     LE.removeAt selectedIdx model.game.selectedTiles
 
                 updatedGame =
-                    { game | selectedTiles = updatedSelectedTiles, availableTiles = updatedAvailableTiles }
+                    { game
+                        | selectedTiles = updatedSelectedTiles
+                        , availableTiles = updatedAvailableTiles
+                    }
             in
             ( { model | game = updatedGame }
             , WebSocket.sendJsonString
@@ -488,7 +547,11 @@ update msg model =
                                         updatedGame =
                                             case model.game.gameState of
                                                 Started sharedGameState ->
-                                                    { game | gameState = Started { sharedGameState | turnSubmitted = True } }
+                                                    { game
+                                                        | gameState =
+                                                            Started
+                                                                { sharedGameState | turnSubmitted = True }
+                                                    }
 
                                                 _ ->
                                                     model.game
