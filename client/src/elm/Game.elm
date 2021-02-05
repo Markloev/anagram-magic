@@ -29,7 +29,6 @@ type alias SharedGame =
     { playerId : String
     , phase : Phase
     , selectedTiles : List Tile
-    , availableTiles : List Tile
     , answerString : Maybe String
     , totalScore : Int
     , turnSubmitted : Bool
@@ -67,7 +66,6 @@ initSharedGame opponentId phase =
     { playerId = opponentId
     , phase = phase
     , selectedTiles = []
-    , availableTiles = []
     , answerString = Nothing
     , totalScore = 0
     , turnSubmitted = False

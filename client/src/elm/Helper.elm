@@ -121,23 +121,6 @@ setNextPhase tileSelectionTurn phase =
         Round round ->
             case round of
                 FirstRound ->
-                    CompletedRound FirstRound
-
-                SecondRound ->
-                    CompletedRound SecondRound
-
-                ThirdRound ->
-                    CompletedRound ThirdRound
-
-                FourthRound ->
-                    CompletedRound FourthRound
-
-                FinalRound ->
-                    CompletedRound FinalRound
-
-        CompletedRound round ->
-            case round of
-                FirstRound ->
                     selectionPhase SecondRound
 
                 SecondRound ->
@@ -147,12 +130,36 @@ setNextPhase tileSelectionTurn phase =
                     selectionPhase FourthRound
 
                 FourthRound ->
-                    selectionPhase FinalRound
+                    Round FinalRound
 
                 FinalRound ->
                     CompletedGame
 
-        CompletedGame ->
+        -- Round round ->
+        --     case round of
+        --         FirstRound ->
+        --             CompletedRound FirstRound
+        --         SecondRound ->
+        --             CompletedRound SecondRound
+        --         ThirdRound ->
+        --             CompletedRound ThirdRound
+        --         FourthRound ->
+        --             CompletedRound FourthRound
+        --         FinalRound ->
+        --             CompletedRound FinalRound
+        -- CompletedRound round ->
+        --     case round of
+        --         FirstRound ->
+        --             selectionPhase SecondRound
+        --         SecondRound ->
+        --             selectionPhase ThirdRound
+        --         ThirdRound ->
+        --             selectionPhase FourthRound
+        --         FourthRound ->
+        --             Round FinalRound
+        --         FinalRound ->
+        --             CompletedGame
+        _ ->
             CompletedGame
 
 

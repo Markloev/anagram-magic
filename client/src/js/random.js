@@ -6,6 +6,7 @@ export function randomPlayerId(length, chars) {
 
 export function bindRandomizers(app) {
     app.ports.getRandomTiles.subscribe(function () {
+        tiles = [];
         getRandomTiles();
         setMultipliers(tiles);
         app.ports.receiveRandomTiles.send(tiles);

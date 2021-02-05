@@ -371,7 +371,10 @@ update msg model =
                                             model.game
 
                                         updatedGame =
-                                            { game | gameState = Started (initSharedGame opponentId updatedPhase) }
+                                            { game
+                                                | tileSelectionTurn = tileSelectionTurn
+                                                , gameState = Started (initSharedGame opponentId updatedPhase)
+                                            }
                                     in
                                     { model | game = updatedGame }
 
@@ -434,12 +437,16 @@ update msg model =
                                                     { game
                                                         | validWord = playerValidWord
                                                         , totalScore = playerTotalScore
+                                                        , tileSelectionTurn = not model.game.tileSelectionTurn
+                                                        , availableTiles = []
+                                                        , selectedTiles = []
                                                         , gameState =
                                                             Started
                                                                 { sharedGameState
                                                                     | validWord = opponentValidWord
                                                                     , totalScore = opponentTotalScore
-                                                                    , phase = setNextPhase model.game.tileSelectionTurn sharedGameState.phase
+                                                                    , phase = setNextPhase (not model.game.tileSelectionTurn) sharedGameState.phase
+                                                                    , selectedTiles = []
                                                                 }
                                                     }
 

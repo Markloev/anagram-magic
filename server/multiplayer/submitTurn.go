@@ -31,6 +31,11 @@ func HandleSubmitTurn(paramsData []byte, clients map[*websocket.Conn]common.Clie
 					client.Close()
 					delete(clients, client)
 				}
+				if thisClient, ok := clients[client]; ok {
+					thisClient.TurnSubmitted = false
+					thisClient.Tiles = nil
+					clients[client] = thisClient
+				}
 				for searchingClient := range clients {
 					if clients[searchingClient].PlayerID == data.PlayerID {
 						//update current player of phase change
@@ -40,11 +45,6 @@ func HandleSubmitTurn(paramsData []byte, clients map[*websocket.Conn]common.Clie
 							log.Printf("Error: %v", err)
 							searchingClient.Close()
 							delete(clients, searchingClient)
-						}
-						if thisClient, ok := clients[searchingClient]; ok {
-							thisClient.TurnSubmitted = false
-							thisClient.Tiles = nil
-							clients[searchingClient] = thisClient
 						}
 					}
 				}
