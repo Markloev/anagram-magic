@@ -15,7 +15,6 @@ func main() {
 
 	router := mux.NewRouter()
 
-	// Only log requests to our admin dashboard to stdout
 	router.HandleFunc("/ws", http.HandlerFunc(websocket.WS)).Methods("GET")
 	go websocket.HandleMessages()
 
@@ -26,6 +25,5 @@ func main() {
 
 	handler := c.Handler(router)
 
-	// Wrap our server with our gzip handler to gzip compress all responses.
 	log.Fatal(http.ListenAndServe(":8080", handler))
 }

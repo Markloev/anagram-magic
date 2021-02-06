@@ -29,6 +29,7 @@ func HandleRoundComplete(paramsData []byte, clients map[*websocket.Conn]common.C
 		if clients[client].OpponentID == data.PlayerID {
 			if clients[client].NextRound {
 				var returnJSON common.DefaultReturnMessage
+				//if changing phase to final round, fetch a random nine-letter word to scramble
 				if data.Phase == "finalRound" {
 					returnJSON = createRoundCompleteReturnMessageJSON(roundCompleteReturnData{RandomWord: getRandomWord()})
 				} else {
