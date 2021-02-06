@@ -1,8 +1,8 @@
 module View exposing (view)
 
 import Constants exposing (tileListMax)
-import Game exposing (Game, GameState(..), Phase(..), SharedGame, SpecificRound(..))
-import Helper exposing (hasMaxConsonants, hasMaxVowels, repeatHtml)
+import Game exposing (Game, GameState(..), Phase(..), SharedGame, SpecificRound(..), Tile)
+import Helper exposing (getScore, hasMaxConsonants, hasMaxVowels, repeatHtml)
 import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (class, classList, disabled, style)
 import Html.Events exposing (onClick)
@@ -19,16 +19,16 @@ view model =
         content =
             case model.game.gameState of
                 NotStarted ->
-                    [ Styles.styledButton StartSearch "Start Search" Nothing ]
+                    [ div [ class "flex justify-center" ] [ Styles.styledButton StartSearch "Start Search" Nothing ] ]
 
                 Searching ->
-                    [ Styles.styledButton StopSearch "Stop Search" Nothing ]
+                    [ div [ class "flex justify-center" ] [ Styles.styledButton StopSearch "Stop Search" Nothing ] ]
 
                 Started sharedGame ->
                     gameView model.game sharedGame
     in
     div [ class "flex h-screen justify-center items-center" ]
-        [ div [ class "p-12 rounded-md border-2 border-blue-400" ]
+        [ div [ style "width" "725px", class "justify-center p-12 rounded-md border-2 border-blue-400" ]
             content
         ]
 
@@ -58,7 +58,7 @@ gameView game sharedGame =
                             finalRoundResults game sharedGame
 
                         _ ->
-                            Styles.styledButton (NextRound sharedGame.phase) "Next Round" (Just "w-full")
+                            completedRound game sharedGame
 
                 CompletedGame ->
                     completed game
@@ -70,8 +70,9 @@ gameView game sharedGame =
 
 overview : Game -> SharedGame -> Html Msg
 overview game sharedGame =
-    div [ class "flex justify-between p-6" ]
-        [ text <| "Your Score: " ++ String.fromInt game.totalScore
+    div [ class "flex justify-between" ]
+        [ div [ class "w-36" ]
+            [ text <| "Your Score: " ++ String.fromInt game.totalScore ]
         , div
             [ class "w-48 text-center" ]
             [ Time.posixToMillis game.currentTime
@@ -81,7 +82,8 @@ overview game sharedGame =
                 |> String.fromInt
                 |> text
             ]
-        , text <| "Opponent Score: " ++ String.fromInt sharedGame.totalScore
+        , div [ class "flex w-36 justify-end" ]
+            [ text <| "Opponent Score: " ++ String.fromInt sharedGame.totalScore ]
         ]
 
 
@@ -122,18 +124,42 @@ tileSelection game =
 regularRound : Game -> SharedGame -> Html Msg
 regularRound game sharedGame =
     div [ class "flex flex-wrap overflow-hidden xl:-mx-2" ]
-        [ div [ class "flex w-full overflow-hidden" ]
+        [ div [ class "flex w-full h-6 min-h-full overflow-hidden" ]
             [ div [ class "flex flex-wrap w-full justify-start overflow-hidden space-x-1" ] <| repeatHtml (List.length game.selectedTiles) Styles.skeletonSelectedTile
             , div [ class "flex flex-wrap w-full justify-end overflow-hidden space-x-1" ] <| repeatHtml (List.length sharedGame.selectedTiles) Styles.skeletonSelectedTile
             ]
-        , div [ class "w-full overflow-hidden" ]
-            [ Styles.styledButton ShuffleTiles "Shuffle" (Just "w-full") ]
-        , div [ class "flex w-full overflow-hidden justify-center xl:my-2 xl:px-2 xl:w-1/2" ]
-            [ selectedTiles game ]
-        , div [ class "flex w-full overflow-hidden justify-center xl:my-2 xl:px-2 xl:w-1/2" ]
-            [ availableTiles game ]
-        , div [ class "w-full overflow-hidden" ]
-            [ Styles.styledButton Submit "Submit" (Just "w-full") ]
+        , div [ class "flex w-full justify-end overflow-hidden space-x-4" ]
+            [ selectedTiles game
+            , Styles.styledButton RemoveTileBackspace "Backspace" (Just "w-24")
+            ]
+        , div [ class "flex w-full justify-end overflow-hidden space-x-4" ]
+            [ availableTiles game
+            , Styles.styledButton ShuffleTiles "Shuffle" (Just "w-24")
+            ]
+        , div [ class "flex w-full justify-center overflow-hidden" ]
+            [ Styles.styledButton Submit "Submit" (Just "w-24")
+            ]
+        ]
+
+
+completedRound : Game -> SharedGame -> Html Msg
+completedRound game sharedGame =
+    div [ class "flex flex-wrap overflow-hidden xl:-mx-2" ]
+        [ div [ class "flex w-full overflow-hidden" ]
+            [ div [ class "flex flex-wrap w-full justify-start overflow-hidden space-x-1" ]
+                [ text <| "Points: " ++ (String.fromInt <| getScore game.selectedTiles) ]
+            , div [ class "flex flex-wrap w-full justify-end overflow-hidden space-x-1" ]
+                [ text <| "Points: " ++ (String.fromInt <| getScore sharedGame.selectedTiles) ]
+            ]
+        , div [ class "flex w-full overflow-hidden" ]
+            [ div [ class "flex flex-wrap w-full justify-start overflow-hidden space-x-1" ]
+                [ resultsSelectedTiles game.selectedTiles ]
+            , div [ class "flex flex-wrap w-full justify-end overflow-hidden space-x-1" ]
+                [ resultsSelectedTiles sharedGame.selectedTiles ]
+            ]
+        , div [ class "flex w-full justify-center overflow-hidden" ]
+            [ Styles.styledButton (NextRound sharedGame.phase) "Next Round" (Just "w-32")
+            ]
         ]
 
 
@@ -166,7 +192,7 @@ availableTiles game =
                 )
                 game.availableTiles
     in
-    div [ class "flex flex-wrap space-x-2 overflow-hidden xl:-mx-2" ] <| tileContent
+    div [ class "flex flex-wrap space-x-2" ] <| tileContent
 
 
 selectedTiles : Game -> Html Msg
@@ -178,5 +204,21 @@ selectedTiles game =
                     Styles.styledTile (RemoveTile tile.originalIndex idx) tile Nothing
                 )
                 game.selectedTiles
+
+        skeletonTiles =
+            repeatHtml (9 - List.length game.selectedTiles) Styles.skeletonTile
+    in
+    div [ class "flex flex-wrap justify-start space-x-2 overflow-hidden xl:-mx-2" ] <| tileContent ++ skeletonTiles
+
+
+resultsSelectedTiles : List Tile -> Html Msg
+resultsSelectedTiles tiles =
+    let
+        tileContent =
+            List.map
+                (\tile ->
+                    Styles.styledTile DoNothing tile (Just "w-8, h-8")
+                )
+                tiles
     in
     div [ class "flex flex-wrap justify-start space-x-2 overflow-hidden xl:-mx-2" ] <| tileContent

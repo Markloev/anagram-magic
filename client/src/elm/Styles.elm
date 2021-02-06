@@ -11,7 +11,7 @@ styledButton : Msg -> String -> Maybe String -> Html Msg
 styledButton cmd label classes =
     button
         [ onClick cmd
-        , "p-2 my-2 bg-blue-400 text-white rounded-md focus:outline-none focus:ring-2 ring-blue-200 "
+        , "p-2 my-2 h-12 bg-blue-400 text-white rounded-md focus:outline-none focus:ring-2 ring-blue-200 "
             ++ Maybe.withDefault "" classes
             |> class
         ]
@@ -21,7 +21,8 @@ styledButton cmd label classes =
 styledTile : Msg -> Tile -> Maybe String -> Html Msg
 styledTile cmd tile classes =
     div
-        [ "p-2 my-2 w-12 h-12 bg-blue-400 text-white rounded-md focus:outline-none focus:ring-2 ring-blue-200 "
+        [ style "cursor" "pointer"
+        , "p-2 my-2 w-12 h-12 bg-blue-400 text-white rounded-md focus:outline-none focus:ring-2 ring-blue-200 "
             ++ Maybe.withDefault "" classes
             |> class
         , onClick cmd
@@ -48,5 +49,5 @@ skeletonSelectedTile =
 skeletonTile : Html Msg
 skeletonTile =
     div
-        [ class "p-2 my-2 w-12 h-12 bg-blue-400 rounded-md" ]
+        [ class "p-2 my-2 w-12 h-12 bg-blue-600 rounded-md" ]
         []

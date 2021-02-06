@@ -463,7 +463,9 @@ update msg model =
                                             case model.game.gameState of
                                                 Started sharedGameState ->
                                                     { game
-                                                        | randomWord =
+                                                        | availableTiles = []
+                                                        , selectedTiles = []
+                                                        , randomWord =
                                                             case randomWord of
                                                                 Just r ->
                                                                     r
@@ -474,6 +476,7 @@ update msg model =
                                                             Started
                                                                 { sharedGameState
                                                                     | phase = setNextPhase model.game.tileSelectionTurn sharedGameState.phase
+                                                                    , selectedTiles = []
                                                                 }
                                                     }
                                                         |> restartTimer Constants.tileSelectionSeconds
@@ -551,15 +554,12 @@ update msg model =
                                                         | validWord = playerValidWord
                                                         , totalScore = playerTotalScore
                                                         , tileSelectionTurn = not model.game.tileSelectionTurn
-                                                        , availableTiles = []
-                                                        , selectedTiles = []
                                                         , gameState =
                                                             Started
                                                                 { sharedGameState
                                                                     | validWord = opponentValidWord
                                                                     , totalScore = opponentTotalScore
                                                                     , phase = setNextPhase (not model.game.tileSelectionTurn) sharedGameState.phase
-                                                                    , selectedTiles = []
                                                                 }
                                                     }
                                                         |> restartTimer Constants.roundResultSeconds
