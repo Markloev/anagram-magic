@@ -47,7 +47,7 @@ type alias Tile =
 initGame : String -> Game
 initGame playerId =
     { playerId = playerId
-    , gameState = NotStarted
+    , gameState = Started <| initSharedGame "" (TileSelection FirstRound)
     , tileSelectionTurn = False
     , currentTime = Time.millisToPosix 0
     , startedTime = Time.millisToPosix 0

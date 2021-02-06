@@ -7,55 +7,53 @@ import (
 	"os"
 	"strings"
 
-	"github.com/gorilla/websocket"
-
 	"../common"
 )
 
 //HandleSubmitTurn handles notifying the opponent that the opponent has finished their turn
-func HandleSubmitTurn(paramsData []byte, clients map[*websocket.Conn]common.Client) {
+func HandleSubmitTurn(paramsData []byte) {
 	var data common.TileData
 	jsonErr := json.Unmarshal(paramsData, &data)
 	if jsonErr != nil {
 		log.Printf("Error: %v", jsonErr)
 	}
 	//loop through list of clients
-	for client := range clients {
-		if clients[client].OpponentID == data.PlayerID {
-			if clients[client].TurnSubmitted {
-				opponentReturnJSON := createchangePhaseReturnMessageJSON("submitTurnComplete", checkWordValidity(clients[client].Tiles), checkWordValidity(data.Tiles))
+	for client := range common.Clients {
+		if common.Clients[client].OpponentID == data.PlayerID {
+			if common.Clients[client].TurnSubmitted {
+				opponentReturnJSON := createchangePhaseReturnMessageJSON("submitTurnComplete", checkWordValidity(common.Clients[client].Tiles), checkWordValidity(data.Tiles))
 				//update opponent client of phase change
 				currentErr := client.WriteJSON(opponentReturnJSON)
 				if currentErr != nil {
 					log.Printf("Error: %v", currentErr)
 					client.Close()
-					delete(clients, client)
+					delete(common.Clients, client)
 				}
-				for searchingClient := range clients {
-					if clients[searchingClient].PlayerID == data.PlayerID {
+				for searchingClient := range common.Clients {
+					if common.Clients[searchingClient].PlayerID == data.PlayerID {
 						//update current player of phase change
-						currentPlayerReturnJSON := createchangePhaseReturnMessageJSON("submitTurnComplete", checkWordValidity(data.Tiles), checkWordValidity(clients[client].Tiles))
+						currentPlayerReturnJSON := createchangePhaseReturnMessageJSON("submitTurnComplete", checkWordValidity(data.Tiles), checkWordValidity(common.Clients[client].Tiles))
 						err := searchingClient.WriteJSON(currentPlayerReturnJSON)
 						if err != nil {
 							log.Printf("Error: %v", err)
 							searchingClient.Close()
-							delete(clients, searchingClient)
+							delete(common.Clients, searchingClient)
 						}
 					}
 				}
-				if thisClient, ok := clients[client]; ok {
+				if thisClient, ok := common.Clients[client]; ok {
 					thisClient.TurnSubmitted = false
 					thisClient.Tiles = nil
-					clients[client] = thisClient
+					common.Clients[client] = thisClient
 				}
 			} else {
 				//if opponent hasn't submitted yet, set the current user's TurnSubmitted status to true and Tiles to their list of selected tiles
-				for searchingClient := range clients {
-					if clients[searchingClient].PlayerID == data.PlayerID {
-						if thisClient, ok := clients[searchingClient]; ok {
+				for searchingClient := range common.Clients {
+					if common.Clients[searchingClient].PlayerID == data.PlayerID {
+						if thisClient, ok := common.Clients[searchingClient]; ok {
 							thisClient.TurnSubmitted = true
 							thisClient.Tiles = data.Tiles
-							clients[searchingClient] = thisClient
+							common.Clients[searchingClient] = thisClient
 						}
 					}
 				}
@@ -65,7 +63,7 @@ func HandleSubmitTurn(paramsData []byte, clients map[*websocket.Conn]common.Clie
 				if err != nil {
 					log.Printf("Error: %v", err)
 					client.Close()
-					delete(clients, client)
+					delete(common.Clients, client)
 				}
 			}
 		}
