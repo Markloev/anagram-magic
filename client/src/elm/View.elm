@@ -27,8 +27,10 @@ view model =
                 Started sharedGame ->
                     gameView model.game sharedGame
     in
-    div [ class "content-container flex" ]
-        content
+    div [ class "flex h-screen justify-center items-center" ]
+        [ div [ class "p-12 rounded-md border-2 border-blue-400" ]
+            content
+        ]
 
 
 gameView : Game -> SharedGame -> List (Html Msg)
@@ -94,11 +96,15 @@ tileSelection game =
             else
                 Styles.styledButton GetVowel "Vowel" Nothing
     in
-    div [ class "flex" ]
-        [ getConsonantsButton
-        , getVowelsButton
-        , Styles.styledButton GetRandom "9 Random Letters" Nothing
-        , availableTiles game
+    div [ class "flex flex-wrap overflow-hidden xl:-mx-2" ]
+        [ div [ class "w-full overflow-hidden xl:my-2 xl:px-2 xl:w-1/2" ]
+            [ getConsonantsButton ]
+        , div [ class "w-full overflow-hidden xl:my-2 xl:px-2 xl:w-1/2" ]
+            [ getVowelsButton ]
+        , div [ class "w-full overflow-hidden xl:my-2 xl:px-2 xl:w-1/2" ]
+            [ availableTiles game ]
+        , div [ class "w-full overflow-hidden xl:my-2 xl:px-2 xl:w-1/2" ]
+            [ Styles.styledButton GetRandom "9 Random Letters" Nothing ]
         ]
 
 
