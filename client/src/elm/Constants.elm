@@ -21,6 +21,11 @@ roundTimeSeconds =
     30
 
 
+roundResultSeconds : Int
+roundResultSeconds =
+    3
+
+
 tileListMax : Int
 tileListMax =
     9

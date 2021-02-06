@@ -41,12 +41,12 @@ func HandleSubmitTurn(paramsData []byte, clients map[*websocket.Conn]common.Clie
 							searchingClient.Close()
 							delete(clients, searchingClient)
 						}
-						if thisClient, ok := clients[searchingClient]; ok {
-							thisClient.TurnSubmitted = false
-							thisClient.Tiles = nil
-							clients[searchingClient] = thisClient
-						}
 					}
+				}
+				if thisClient, ok := clients[client]; ok {
+					thisClient.TurnSubmitted = false
+					thisClient.Tiles = nil
+					clients[client] = thisClient
 				}
 			} else {
 				//if opponent hasn't submitted yet, set the current user's TurnSubmitted status to true and Tiles to their list of selected tiles

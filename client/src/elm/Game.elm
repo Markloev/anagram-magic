@@ -4,7 +4,7 @@ import Time exposing (Posix)
 
 
 type GameState
-    = NotStarted String
+    = NotStarted
     | Searching
     | Started SharedGame
 
@@ -14,11 +14,12 @@ type alias Game =
     , gameState : GameState
     , tileSelectionTurn : Bool
     , currentTime : Posix
-    , startTime : Posix
+    , startedTime : Posix
+    , timeInterval : Int
     , elapsedTime : Int
     , selectedTiles : List Tile
     , availableTiles : List Tile
-    , answerString : Maybe String
+    , randomWord : String
     , totalScore : Int
     , turnSubmitted : Bool
     , validWord : Bool
@@ -29,8 +30,6 @@ type alias SharedGame =
     { playerId : String
     , phase : Phase
     , selectedTiles : List Tile
-    , availableTiles : List Tile
-    , answerString : Maybe String
     , totalScore : Int
     , turnSubmitted : Bool
     , validWord : Bool
@@ -48,14 +47,15 @@ type alias Tile =
 initGame : String -> Game
 initGame playerId =
     { playerId = playerId
-    , gameState = NotStarted ""
+    , gameState = NotStarted
     , tileSelectionTurn = False
     , currentTime = Time.millisToPosix 0
-    , startTime = Time.millisToPosix 0
+    , startedTime = Time.millisToPosix 0
+    , timeInterval = 0
     , elapsedTime = 0
     , selectedTiles = []
     , availableTiles = []
-    , answerString = Nothing
+    , randomWord = ""
     , totalScore = 0
     , turnSubmitted = False
     , validWord = False
@@ -67,8 +67,6 @@ initSharedGame opponentId phase =
     { playerId = opponentId
     , phase = phase
     , selectedTiles = []
-    , availableTiles = []
-    , answerString = Nothing
     , totalScore = 0
     , turnSubmitted = False
     , validWord = False

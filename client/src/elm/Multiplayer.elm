@@ -1,20 +1,21 @@
 module Multiplayer exposing (..)
 
-import Game exposing (Tile)
-import Json.Decode as Decode exposing (Decoder)
-import Json.Encode as Encode exposing (Value)
+import Game exposing (Phase(..), SpecificRound(..), Tile)
+import Json.Decode as Decode
+import Json.Encode as Encode
 import WebSocket
 
 
 type Event
     = PlayerFound String Bool
+    | RoundComplete (Maybe String)
     | ReceiveTiles (List Tile)
     | ChangeTiles (List Tile)
     | SubmitTurnComplete Bool Bool
     | SubmitTurn
 
 
-eventDecoder : Decoder Event
+eventDecoder : Decode.Decoder Event
 eventDecoder =
     Decode.field "EventType" Decode.string
         |> Decode.andThen
@@ -24,6 +25,15 @@ eventDecoder =
                         Decode.map2 PlayerFound
                             (Decode.at [ "Data", "PlayerID" ] Decode.string)
                             (Decode.at [ "Data", "TileSelectionTurn" ] Decode.bool)
+
+                    "roundComplete" ->
+                        Decode.maybe
+                            (Decode.at
+                                [ "Data", "randomWord" ]
+                                Decode.string
+                            )
+                            |> Decode.map
+                                RoundComplete
 
                     "receiveTiles" ->
                         Decode.map ReceiveTiles
@@ -46,12 +56,12 @@ eventDecoder =
             )
 
 
-searchingEncoder : String -> Value
-searchingEncoder playerId =
-    WebSocket.eventEncoder "searching" (Encode.string playerId)
+basicEncoder : String -> String -> Encode.Value
+basicEncoder eventType playerId =
+    WebSocket.eventEncoder eventType (Encode.string playerId)
 
 
-receiveTilesEncoder : List Tile -> String -> Value
+receiveTilesEncoder : List Tile -> String -> Encode.Value
 receiveTilesEncoder tiles playerId =
     Encode.object
         [ ( "playerId", Encode.string playerId )
@@ -60,7 +70,7 @@ receiveTilesEncoder tiles playerId =
         |> WebSocket.eventEncoder "receiveTiles"
 
 
-submitTurnEncoder : List Tile -> String -> Value
+submitTurnEncoder : List Tile -> String -> Encode.Value
 submitTurnEncoder tiles playerId =
     Encode.object
         [ ( "playerId", Encode.string playerId )
@@ -69,13 +79,22 @@ submitTurnEncoder tiles playerId =
         |> WebSocket.eventEncoder "submitTurn"
 
 
-sharedTilesEncoder : List Tile -> String -> Value
+sharedTilesEncoder : List Tile -> String -> Encode.Value
 sharedTilesEncoder tiles playerId =
     Encode.object
         [ ( "playerId", Encode.string playerId )
         , ( "tiles", listTilesEncoder tiles )
         ]
         |> WebSocket.eventEncoder "changeTiles"
+
+
+roundCompleteEncoder : Phase -> String -> Encode.Value
+roundCompleteEncoder phase playerId =
+    Encode.object
+        [ ( "playerId", Encode.string playerId )
+        , phaseEncoder phase
+        ]
+        |> WebSocket.eventEncoder "roundComplete"
 
 
 tileEncoder : Tile -> Encode.Value
@@ -86,6 +105,16 @@ tileEncoder tile =
         , ( "originalIndex", tile.originalIndex |> Encode.int )
         , ( "hidden", tile.hidden |> Encode.bool )
         ]
+
+
+phaseEncoder : Phase -> ( String, Encode.Value )
+phaseEncoder phase =
+    case phase of
+        CompletedRound FourthRound ->
+            ( "phase", Encode.string "finalRound" )
+
+        _ ->
+            ( "phase", Encode.string "regularRound" )
 
 
 listTilesEncoder : List Tile -> Encode.Value
@@ -121,4 +150,5 @@ listTilesDecoder =
 
 listTilesDecoderResult : Decode.Value -> Result Decode.Error (List Tile)
 listTilesDecoderResult =
-    Decode.list tileDecoder |> Decode.decodeValue
+    Decode.list tileDecoder
+        |> Decode.decodeValue

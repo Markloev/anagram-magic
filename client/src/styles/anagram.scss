@@ -5,35 +5,28 @@
 
 body {
     margin: 0;
-    height: 100%;
-    width: 100%;
     background-color: rgb(247, 247, 248);
 
-    .content-container {
-        padding: 50px;
+    .button {
+        cursor: pointer;
+        border-radius: 3px;
+        padding: 5px;
+        background-color: lightseagreen;
+        color: white;
 
-        .button {
-            cursor: pointer;
-            border: 2px solid black;
-            border-radius: 3px;
-            padding: 5px;
-            background-color: lightseagreen;
-            color: white;
+        &:not(.disabled) {
+            &:hover {
+                background-color: rgb(103, 174, 197);
 
-            &:not(.disabled) {
-                &:hover {
-                    background-color: rgb(103, 174, 197);
-
-                    &:active {
-                        background-color: rgb(18, 110, 106);
-                    }
+                &:active {
+                    background-color: rgb(18, 110, 106);
                 }
             }
+        }
 
-            &.disabled {
-                background-color: grey;
-                cursor: default;
-            }
+        &.disabled {
+            background-color: grey;
+            cursor: default;
         }
     }
 }

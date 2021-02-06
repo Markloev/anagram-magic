@@ -1,8 +1,9 @@
 module Helper exposing (..)
 
 import Constants exposing (maxConsonantOrVowel)
-import Game exposing (Phase(..), SpecificRound(..), Tile)
+import Game exposing (Game, Phase(..), SpecificRound(..), Tile)
 import Task
+import Time
 import WebSocket exposing (ConnectionInfo, SocketStatus(..))
 
 
@@ -23,12 +24,32 @@ vowels =
 
 hasMaxConsonants : List Tile -> Bool
 hasMaxConsonants tiles =
-    List.length (List.filter (\isConsonant -> isConsonant == True) (List.map (\tile -> List.member tile.letter consonants) tiles)) >= maxConsonantOrVowel
+    List.length
+        (List.filter
+            (\isConsonant -> isConsonant == True)
+            (List.map
+                (\tile ->
+                    List.member tile.letter consonants
+                )
+                tiles
+            )
+        )
+        >= maxConsonantOrVowel
 
 
 hasMaxVowels : List Tile -> Bool
 hasMaxVowels tiles =
-    List.length (List.filter (\isVowel -> isVowel == True) (List.map (\tile -> List.member tile.letter vowels) tiles)) >= maxConsonantOrVowel
+    List.length
+        (List.filter
+            (\isVowel -> isVowel == True)
+            (List.map
+                (\tile ->
+                    List.member tile.letter vowels
+                )
+                tiles
+            )
+        )
+        >= maxConsonantOrVowel
 
 
 toLetter : String -> Maybe Char
@@ -147,15 +168,25 @@ setNextPhase tileSelectionTurn phase =
                     selectionPhase FourthRound
 
                 FourthRound ->
-                    selectionPhase FinalRound
+                    Round FinalRound
 
                 FinalRound ->
                     CompletedGame
 
-        CompletedGame ->
+        _ ->
             CompletedGame
 
 
 getScore : List Tile -> Int
 getScore tiles =
     List.sum (List.map (\tile -> tile.value) tiles)
+
+
+restartTimer : Int -> Game -> Game
+restartTimer interval game =
+    { game
+        | currentTime = Time.millisToPosix 0
+        , startedTime = Time.millisToPosix 0
+        , timeInterval = interval
+        , elapsedTime = 0
+    }

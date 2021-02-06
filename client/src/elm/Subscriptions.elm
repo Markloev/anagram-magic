@@ -2,7 +2,7 @@ module Subscriptions exposing (subscriptions)
 
 import Browser.Events
 import Constants exposing (timeInterval)
-import Game exposing (GameState(..), Tile)
+import Game exposing (GameState(..))
 import Json.Decode as Decode
 import Msg exposing (Msg(..))
 import Multiplayer exposing (listTilesDecoderResult)
@@ -15,7 +15,7 @@ import WebSocket exposing (SocketStatus(..))
 subscriptions : Model -> Sub Msg
 subscriptions { game } =
     let
-        webSub =
+        webSocketSub =
             WebSocket.events
                 (\event ->
                     case event of
@@ -39,16 +39,15 @@ subscriptions { game } =
             case game.gameState of
                 Started sg ->
                     Sub.batch
-                        [ webSub
-
-                        -- , tick
+                        [ webSocketSub
+                        , tick
                         , Browser.Events.onKeyUp (Decode.map (KeyPressed sg) keyDecoder)
                         , Ports.receiveRandomTiles (listTilesDecoderResult >> ReceiveRandomTiles sg)
                         , Ports.receiveShuffledTiles (listTilesDecoderResult >> ReceiveShuffledTiles)
                         ]
 
                 _ ->
-                    webSub
+                    webSocketSub
     in
     subs
 
