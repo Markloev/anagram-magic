@@ -2,6 +2,8 @@ module Helper exposing (..)
 
 import Constants exposing (maxConsonantOrVowel)
 import Game exposing (Game, Phase(..), SpecificRound(..), Tile)
+import Html exposing (Html, div)
+import Msg exposing (Msg(..))
 import Task
 import Time
 import WebSocket exposing (ConnectionInfo, SocketStatus(..))
@@ -190,3 +192,12 @@ restartTimer interval game =
         , timeInterval = interval
         , elapsedTime = 0
     }
+
+
+repeatHtml : Int -> Html Msg -> List (Html Msg)
+repeatHtml n html =
+    if n <= 0 then
+        []
+
+    else
+        List.append (repeatHtml (n - 1) html) [ html ]

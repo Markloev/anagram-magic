@@ -2,7 +2,7 @@ module View exposing (view)
 
 import Constants exposing (tileListMax)
 import Game exposing (Game, GameState(..), Phase(..), SharedGame, SpecificRound(..))
-import Helper exposing (hasMaxConsonants, hasMaxVowels)
+import Helper exposing (hasMaxConsonants, hasMaxVowels, repeatHtml)
 import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (class, classList, disabled, style)
 import Html.Events exposing (onClick)
@@ -58,20 +58,31 @@ gameView game sharedGame =
                             finalRoundResults game sharedGame
 
                         _ ->
-                            regularRoundResults game sharedGame
+                            Styles.styledButton (NextRound sharedGame.phase) "Next Round" (Just "w-full")
 
                 CompletedGame ->
                     completed game
     in
-    [ overview game
+    [ overview game sharedGame
     , gameContent
-    , div [] [ text <| "PLAYER 2: " ++ sharedGame.playerId ]
     ]
 
 
-overview : Game -> Html Msg
-overview game =
-    div [] [ text <| String.fromInt <| Time.toSecond Time.utc (Time.millisToPosix (Time.posixToMillis game.currentTime - Time.posixToMillis game.startedTime)) ]
+overview : Game -> SharedGame -> Html Msg
+overview game sharedGame =
+    div [ class "flex justify-between p-6" ]
+        [ text <| "Your Score: " ++ String.fromInt game.totalScore
+        , div
+            [ class "w-48 text-center" ]
+            [ Time.posixToMillis game.currentTime
+                - Time.posixToMillis game.startedTime
+                |> Time.millisToPosix
+                |> Time.toSecond Time.utc
+                |> String.fromInt
+                |> text
+            ]
+        , text <| "Opponent Score: " ++ String.fromInt sharedGame.totalScore
+        ]
 
 
 waiting : Html Msg
@@ -84,38 +95,45 @@ tileSelection game =
     let
         getConsonantsButton =
             if List.length game.availableTiles >= tileListMax || hasMaxConsonants game.availableTiles then
-                Styles.styledButton DoNothing "Consonant" Nothing
+                Styles.styledButton DoNothing "Consonant" (Just "w-24")
 
             else
-                Styles.styledButton GetConsonant "Consonant" Nothing
+                Styles.styledButton GetConsonant "Consonant" (Just "w-24")
 
         getVowelsButton =
             if List.length game.availableTiles >= tileListMax || hasMaxVowels game.availableTiles then
-                Styles.styledButton DoNothing "Vowel" Nothing
+                Styles.styledButton DoNothing "Vowel" (Just "w-24")
 
             else
-                Styles.styledButton GetVowel "Vowel" Nothing
+                Styles.styledButton GetVowel "Vowel" (Just "w-24")
     in
     div [ class "flex flex-wrap overflow-hidden xl:-mx-2" ]
-        [ div [ class "w-full overflow-hidden xl:my-2 xl:px-2 xl:w-1/2" ]
-            [ getConsonantsButton ]
-        , div [ class "w-full overflow-hidden xl:my-2 xl:px-2 xl:w-1/2" ]
-            [ getVowelsButton ]
+        [ div [ class "flex justify-center space-x-4 w-full overflow-hidden xl:my-2 xl:px-2 xl:w-1/2" ]
+            [ getConsonantsButton
+            , getVowelsButton
+            ]
         , div [ class "w-full overflow-hidden xl:my-2 xl:px-2 xl:w-1/2" ]
             [ availableTiles game ]
-        , div [ class "w-full overflow-hidden xl:my-2 xl:px-2 xl:w-1/2" ]
-            [ Styles.styledButton GetRandom "9 Random Letters" Nothing ]
+        , div [ class "w-full overflow-hidden" ]
+            [ Styles.styledButton GetRandom "9 Random Letters" (Just "w-full") ]
         ]
 
 
 regularRound : Game -> SharedGame -> Html Msg
 regularRound game sharedGame =
-    div [ class "flex" ]
-        [ Styles.styledButton ShuffleTiles "Shuffle" Nothing
-        , availableTiles game
-        , selectedTiles game
-        , opponentSelectedTiles sharedGame
-        , Styles.styledButton Submit "Submit" Nothing
+    div [ class "flex flex-wrap overflow-hidden xl:-mx-2" ]
+        [ div [ class "flex w-full overflow-hidden" ]
+            [ div [ class "flex flex-wrap w-full justify-start overflow-hidden space-x-1" ] <| repeatHtml (List.length game.selectedTiles) Styles.skeletonSelectedTile
+            , div [ class "flex flex-wrap w-full justify-end overflow-hidden space-x-1" ] <| repeatHtml (List.length sharedGame.selectedTiles) Styles.skeletonSelectedTile
+            ]
+        , div [ class "w-full overflow-hidden" ]
+            [ Styles.styledButton ShuffleTiles "Shuffle" (Just "w-full") ]
+        , div [ class "flex w-full overflow-hidden justify-center xl:my-2 xl:px-2 xl:w-1/2" ]
+            [ selectedTiles game ]
+        , div [ class "flex w-full overflow-hidden justify-center xl:my-2 xl:px-2 xl:w-1/2" ]
+            [ availableTiles game ]
+        , div [ class "w-full overflow-hidden" ]
+            [ Styles.styledButton Submit "Submit" (Just "w-full") ]
         ]
 
 
@@ -127,15 +145,6 @@ finalRound _ =
 completed : Game -> Html Msg
 completed _ =
     div [] [ text "Completed Game" ]
-
-
-regularRoundResults : Game -> SharedGame -> Html Msg
-regularRoundResults game sharedGame =
-    div []
-        [ div [] [ text <| "Your score: " ++ String.fromInt game.totalScore ]
-        , div [] [ text <| "Opponent score: " ++ String.fromInt sharedGame.totalScore ]
-        , Styles.styledButton (NextRound sharedGame.phase) "Next Round" Nothing
-        ]
 
 
 finalRoundResults : Game -> SharedGame -> Html Msg
@@ -150,16 +159,14 @@ availableTiles game =
             List.indexedMap
                 (\idx tile ->
                     if tile.hidden then
-                        div [] [ text "Hidden" ]
+                        Styles.skeletonTile
 
                     else
-                        div []
-                            [ Styles.styledButton (SelectTile idx tile) (String.fromChar tile.letter ++ " / " ++ String.fromInt tile.value) (Just Styles.tileClasses)
-                            ]
+                        Styles.styledTile (SelectTile idx tile) tile Nothing
                 )
                 game.availableTiles
     in
-    div [] <| tileContent
+    div [ class "flex flex-wrap space-x-2 overflow-hidden xl:-mx-2" ] <| tileContent
 
 
 selectedTiles : Game -> Html Msg
@@ -168,24 +175,8 @@ selectedTiles game =
         tileContent =
             List.indexedMap
                 (\idx tile ->
-                    div []
-                        [ Styles.styledButton (RemoveTile tile.originalIndex idx) (String.fromChar tile.letter ++ " / " ++ String.fromInt tile.value) (Just Styles.tileClasses)
-                        ]
+                    Styles.styledTile (RemoveTile tile.originalIndex idx) tile Nothing
                 )
                 game.selectedTiles
     in
-    div [] <| tileContent
-
-
-opponentSelectedTiles : SharedGame -> Html Msg
-opponentSelectedTiles sharedGame =
-    let
-        tileContent =
-            List.map
-                (\tile ->
-                    div []
-                        [ text <| String.fromChar tile.letter ++ " / " ++ String.fromInt tile.value ]
-                )
-                sharedGame.selectedTiles
-    in
-    div [] <| tileContent
+    div [ class "flex flex-wrap justify-start space-x-2 overflow-hidden xl:-mx-2" ] <| tileContent

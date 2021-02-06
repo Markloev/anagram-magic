@@ -197,7 +197,9 @@ update msg model =
                         game
             in
             ( { model | game = updatedGame }
-            , Cmd.none
+            , WebSocket.sendJsonString
+                (getConnectionInfo model.socketInfo)
+                (Multiplayer.sharedTilesEncoder updatedGame.selectedTiles model.game.playerId)
             )
 
         GetConsonant ->
@@ -315,7 +317,9 @@ update msg model =
                         game
             in
             ( { model | game = updatedGame }
-            , Cmd.none
+            , WebSocket.sendJsonString
+                (getConnectionInfo model.socketInfo)
+                (Multiplayer.sharedTilesEncoder updatedGame.selectedTiles model.game.playerId)
             )
 
         SelectTile selectedIdx tile ->
