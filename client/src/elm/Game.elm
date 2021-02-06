@@ -19,7 +19,7 @@ type alias Game =
     , elapsedTime : Int
     , selectedTiles : List Tile
     , availableTiles : List Tile
-    , answerString : Maybe String
+    , randomWord : String
     , totalScore : Int
     , turnSubmitted : Bool
     , validWord : Bool
@@ -30,7 +30,6 @@ type alias SharedGame =
     { playerId : String
     , phase : Phase
     , selectedTiles : List Tile
-    , answerString : Maybe String
     , totalScore : Int
     , turnSubmitted : Bool
     , validWord : Bool
@@ -56,7 +55,7 @@ initGame playerId =
     , elapsedTime = 0
     , selectedTiles = []
     , availableTiles = []
-    , answerString = Nothing
+    , randomWord = ""
     , totalScore = 0
     , turnSubmitted = False
     , validWord = False
@@ -68,7 +67,6 @@ initSharedGame opponentId phase =
     { playerId = opponentId
     , phase = phase
     , selectedTiles = []
-    , answerString = Nothing
     , totalScore = 0
     , turnSubmitted = False
     , validWord = False

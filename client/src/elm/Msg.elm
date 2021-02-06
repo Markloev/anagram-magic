@@ -1,6 +1,6 @@
 module Msg exposing (Msg(..))
 
-import Game exposing (SharedGame, Tile)
+import Game exposing (Phase, SharedGame, Tile)
 import Json.Decode as Decode
 import Time
 import WebSocket exposing (ConnectionInfo)
@@ -23,7 +23,7 @@ type Msg
     | SelectTile Int Tile
     | RemoveTile Int Int
     | Submit
-    | NextRound
+    | NextRound Phase
     | SocketConnect ConnectionInfo
     | SocketClosed Int (Maybe String)
     | ReceivedString String

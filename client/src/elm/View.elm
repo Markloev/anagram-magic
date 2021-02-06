@@ -134,7 +134,7 @@ regularRoundResults game sharedGame =
     div []
         [ div [] [ text <| "Your score: " ++ String.fromInt game.totalScore ]
         , div [] [ text <| "Opponent score: " ++ String.fromInt sharedGame.totalScore ]
-        , Styles.styledButton NextRound "Next Round" Nothing
+        , Styles.styledButton (NextRound sharedGame.phase) "Next Round" Nothing
         ]
 
 

@@ -88,7 +88,7 @@ update msg model =
                                                     |> mkCmd
 
                                             CompletedRound _ ->
-                                                NextRound
+                                                NextRound sharedGame.phase
                                                     |> mkCmd
 
                                             CompletedGame ->
@@ -391,11 +391,11 @@ update msg model =
                 (Multiplayer.submitTurnEncoder model.game.selectedTiles model.game.playerId)
             )
 
-        NextRound ->
+        NextRound phase ->
             ( model
             , WebSocket.sendJsonString
                 (getConnectionInfo model.socketInfo)
-                (Multiplayer.basicEncoder "roundComplete" model.game.playerId)
+                (Multiplayer.roundCompleteEncoder phase model.game.playerId)
             )
 
         SocketConnect info ->
@@ -450,7 +450,7 @@ update msg model =
                                     in
                                     { model | game = updatedGame }
 
-                                Multiplayer.RoundComplete ->
+                                Multiplayer.RoundComplete randomWord ->
                                     let
                                         game =
                                             model.game
@@ -459,7 +459,14 @@ update msg model =
                                             case model.game.gameState of
                                                 Started sharedGameState ->
                                                     { game
-                                                        | gameState =
+                                                        | randomWord =
+                                                            case randomWord of
+                                                                Just r ->
+                                                                    r
+
+                                                                Nothing ->
+                                                                    ""
+                                                        , gameState =
                                                             Started
                                                                 { sharedGameState
                                                                     | phase = setNextPhase model.game.tileSelectionTurn sharedGameState.phase
