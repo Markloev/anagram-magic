@@ -40,8 +40,7 @@ subscriptions { game } =
                 Started sg ->
                     Sub.batch
                         [ webSocketSub
-
-                        -- , tick
+                        , tick
                         , Browser.Events.onKeyUp (Decode.map (KeyPressed sg) keyDecoder)
                         , Ports.receiveRandomTiles (listTilesDecoderResult >> ReceiveRandomTiles sg)
                         , Ports.receiveShuffledTiles (listTilesDecoderResult >> ReceiveShuffledTiles)
