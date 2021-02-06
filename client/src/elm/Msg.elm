@@ -7,7 +7,8 @@ import WebSocket exposing (ConnectionInfo)
 
 
 type Msg
-    = StartSearch
+    = DoNothing
+    | StartSearch
     | StopSearch
     | Tick Time.Posix
     | KeyPressed SharedGame String

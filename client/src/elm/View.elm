@@ -8,6 +8,7 @@ import Html.Attributes exposing (class, classList, disabled, style)
 import Html.Events exposing (onClick)
 import List
 import Msg exposing (Msg(..))
+import Styles
 import Time
 import Types exposing (Model)
 
@@ -18,19 +19,19 @@ view model =
         content =
             case model.game.gameState of
                 NotStarted ->
-                    button [ onClick StartSearch, class "p-2 my-2 bg-blue-400 text-white rounded-md focus:outline-none focus:ring-2 ring-blue-200" ] [ text "Start Search" ]
+                    [ Styles.styledButton StartSearch "Start Search" Nothing ]
 
                 Searching ->
-                    button [ onClick StopSearch, class "button" ] [ text "Stop Search" ]
+                    [ Styles.styledButton StopSearch "Stop Search" Nothing ]
 
                 Started sharedGame ->
                     gameView model.game sharedGame
     in
-    div [ style "height" "100%", style "width" "100%", class "content-container" ]
-        [ content ]
+    div [ class "content-container flex" ]
+        content
 
 
-gameView : Game -> SharedGame -> Html Msg
+gameView : Game -> SharedGame -> List (Html Msg)
 gameView game sharedGame =
     let
         gameContent =
@@ -60,11 +61,10 @@ gameView game sharedGame =
                 CompletedGame ->
                     completed game
     in
-    div []
-        [ overview game
-        , gameContent
-        , div [] [ text <| "PLAYER 2: " ++ sharedGame.playerId ]
-        ]
+    [ overview game
+    , gameContent
+    , div [] [ text <| "PLAYER 2: " ++ sharedGame.playerId ]
+    ]
 
 
 overview : Game -> Html Msg
@@ -82,34 +82,34 @@ tileSelection game =
     let
         getConsonantsButton =
             if List.length game.availableTiles >= tileListMax || hasMaxConsonants game.availableTiles then
-                button [ onClick GetConsonant, disabled True, class "button" ] [ text "Consonant" ]
+                Styles.styledButton DoNothing "Consonant" Nothing
 
             else
-                button [ onClick GetConsonant, class "button" ] [ text "Consonant" ]
+                Styles.styledButton GetConsonant "Consonant" Nothing
 
         getVowelsButton =
             if List.length game.availableTiles >= tileListMax || hasMaxVowels game.availableTiles then
-                button [ onClick GetVowel, disabled True, class "button" ] [ text "Vowel" ]
+                Styles.styledButton DoNothing "Vowel" Nothing
 
             else
-                button [ onClick GetVowel, class "button" ] [ text "Vowel" ]
+                Styles.styledButton GetVowel "Vowel" Nothing
     in
-    div [ classList [ ( "flex", True ), ( "flex-col", True ) ] ]
+    div [ class "flex" ]
         [ getConsonantsButton
         , getVowelsButton
-        , button [ onClick GetRandom, class "button" ] [ text "9 Random Letters" ]
+        , Styles.styledButton GetRandom "9 Random Letters" Nothing
         , availableTiles game
         ]
 
 
 regularRound : Game -> SharedGame -> Html Msg
 regularRound game sharedGame =
-    div [ classList [ ( "flex", True ), ( "flex-row", True ) ] ]
-        [ button [ onClick ShuffleTiles, class "button" ] [ text "Shuffle" ]
+    div [ class "flex" ]
+        [ Styles.styledButton ShuffleTiles "Shuffle" Nothing
         , availableTiles game
         , selectedTiles game
         , opponentSelectedTiles sharedGame
-        , button [ onClick Submit, class "button" ] [ text "Submit" ]
+        , Styles.styledButton Submit "Submit" Nothing
         ]
 
 
@@ -128,7 +128,7 @@ regularRoundResults game sharedGame =
     div []
         [ div [] [ text <| "Your score: " ++ String.fromInt game.totalScore ]
         , div [] [ text <| "Opponent score: " ++ String.fromInt sharedGame.totalScore ]
-        , button [ onClick NextRound, class "button" ] [ text "Next Round" ]
+        , Styles.styledButton NextRound "Next Round" Nothing
         ]
 
 
@@ -148,7 +148,7 @@ availableTiles game =
 
                     else
                         div []
-                            [ button [ onClick <| SelectTile idx tile, class "button" ] [ text <| String.fromChar tile.letter ++ " / " ++ String.fromInt tile.value ]
+                            [ Styles.styledButton (SelectTile idx tile) (String.fromChar tile.letter ++ " / " ++ String.fromInt tile.value) (Just Styles.tileClasses)
                             ]
                 )
                 game.availableTiles
@@ -163,7 +163,7 @@ selectedTiles game =
             List.indexedMap
                 (\idx tile ->
                     div []
-                        [ button [ onClick <| RemoveTile tile.originalIndex idx, class "button" ] [ text <| String.fromChar tile.letter ++ " / " ++ String.fromInt tile.value ]
+                        [ Styles.styledButton (RemoveTile tile.originalIndex idx) (String.fromChar tile.letter ++ " / " ++ String.fromInt tile.value) (Just Styles.tileClasses)
                         ]
                 )
                 game.selectedTiles
