@@ -3,12 +3,13 @@ package common
 import (
 	"encoding/json"
 	"errors"
+	"log"
 
 	"github.com/gorilla/websocket"
 )
 
 //Clients stores a list of all clients connected via web socket
-var Clients = make(map[*websocket.Conn]Client)
+var Clients = make(map[*websocket.Conn]*Client)
 
 //Broadcast handles messages received through web socket
 var Broadcast = make(chan Message)
@@ -60,23 +61,29 @@ func CreateBasicReturnMessageJSON(eventType string) DefaultReturnMessage {
 }
 
 //GetCurrentPlayerClient gets the current player client from a given playerID
-func GetCurrentPlayerClient(playerID string) (Client, error) {
-	var clientStruct Client
+func GetCurrentPlayerClient(playerID string) (*websocket.Conn, error) {
 	for client := range Clients {
 		if Clients[client].PlayerID == playerID {
-			return Clients[client], nil
+			return client, nil
 		}
 	}
-	return clientStruct, errors.New("Error finding current player client")
+	return nil, errors.New("No current player client found")
 }
 
 //GetOpponentClient gets the current opponent client from a given playerID
-func GetOpponentClient(playerID string) (Client, error) {
-	var clientStruct Client
+func GetOpponentClient(playerID string) (*Client, error) {
+	var clientStruct *Client
 	for client := range Clients {
 		if Clients[client].OpponentID == playerID {
 			return Clients[client], nil
 		}
 	}
-	return clientStruct, errors.New("Error finding opponent client")
+	return clientStruct, errors.New("No opponent client found")
+}
+
+//CloseClient closes the current client session
+func CloseClient(err error, client *websocket.Conn) {
+	log.Printf("Error: %v", err)
+	client.Close()
+	delete(Clients, client)
 }

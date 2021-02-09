@@ -37,7 +37,7 @@ func WS(w http.ResponseWriter, req *http.Request) {
 	newClient.NextRound = false
 	newClient.Tiles = nil
 	newClient.FinalRoundWord = ""
-	common.Clients[currentClient] = newClient
+	common.Clients[currentClient] = &newClient
 
 	for {
 		var incMessage common.Message

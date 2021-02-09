@@ -2,9 +2,11 @@ package multiplayer
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 
 	"../common"
+	"github.com/gorilla/websocket"
 )
 
 type searchingReturnData struct {
@@ -14,63 +16,46 @@ type searchingReturnData struct {
 
 //HandleSearch handles return message to player that is searching for a game
 func HandleSearch(paramsData []byte) {
-	found := false
 	var currentPlayerID string
 	jsonErr := json.Unmarshal(paramsData, &currentPlayerID)
 	if jsonErr != nil {
 		log.Printf("Error: %v", jsonErr)
 	}
-	//loop through list of clients and look for another client that is searching
-	for client := range common.Clients {
-		//if it is another client and they are also searching
-		if common.Clients[client].PlayerID != currentPlayerID && common.Clients[client].Searching {
-			found = true
-			foundPlayerReturnJSON := createSearchingReturnMessageJSON(common.Clients[client].PlayerID, true)
-			currentPlayerReturnJSON := createSearchingReturnMessageJSON(currentPlayerID, false)
-			//get current client and update to say they are no longer searching and also return the opposing playerID
-			for client2 := range common.Clients {
-				if common.Clients[client2].PlayerID == currentPlayerID {
-					if thisClient, ok := common.Clients[client2]; ok {
-						thisClient.Searching = false
-						thisClient.OpponentID = common.Clients[client].PlayerID
-						common.Clients[client2] = thisClient
-						jsonErr := client2.WriteJSON(foundPlayerReturnJSON)
-						if jsonErr != nil {
-							log.Printf("Error: %v", jsonErr)
-							client2.Close()
-							delete(common.Clients, client2)
-						}
-					}
-				}
-			}
-			//update opponent client to say they are no longer searching and also return the opposing playerID
-			if thisClient, ok := common.Clients[client]; ok {
-				thisClient.Searching = false
-				thisClient.OpponentID = currentPlayerID
-				common.Clients[client] = thisClient
-			}
-			jsonErr := client.WriteJSON(currentPlayerReturnJSON)
-			if jsonErr != nil {
-				log.Printf("Error: %v", jsonErr)
-				client.Close()
-				delete(common.Clients, client)
-			}
-		}
+	currentClient, err := common.GetCurrentPlayerClient(currentPlayerID)
+	if err != nil {
+		log.Printf("Error: %v", jsonErr)
 	}
-	//if no other player was found when search is initiated, set the current userss searching status to true
-	if !found {
-		for searchingClient := range common.Clients {
-			if common.Clients[searchingClient].PlayerID == currentPlayerID {
-				if thisClient, ok := common.Clients[searchingClient]; ok {
-					thisClient.Searching = true
-					common.Clients[searchingClient] = thisClient
-				}
-			}
+	searchingClient, err := findSearchingClient(currentPlayerID)
+	//if another searching client is not found, set the current client Searching attribute to 'true'
+	if err != nil {
+		common.Clients[currentClient].Searching = true
+	} else { //Set the OpponentID attributes on both clients, the Searching attribute to 'false' on the searching client, and notify players of the created match
+		searchingPlayerJSON := createSearchingJSON(common.Clients[searchingClient].PlayerID, true)
+		currentPlayerJSON := createSearchingJSON(currentPlayerID, false)
+		common.Clients[currentClient].OpponentID = common.Clients[searchingClient].PlayerID
+		errCurrentWrite := currentClient.WriteJSON(searchingPlayerJSON)
+		if errCurrentWrite != nil {
+			common.CloseClient(errCurrentWrite, currentClient)
+		}
+		common.Clients[searchingClient].Searching = false
+		common.Clients[searchingClient].OpponentID = currentPlayerID
+		errSearchingWrite := searchingClient.WriteJSON(currentPlayerJSON)
+		if errSearchingWrite != nil {
+			common.CloseClient(errSearchingWrite, searchingClient)
 		}
 	}
 }
 
-func createSearchingReturnMessageJSON(playerID string, tileSelectionTurn bool) common.DefaultReturnMessage {
+func findSearchingClient(playerID string) (*websocket.Conn, error) {
+	for client := range common.Clients {
+		if common.Clients[client].PlayerID != playerID && common.Clients[client].Searching {
+			return client, nil
+		}
+	}
+	return nil, errors.New("No searching client found")
+}
+
+func createSearchingJSON(playerID string, tileSelectionTurn bool) common.DefaultReturnMessage {
 	returnJSON := common.DefaultReturnMessage{
 		EventType: "playerFound",
 		Data: searchingReturnData{

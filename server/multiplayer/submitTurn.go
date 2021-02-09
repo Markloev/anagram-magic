@@ -2,7 +2,7 @@ package multiplayer
 
 import (
 	"bufio"
-	"encoding/json"
+	// "encoding/json"
 	"log"
 	"os"
 	"strings"
@@ -18,95 +18,95 @@ type submitTurnData struct {
 
 //HandleSubmitTurn handles notifying the opponent that the opponent has finished their turn
 func HandleSubmitTurn(paramsData []byte) {
-	var data submitTurnData
-	jsonErr := json.Unmarshal(paramsData, &data)
-	if jsonErr != nil {
-		log.Printf("Error: %v", jsonErr)
-	}
-	//loop through list of clients
-	for client := range common.Clients {
-		if common.Clients[client].OpponentID == data.PlayerID {
-			if common.Clients[client].TurnSubmitted {
-				if data.Phase == "finalRound" {
-					var playerValidWord bool
-					var opponentValidWord bool
-					if common.Clients[client].FinalRoundWord != "" {
-						playerValidWord = checkFinalRoundWordValidity(common.Clients[client].Tiles, common.Clients[client])
-						opponentValidWord = checkFinalRoundWordValidity(data.Tiles, common.Clients[client])
-					} else {
-						for searchingClient := range common.Clients {
-							if common.Clients[searchingClient].PlayerID == data.PlayerID {
-								playerValidWord = checkFinalRoundWordValidity(common.Clients[searchingClient].Tiles, common.Clients[searchingClient])
-								opponentValidWord = checkFinalRoundWordValidity(data.Tiles, common.Clients[searchingClient])
-							}
-						}
-					}
-					opponentReturnJSON := createchangePhaseReturnMessageJSON("submitTurnComplete", playerValidWord, opponentValidWord)
-					//update opponent client of phase change
-					currentErr := client.WriteJSON(opponentReturnJSON)
-					if currentErr != nil {
-						log.Printf("Error: %v", currentErr)
-						client.Close()
-						delete(common.Clients, client)
-					}
-					for searchingClient := range common.Clients {
-						if common.Clients[searchingClient].PlayerID == data.PlayerID {
-							//update current player of phase change
-							currentPlayerReturnJSON := createchangePhaseReturnMessageJSON("submitTurnComplete", opponentValidWord, playerValidWord)
-							err := searchingClient.WriteJSON(currentPlayerReturnJSON)
-							if err != nil {
-								log.Printf("Error: %v", err)
-								searchingClient.Close()
-								delete(common.Clients, searchingClient)
-							}
-						}
-					}
-					if thisClient, ok := common.Clients[client]; ok {
-						thisClient.TurnSubmitted = false
-						thisClient.Tiles = nil
-						common.Clients[client] = thisClient
-					}
-				} else {
-					opponentReturnJSON := createchangePhaseReturnMessageJSON("submitTurnComplete", checkWordValidity(common.Clients[client].Tiles), checkWordValidity(data.Tiles))
-					//update opponent client of phase change
-					currentErr := client.WriteJSON(opponentReturnJSON)
-					if currentErr != nil {
-						log.Printf("Error: %v", currentErr)
-						client.Close()
-						delete(common.Clients, client)
-					}
-					for searchingClient := range common.Clients {
-						if common.Clients[searchingClient].PlayerID == data.PlayerID {
-							//update current player of phase change
-							currentPlayerReturnJSON := createchangePhaseReturnMessageJSON("submitTurnComplete", checkWordValidity(data.Tiles), checkWordValidity(common.Clients[client].Tiles))
-							err := searchingClient.WriteJSON(currentPlayerReturnJSON)
-							if err != nil {
-								log.Printf("Error: %v", err)
-								searchingClient.Close()
-								delete(common.Clients, searchingClient)
-							}
-						}
-					}
-					if thisClient, ok := common.Clients[client]; ok {
-						thisClient.TurnSubmitted = false
-						thisClient.Tiles = nil
-						common.Clients[client] = thisClient
-					}
-				}
-			} else {
-				//if opponent hasn't submitted yet, set the current user's TurnSubmitted status to true and Tiles to their list of selected tiles
-				for searchingClient := range common.Clients {
-					if common.Clients[searchingClient].PlayerID == data.PlayerID {
-						if thisClient, ok := common.Clients[searchingClient]; ok {
-							thisClient.TurnSubmitted = true
-							thisClient.Tiles = data.Tiles
-							common.Clients[searchingClient] = thisClient
-						}
-					}
-				}
-			}
-		}
-	}
+	// var data submitTurnData
+	// jsonErr := json.Unmarshal(paramsData, &data)
+	// if jsonErr != nil {
+	// 	log.Printf("Error: %v", jsonErr)
+	// }
+	// //loop through list of clients
+	// for client := range common.Clients {
+	// 	if common.Clients[client].OpponentID == data.PlayerID {
+	// 		if common.Clients[client].TurnSubmitted {
+	// 			if data.Phase == "finalRound" {
+	// 				var playerValidWord bool
+	// 				var opponentValidWord bool
+	// 				if common.Clients[client].FinalRoundWord != "" {
+	// 					playerValidWord = checkFinalRoundWordValidity(common.Clients[client].Tiles, common.Clients[client])
+	// 					opponentValidWord = checkFinalRoundWordValidity(data.Tiles, common.Clients[client])
+	// 				} else {
+	// 					for searchingClient := range common.Clients {
+	// 						if common.Clients[searchingClient].PlayerID == data.PlayerID {
+	// 							playerValidWord = checkFinalRoundWordValidity(common.Clients[searchingClient].Tiles, common.Clients[searchingClient])
+	// 							opponentValidWord = checkFinalRoundWordValidity(data.Tiles, common.Clients[searchingClient])
+	// 						}
+	// 					}
+	// 				}
+	// 				opponentReturnJSON := createchangePhaseReturnMessageJSON("submitTurnComplete", playerValidWord, opponentValidWord)
+	// 				//update opponent client of phase change
+	// 				currentErr := client.WriteJSON(opponentReturnJSON)
+	// 				if currentErr != nil {
+	// 					log.Printf("Error: %v", currentErr)
+	// 					client.Close()
+	// 					delete(common.Clients, client)
+	// 				}
+	// 				for searchingClient := range common.Clients {
+	// 					if common.Clients[searchingClient].PlayerID == data.PlayerID {
+	// 						//update current player of phase change
+	// 						currentPlayerReturnJSON := createchangePhaseReturnMessageJSON("submitTurnComplete", opponentValidWord, playerValidWord)
+	// 						err := searchingClient.WriteJSON(currentPlayerReturnJSON)
+	// 						if err != nil {
+	// 							log.Printf("Error: %v", err)
+	// 							searchingClient.Close()
+	// 							delete(common.Clients, searchingClient)
+	// 						}
+	// 					}
+	// 				}
+	// 				if thisClient, ok := common.Clients[client]; ok {
+	// 					thisClient.TurnSubmitted = false
+	// 					thisClient.Tiles = nil
+	// 					common.Clients[client] = thisClient
+	// 				}
+	// 			} else {
+	// 				opponentReturnJSON := createchangePhaseReturnMessageJSON("submitTurnComplete", checkWordValidity(common.Clients[client].Tiles), checkWordValidity(data.Tiles))
+	// 				//update opponent client of phase change
+	// 				currentErr := client.WriteJSON(opponentReturnJSON)
+	// 				if currentErr != nil {
+	// 					log.Printf("Error: %v", currentErr)
+	// 					client.Close()
+	// 					delete(common.Clients, client)
+	// 				}
+	// 				for searchingClient := range common.Clients {
+	// 					if common.Clients[searchingClient].PlayerID == data.PlayerID {
+	// 						//update current player of phase change
+	// 						currentPlayerReturnJSON := createchangePhaseReturnMessageJSON("submitTurnComplete", checkWordValidity(data.Tiles), checkWordValidity(common.Clients[client].Tiles))
+	// 						err := searchingClient.WriteJSON(currentPlayerReturnJSON)
+	// 						if err != nil {
+	// 							log.Printf("Error: %v", err)
+	// 							searchingClient.Close()
+	// 							delete(common.Clients, searchingClient)
+	// 						}
+	// 					}
+	// 				}
+	// 				if thisClient, ok := common.Clients[client]; ok {
+	// 					thisClient.TurnSubmitted = false
+	// 					thisClient.Tiles = nil
+	// 					common.Clients[client] = thisClient
+	// 				}
+	// 			}
+	// 		} else {
+	// 			//if opponent hasn't submitted yet, set the current user's TurnSubmitted status to true and Tiles to their list of selected tiles
+	// 			for searchingClient := range common.Clients {
+	// 				if common.Clients[searchingClient].PlayerID == data.PlayerID {
+	// 					if thisClient, ok := common.Clients[searchingClient]; ok {
+	// 						thisClient.TurnSubmitted = true
+	// 						thisClient.Tiles = data.Tiles
+	// 						common.Clients[searchingClient] = thisClient
+	// 					}
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// }
 }
 
 func checkWordValidity(tiles []common.Tile) bool {
