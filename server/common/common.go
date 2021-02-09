@@ -71,14 +71,13 @@ func GetCurrentPlayerClient(playerID string) (*websocket.Conn, error) {
 }
 
 //GetOpponentClient gets the current opponent client from a given playerID
-func GetOpponentClient(playerID string) (*Client, error) {
-	var clientStruct *Client
+func GetOpponentClient(playerID string) (*websocket.Conn, error) {
 	for client := range Clients {
 		if Clients[client].OpponentID == playerID {
-			return Clients[client], nil
+			return client, nil
 		}
 	}
-	return clientStruct, errors.New("No opponent client found")
+	return nil, errors.New("No opponent client found")
 }
 
 //CloseClient closes the current client session

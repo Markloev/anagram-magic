@@ -17,31 +17,31 @@ type searchingReturnData struct {
 //HandleSearch handles return message to player that is searching for a game
 func HandleSearch(paramsData []byte) {
 	var currentPlayerID string
-	jsonErr := json.Unmarshal(paramsData, &currentPlayerID)
-	if jsonErr != nil {
-		log.Printf("Error: %v", jsonErr)
+	parseErr := json.Unmarshal(paramsData, &currentPlayerID)
+	if parseErr != nil {
+		log.Printf("Error: %v", parseErr)
 	}
-	currentClient, err := common.GetCurrentPlayerClient(currentPlayerID)
-	if err != nil {
-		log.Printf("Error: %v", jsonErr)
+	currentClient, getClientErr := common.GetCurrentPlayerClient(currentPlayerID)
+	if getClientErr != nil {
+		log.Printf("Error: %v", getClientErr)
 	}
-	searchingClient, err := findSearchingClient(currentPlayerID)
+	searchingClient, getClientErr := findSearchingClient(currentPlayerID)
 	//if another searching client is not found, set the current client Searching attribute to 'true'
-	if err != nil {
+	if getClientErr != nil {
 		common.Clients[currentClient].Searching = true
 	} else { //Set the OpponentID attributes on both clients, the Searching attribute to 'false' on the searching client, and notify players of the created match
 		searchingPlayerJSON := createSearchingJSON(common.Clients[searchingClient].PlayerID, true)
 		currentPlayerJSON := createSearchingJSON(currentPlayerID, false)
 		common.Clients[currentClient].OpponentID = common.Clients[searchingClient].PlayerID
-		errCurrentWrite := currentClient.WriteJSON(searchingPlayerJSON)
-		if errCurrentWrite != nil {
-			common.CloseClient(errCurrentWrite, currentClient)
+		currentWriteErr := currentClient.WriteJSON(searchingPlayerJSON)
+		if currentWriteErr != nil {
+			common.CloseClient(currentWriteErr, currentClient)
 		}
 		common.Clients[searchingClient].Searching = false
 		common.Clients[searchingClient].OpponentID = currentPlayerID
-		errSearchingWrite := searchingClient.WriteJSON(currentPlayerJSON)
-		if errSearchingWrite != nil {
-			common.CloseClient(errSearchingWrite, searchingClient)
+		searchingWriteErr := searchingClient.WriteJSON(currentPlayerJSON)
+		if searchingWriteErr != nil {
+			common.CloseClient(searchingWriteErr, searchingClient)
 		}
 	}
 }
