@@ -33,16 +33,10 @@ func HandleSearch(paramsData []byte) {
 		searchingPlayerJSON := createSearchingJSON(common.Clients[searchingClient].PlayerID, true)
 		currentPlayerJSON := createSearchingJSON(currentPlayerID, false)
 		common.Clients[currentClient].OpponentID = common.Clients[searchingClient].PlayerID
-		currentWriteErr := currentClient.WriteJSON(searchingPlayerJSON)
-		if currentWriteErr != nil {
-			common.CloseClient(currentWriteErr, currentClient)
-		}
+		common.WriteJSON(currentClient, searchingPlayerJSON)
 		common.Clients[searchingClient].Searching = false
 		common.Clients[searchingClient].OpponentID = currentPlayerID
-		searchingWriteErr := searchingClient.WriteJSON(currentPlayerJSON)
-		if searchingWriteErr != nil {
-			common.CloseClient(searchingWriteErr, searchingClient)
-		}
+		common.WriteJSON(searchingClient, currentPlayerJSON)
 	}
 }
 

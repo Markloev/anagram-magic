@@ -199,8 +199,13 @@ update msg model =
                             else
                                 Cmd.none
 
-                        _ ->
-                            Cmd.none
+                        Searching ->
+                            if key == "Enter" then
+                                StopSearch
+                                    |> mkCmd
+
+                            else
+                                Cmd.none
             in
             ( model
             , cmd

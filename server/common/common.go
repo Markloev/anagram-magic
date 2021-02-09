@@ -86,3 +86,11 @@ func CloseClient(err error, client *websocket.Conn) {
 	client.Close()
 	delete(Clients, client)
 }
+
+//WriteJSON sends JSON to the client
+func WriteJSON(client *websocket.Conn, jsonMsg DefaultReturnMessage) {
+	currentWriteErr := client.WriteJSON(jsonMsg)
+	if currentWriteErr != nil {
+		CloseClient(currentWriteErr, client)
+	}
+}

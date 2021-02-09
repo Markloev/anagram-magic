@@ -20,10 +20,7 @@ func HandleChangeTiles(paramsData []byte) {
 	}
 	opponentJSON := createChangeTilesJSON(common.Clients[opponentClient].PlayerID, data.Tiles)
 	//update opponent client of newly selected tiles by other player
-	opponentWriteErr := opponentClient.WriteJSON(opponentJSON)
-	if opponentWriteErr != nil {
-		common.CloseClient(opponentWriteErr, opponentClient)
-	}
+	common.WriteJSON(opponentClient, opponentJSON)
 }
 
 func createChangeTilesJSON(playerID string, tiles []common.Tile) common.DefaultReturnMessage {

@@ -22,55 +22,40 @@ func HandleRoundComplete(paramsData []byte) {
 	if jsonErr != nil {
 		log.Printf("Error: %v", jsonErr)
 	}
-	//loop through list of clients to find current client and opponent client
-	for client := range common.Clients {
-		if common.Clients[client].OpponentID == data.PlayerID {
-			if common.Clients[client].NextRound {
-				var returnJSON common.DefaultReturnMessage
-				var randomWord string
-				//if changing phase to final round, fetch a random nine-letter word to scramble
-				if data.Phase == "finalRound" {
-					randomWord = getRandomWord()
-					returnJSON = createRoundCompleteReturnMessageJSON(roundCompleteReturnData{RandomWord: randomWord})
-				} else {
-					returnJSON = createRoundCompleteReturnMessageJSON(nil)
-				}
-				if thisClient, ok := common.Clients[client]; ok {
-					thisClient.NextRound = false
-					thisClient.FinalRoundWord = randomWord
-					common.Clients[client] = thisClient
-				}
-				//get current client and update in order to start timer for "Round Complete" phase
-				for client2 := range common.Clients {
-					if common.Clients[client2].PlayerID == data.PlayerID {
-						jsonErr := client2.WriteJSON(returnJSON)
-						if jsonErr != nil {
-							log.Printf("Error: %v", jsonErr)
-							client2.Close()
-							delete(common.Clients, client2)
-						}
-					}
-				}
-
-				//get opponent client and update in order to start timer for "Round Complete" phase
-				jsonErr := client.WriteJSON(returnJSON)
-				if jsonErr != nil {
-					log.Printf("Error: %v", jsonErr)
-					client.Close()
-					delete(common.Clients, client)
-				}
-			} else {
-				//if opponent hasn't selected "Next Round" yet, set the current user's NextRound status to true
-				for searchingClient := range common.Clients {
-					if common.Clients[searchingClient].PlayerID == data.PlayerID {
-						if thisClient, ok := common.Clients[searchingClient]; ok {
-							thisClient.NextRound = true
-							common.Clients[searchingClient] = thisClient
-						}
-					}
-				}
-			}
+	opponentClient, getClientErr := common.GetOpponentClient(data.PlayerID)
+	if getClientErr != nil {
+		log.Printf("Error: %v", getClientErr)
+	}
+	currentClient, getClientErr := common.GetCurrentPlayerClient(data.PlayerID)
+	if getClientErr != nil {
+		log.Printf("Error: %v", getClientErr)
+	}
+	if common.Clients[opponentClient].NextRound {
+		var returnJSON common.DefaultReturnMessage
+		var randomWord string
+		//if changing phase to final round, fetch a random nine-letter word to scramble
+		if data.Phase == "finalRound" {
+			randomWord = getRandomWord()
+			returnJSON = createRoundCompleteJSON(roundCompleteReturnData{RandomWord: randomWord})
+		} else {
+			returnJSON = createRoundCompleteJSON(nil)
 		}
+		common.Clients[opponentClient].NextRound = false
+		common.Clients[opponentClient].FinalRoundWord = randomWord
+		common.Clients[currentClient].FinalRoundWord = randomWord
+		//update current client in order to start timer for "Round Complete" phase
+		currentWriteErr := currentClient.WriteJSON(returnJSON)
+		if jsonErr != nil {
+			common.CloseClient(currentWriteErr, opponentClient)
+		}
+
+		//update opponent client in order to start timer for "Round Complete" phase
+		opponentWriteErr := opponentClient.WriteJSON(returnJSON)
+		if opponentWriteErr != nil {
+			common.CloseClient(opponentWriteErr, opponentClient)
+		}
+	} else { //if opponent hasn't selected "Next Round" yet, set the current user's NextRound status to true
+		common.Clients[currentClient].NextRound = true
 	}
 }
 
@@ -78,7 +63,7 @@ type roundCompleteReturnData struct {
 	RandomWord string `json:"randomWord"`
 }
 
-func createRoundCompleteReturnMessageJSON(data interface{}) common.DefaultReturnMessage {
+func createRoundCompleteJSON(data interface{}) common.DefaultReturnMessage {
 	returnJSON := common.DefaultReturnMessage{
 		EventType: "roundComplete",
 		Data:      data,

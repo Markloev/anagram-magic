@@ -110,6 +110,9 @@ phaseEncoder phase =
         CompletedRound FourthRound ->
             ( "phase", Encode.string "finalRound" )
 
+        Round FinalRound ->
+            ( "phase", Encode.string "finalRound" )
+
         _ ->
             ( "phase", Encode.string "regularRound" )
 
