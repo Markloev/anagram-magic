@@ -27,14 +27,17 @@ func HandleRoundComplete(paramsData []byte) {
 		if common.Clients[client].OpponentID == data.PlayerID {
 			if common.Clients[client].NextRound {
 				var returnJSON common.DefaultReturnMessage
+				var randomWord string
 				//if changing phase to final round, fetch a random nine-letter word to scramble
 				if data.Phase == "finalRound" {
-					returnJSON = createRoundCompleteReturnMessageJSON(roundCompleteReturnData{RandomWord: getRandomWord()})
+					randomWord = getRandomWord()
+					returnJSON = createRoundCompleteReturnMessageJSON(roundCompleteReturnData{RandomWord: randomWord})
 				} else {
 					returnJSON = createRoundCompleteReturnMessageJSON(nil)
 				}
 				if thisClient, ok := common.Clients[client]; ok {
 					thisClient.NextRound = false
+					thisClient.FinalRoundWord = randomWord
 					common.Clients[client] = thisClient
 				}
 				//get current client and update in order to start timer for "Round Complete" phase

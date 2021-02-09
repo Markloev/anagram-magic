@@ -18,6 +18,17 @@ styledButton cmd label classes =
         [ text label ]
 
 
+styledDisabledButton : String -> Maybe String -> Html Msg
+styledDisabledButton label classes =
+    div
+        [ "flex items-center justify-center p-2 my-2 h-12 bg-gray-300 text-white rounded-md "
+            ++ Maybe.withDefault "" classes
+            |> class
+        , style "cursor" "default"
+        ]
+        [ text label ]
+
+
 styledTile : Msg -> Tile -> Maybe String -> Html Msg
 styledTile cmd tile classes =
     div

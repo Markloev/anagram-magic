@@ -15,12 +15,13 @@ var Broadcast = make(chan Message)
 
 //Client stores a player's information that is needed for matching player's together
 type Client struct {
-	PlayerID      string
-	OpponentID    string
-	Searching     bool
-	TurnSubmitted bool
-	NextRound     bool
-	Tiles         []Tile
+	PlayerID       string
+	OpponentID     string
+	Searching      bool
+	TurnSubmitted  bool
+	NextRound      bool
+	FinalRoundWord string
+	Tiles          []Tile
 }
 
 //Message stores the incoming message received from a client

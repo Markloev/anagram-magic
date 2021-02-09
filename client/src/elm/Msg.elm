@@ -7,11 +7,11 @@ import WebSocket exposing (ConnectionInfo)
 
 
 type Msg
-    = DoNothing
+    = NoOp
     | StartSearch
     | StopSearch
     | Tick Time.Posix
-    | KeyPressed SharedGame String
+    | KeyPressed String
     | KeyCharPressed Char
     | GetConsonant
     | GetVowel
@@ -22,8 +22,10 @@ type Msg
     | RemoveTileBackspace
     | SelectTile Int Tile
     | RemoveTile Int Int
-    | Submit
+    | Submit Phase
     | NextRound Phase
+    | Continue
+    | EndGame
     | SocketConnect ConnectionInfo
     | SocketClosed Int (Maybe String)
     | ReceivedString String

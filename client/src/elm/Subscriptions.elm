@@ -39,18 +39,19 @@ subscriptions { game } =
             case game.gameState of
                 Started sg ->
                     Sub.batch
-                        [ webSocketSub
-
-                        -- , tick
-                        , Browser.Events.onKeyUp (Decode.map (KeyPressed sg) keyDecoder)
-                        , Ports.receiveRandomTiles (listTilesDecoderResult >> ReceiveRandomTiles sg)
+                        [ -- , tick
+                          Ports.receiveRandomTiles (listTilesDecoderResult >> ReceiveRandomTiles sg)
                         , Ports.receiveShuffledTiles (listTilesDecoderResult >> ReceiveShuffledTiles)
                         ]
 
                 _ ->
-                    webSocketSub
+                    Sub.none
     in
-    subs
+    Sub.batch
+        [ webSocketSub
+        , Browser.Events.onKeyUp (Decode.map KeyPressed keyDecoder)
+        , subs
+        ]
 
 
 tick : Sub Msg

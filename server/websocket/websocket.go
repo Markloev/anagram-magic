@@ -36,6 +36,7 @@ func WS(w http.ResponseWriter, req *http.Request) {
 	newClient.TurnSubmitted = false
 	newClient.NextRound = false
 	newClient.Tiles = nil
+	newClient.FinalRoundWord = ""
 	common.Clients[currentClient] = newClient
 
 	for {
@@ -71,6 +72,8 @@ func HandleMessages() {
 			multiplayer.HandleChangeTiles(params.Data)
 		} else if params.EventType == "roundComplete" {
 			multiplayer.HandleRoundComplete(params.Data)
+		} else if params.EventType == "endGame" {
+			multiplayer.HandleEndGame(params.Data)
 		} else {
 			for client := range common.Clients {
 				err := client.WriteJSON(params.Data)

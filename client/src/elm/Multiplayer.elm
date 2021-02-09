@@ -12,7 +12,6 @@ type Event
     | ReceiveTiles (List Tile)
     | ChangeTiles (List Tile)
     | SubmitTurnComplete Bool Bool
-    | SubmitTurn
 
 
 eventDecoder : Decode.Decoder Event
@@ -48,9 +47,6 @@ eventDecoder =
                             (Decode.at [ "Data", "playerValidWord" ] Decode.bool)
                             (Decode.at [ "Data", "opponentValidWord" ] Decode.bool)
 
-                    "submitTurn" ->
-                        Decode.succeed SubmitTurn
-
                     _ ->
                         Decode.fail "Unknown server event: "
             )
@@ -70,11 +66,12 @@ receiveTilesEncoder tiles playerId =
         |> WebSocket.eventEncoder "receiveTiles"
 
 
-submitTurnEncoder : List Tile -> String -> Encode.Value
-submitTurnEncoder tiles playerId =
+submitTurnEncoder : Phase -> List Tile -> String -> Encode.Value
+submitTurnEncoder phase tiles playerId =
     Encode.object
         [ ( "playerId", Encode.string playerId )
         , ( "tiles", listTilesEncoder tiles )
+        , phaseEncoder phase
         ]
         |> WebSocket.eventEncoder "submitTurn"
 
