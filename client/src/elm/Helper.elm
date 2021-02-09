@@ -2,6 +2,8 @@ module Helper exposing (..)
 
 import Constants exposing (maxConsonantOrVowel)
 import Game exposing (Game, Phase(..), SpecificRound(..), Tile)
+import Html exposing (Html, div)
+import Msg exposing (Msg(..))
 import Task
 import Time
 import WebSocket exposing (ConnectionInfo, SocketStatus(..))
@@ -177,9 +179,13 @@ setNextPhase tileSelectionTurn phase =
             CompletedGame
 
 
-getScore : List Tile -> Int
-getScore tiles =
-    List.sum (List.map (\tile -> tile.value) tiles)
+getScore : Bool -> List Tile -> Int
+getScore validWord tiles =
+    if validWord then
+        List.sum (List.map (\tile -> tile.value) tiles)
+
+    else
+        0
 
 
 restartTimer : Int -> Game -> Game
@@ -190,3 +196,31 @@ restartTimer interval game =
         , timeInterval = interval
         , elapsedTime = 0
     }
+
+
+repeatHtml : Int -> Html Msg -> List (Html Msg)
+repeatHtml n html =
+    if n <= 0 then
+        []
+
+    else
+        List.append (repeatHtml (n - 1) html) [ html ]
+
+
+wordToTiles : String -> List Tile
+wordToTiles word =
+    word
+        |> String.toList
+        |> List.indexedMap
+            (\idx letter ->
+                { letter = letter
+                , value = 1
+                , originalIndex = idx
+                , hidden = False
+                }
+            )
+
+
+unshuffleFinalWord : List Tile -> List Tile
+unshuffleFinalWord tiles =
+    List.sortBy (\tile -> tile.originalIndex) tiles

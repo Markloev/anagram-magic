@@ -7,65 +7,102 @@ import (
 	"os"
 	"strings"
 
-	"github.com/gorilla/websocket"
-
 	"../common"
 )
 
+type submitTurnData struct {
+	PlayerID string        `json:"playerId"`
+	Tiles    []common.Tile `json:"tiles"`
+	Phase    string        `json:"phase"`
+}
+
 //HandleSubmitTurn handles notifying the opponent that the opponent has finished their turn
-func HandleSubmitTurn(paramsData []byte, clients map[*websocket.Conn]common.Client) {
-	var data common.TileData
+func HandleSubmitTurn(paramsData []byte) {
+	var data submitTurnData
 	jsonErr := json.Unmarshal(paramsData, &data)
 	if jsonErr != nil {
 		log.Printf("Error: %v", jsonErr)
 	}
 	//loop through list of clients
-	for client := range clients {
-		if clients[client].OpponentID == data.PlayerID {
-			if clients[client].TurnSubmitted {
-				opponentReturnJSON := createchangePhaseReturnMessageJSON("submitTurnComplete", checkWordValidity(clients[client].Tiles), checkWordValidity(data.Tiles))
-				//update opponent client of phase change
-				currentErr := client.WriteJSON(opponentReturnJSON)
-				if currentErr != nil {
-					log.Printf("Error: %v", currentErr)
-					client.Close()
-					delete(clients, client)
-				}
-				for searchingClient := range clients {
-					if clients[searchingClient].PlayerID == data.PlayerID {
-						//update current player of phase change
-						currentPlayerReturnJSON := createchangePhaseReturnMessageJSON("submitTurnComplete", checkWordValidity(data.Tiles), checkWordValidity(clients[client].Tiles))
-						err := searchingClient.WriteJSON(currentPlayerReturnJSON)
-						if err != nil {
-							log.Printf("Error: %v", err)
-							searchingClient.Close()
-							delete(clients, searchingClient)
+	for client := range common.Clients {
+		if common.Clients[client].OpponentID == data.PlayerID {
+			if common.Clients[client].TurnSubmitted {
+				if data.Phase == "finalRound" {
+					var playerValidWord bool
+					var opponentValidWord bool
+					if common.Clients[client].FinalRoundWord != "" {
+						playerValidWord = checkFinalRoundWordValidity(common.Clients[client].Tiles, common.Clients[client])
+						opponentValidWord = checkFinalRoundWordValidity(data.Tiles, common.Clients[client])
+					} else {
+						for searchingClient := range common.Clients {
+							if common.Clients[searchingClient].PlayerID == data.PlayerID {
+								playerValidWord = checkFinalRoundWordValidity(common.Clients[searchingClient].Tiles, common.Clients[searchingClient])
+								opponentValidWord = checkFinalRoundWordValidity(data.Tiles, common.Clients[searchingClient])
+							}
 						}
 					}
-				}
-				if thisClient, ok := clients[client]; ok {
-					thisClient.TurnSubmitted = false
-					thisClient.Tiles = nil
-					clients[client] = thisClient
+					opponentReturnJSON := createchangePhaseReturnMessageJSON("submitTurnComplete", playerValidWord, opponentValidWord)
+					//update opponent client of phase change
+					currentErr := client.WriteJSON(opponentReturnJSON)
+					if currentErr != nil {
+						log.Printf("Error: %v", currentErr)
+						client.Close()
+						delete(common.Clients, client)
+					}
+					for searchingClient := range common.Clients {
+						if common.Clients[searchingClient].PlayerID == data.PlayerID {
+							//update current player of phase change
+							currentPlayerReturnJSON := createchangePhaseReturnMessageJSON("submitTurnComplete", opponentValidWord, playerValidWord)
+							err := searchingClient.WriteJSON(currentPlayerReturnJSON)
+							if err != nil {
+								log.Printf("Error: %v", err)
+								searchingClient.Close()
+								delete(common.Clients, searchingClient)
+							}
+						}
+					}
+					if thisClient, ok := common.Clients[client]; ok {
+						thisClient.TurnSubmitted = false
+						thisClient.Tiles = nil
+						common.Clients[client] = thisClient
+					}
+				} else {
+					opponentReturnJSON := createchangePhaseReturnMessageJSON("submitTurnComplete", checkWordValidity(common.Clients[client].Tiles), checkWordValidity(data.Tiles))
+					//update opponent client of phase change
+					currentErr := client.WriteJSON(opponentReturnJSON)
+					if currentErr != nil {
+						log.Printf("Error: %v", currentErr)
+						client.Close()
+						delete(common.Clients, client)
+					}
+					for searchingClient := range common.Clients {
+						if common.Clients[searchingClient].PlayerID == data.PlayerID {
+							//update current player of phase change
+							currentPlayerReturnJSON := createchangePhaseReturnMessageJSON("submitTurnComplete", checkWordValidity(data.Tiles), checkWordValidity(common.Clients[client].Tiles))
+							err := searchingClient.WriteJSON(currentPlayerReturnJSON)
+							if err != nil {
+								log.Printf("Error: %v", err)
+								searchingClient.Close()
+								delete(common.Clients, searchingClient)
+							}
+						}
+					}
+					if thisClient, ok := common.Clients[client]; ok {
+						thisClient.TurnSubmitted = false
+						thisClient.Tiles = nil
+						common.Clients[client] = thisClient
+					}
 				}
 			} else {
 				//if opponent hasn't submitted yet, set the current user's TurnSubmitted status to true and Tiles to their list of selected tiles
-				for searchingClient := range clients {
-					if clients[searchingClient].PlayerID == data.PlayerID {
-						if thisClient, ok := clients[searchingClient]; ok {
+				for searchingClient := range common.Clients {
+					if common.Clients[searchingClient].PlayerID == data.PlayerID {
+						if thisClient, ok := common.Clients[searchingClient]; ok {
 							thisClient.TurnSubmitted = true
 							thisClient.Tiles = data.Tiles
-							clients[searchingClient] = thisClient
+							common.Clients[searchingClient] = thisClient
 						}
 					}
-				}
-				currentPlayerReturnJSON := common.CreateBasicReturnMessageJSON("submitTurn")
-				//update opponent client of turn submit
-				err := client.WriteJSON(currentPlayerReturnJSON)
-				if err != nil {
-					log.Printf("Error: %v", err)
-					client.Close()
-					delete(clients, client)
 				}
 			}
 		}
@@ -92,6 +129,15 @@ func checkWordValidity(tiles []common.Tile) bool {
 	}
 
 	return false
+}
+
+func checkFinalRoundWordValidity(tiles []common.Tile, client common.Client) bool {
+	var word string
+	for tile := range tiles {
+		word = word + string(tiles[tile].Letter)
+	}
+	word = strings.ToLower(word)
+	return word == client.FinalRoundWord
 }
 
 type returnData struct {

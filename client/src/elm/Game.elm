@@ -19,9 +19,8 @@ type alias Game =
     , elapsedTime : Int
     , selectedTiles : List Tile
     , availableTiles : List Tile
-    , randomWord : String
     , totalScore : Int
-    , turnSubmitted : Bool
+    , waitingForUser : Bool
     , validWord : Bool
     }
 
@@ -31,7 +30,7 @@ type alias SharedGame =
     , phase : Phase
     , selectedTiles : List Tile
     , totalScore : Int
-    , turnSubmitted : Bool
+    , waitingForUser : Bool
     , validWord : Bool
     }
 
@@ -55,9 +54,8 @@ initGame playerId =
     , elapsedTime = 0
     , selectedTiles = []
     , availableTiles = []
-    , randomWord = ""
     , totalScore = 0
-    , turnSubmitted = False
+    , waitingForUser = False
     , validWord = False
     }
 
@@ -68,7 +66,7 @@ initSharedGame opponentId phase =
     , phase = phase
     , selectedTiles = []
     , totalScore = 0
-    , turnSubmitted = False
+    , waitingForUser = False
     , validWord = False
     }
 

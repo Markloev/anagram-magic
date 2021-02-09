@@ -2,6 +2,7 @@ package common
 
 import (
 	"encoding/json"
+	"errors"
 
 	"github.com/gorilla/websocket"
 )
@@ -14,12 +15,13 @@ var Broadcast = make(chan Message)
 
 //Client stores a player's information that is needed for matching player's together
 type Client struct {
-	PlayerID      string
-	OpponentID    string
-	Searching     bool
-	TurnSubmitted bool
-	NextRound     bool
-	Tiles         []Tile
+	PlayerID       string
+	OpponentID     string
+	Searching      bool
+	TurnSubmitted  bool
+	NextRound      bool
+	FinalRoundWord string
+	Tiles          []Tile
 }
 
 //Message stores the incoming message received from a client
@@ -55,4 +57,26 @@ func CreateBasicReturnMessageJSON(eventType string) DefaultReturnMessage {
 		Data:      nil,
 	}
 	return returnJSON
+}
+
+//GetCurrentPlayerClient gets the current player client from a given playerID
+func GetCurrentPlayerClient(playerID string) (Client, error) {
+	var clientStruct Client
+	for client := range Clients {
+		if Clients[client].PlayerID == playerID {
+			return Clients[client], nil
+		}
+	}
+	return clientStruct, errors.New("Error finding current player client")
+}
+
+//GetOpponentClient gets the current opponent client from a given playerID
+func GetOpponentClient(playerID string) (Client, error) {
+	var clientStruct Client
+	for client := range Clients {
+		if Clients[client].OpponentID == playerID {
+			return Clients[client], nil
+		}
+	}
+	return clientStruct, errors.New("Error finding opponent client")
 }

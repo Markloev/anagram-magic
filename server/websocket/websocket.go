@@ -36,6 +36,7 @@ func WS(w http.ResponseWriter, req *http.Request) {
 	newClient.TurnSubmitted = false
 	newClient.NextRound = false
 	newClient.Tiles = nil
+	newClient.FinalRoundWord = ""
 	common.Clients[currentClient] = newClient
 
 	for {
@@ -60,17 +61,19 @@ func HandleMessages() {
 		params := <-common.Broadcast
 		// Send it out to every client that is currently connected
 		if params.EventType == "startSearch" {
-			multiplayer.HandleSearch(params.Data, common.Clients)
+			multiplayer.HandleSearch(params.Data)
 		} else if params.EventType == "stopSearch" {
-			multiplayer.HandleStopSearch(params.Data, common.Clients)
+			multiplayer.HandleStopSearch(params.Data)
 		} else if params.EventType == "receiveTiles" {
-			multiplayer.HandleReceiveTiles(params.Data, common.Clients)
+			multiplayer.HandleReceiveTiles(params.Data)
 		} else if params.EventType == "submitTurn" {
-			multiplayer.HandleSubmitTurn(params.Data, common.Clients)
+			multiplayer.HandleSubmitTurn(params.Data)
 		} else if params.EventType == "changeTiles" {
-			multiplayer.HandleChangeTiles(params.Data, common.Clients)
+			multiplayer.HandleChangeTiles(params.Data)
 		} else if params.EventType == "roundComplete" {
-			multiplayer.HandleRoundComplete(params.Data, common.Clients)
+			multiplayer.HandleRoundComplete(params.Data)
+		} else if params.EventType == "endGame" {
+			multiplayer.HandleEndGame(params.Data)
 		} else {
 			for client := range common.Clients {
 				err := client.WriteJSON(params.Data)
