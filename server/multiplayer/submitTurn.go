@@ -26,62 +26,41 @@ func HandleSubmitTurn(paramsData []byte) {
 	if getClientErr != nil {
 		log.Printf("Error: %v", getClientErr)
 	}
+	playerValidWord := checkFinalRoundWordValidity(data.Tiles, common.Clients[currentClient])
 	opponentClient, getClientErr := common.GetOpponentClient(data.PlayerID)
 	if getClientErr != nil {
 		log.Printf("Error: %v", getClientErr)
 	} else {
 		if common.Clients[opponentClient].TurnSubmitted {
 			if data.Phase == "finalRound" {
-				playerValidWord := checkFinalRoundWordValidity(data.Tiles, common.Clients[currentClient])
-				opponentJSON := createchangePhaseJSON("submitTurnComplete", playerValidWord, false)
-				//update opponent client of phase change
-				opponentWriteErr := opponentClient.WriteJSON(opponentJSON)
-				if opponentWriteErr != nil {
-					common.CloseClient(opponentWriteErr, opponentClient)
-				}
-				//update current player of phase change
-				currentPlayerJSON := createchangePhaseJSON("submitTurnComplete", false, playerValidWord)
-				currentWriteErr := currentClient.WriteJSON(currentPlayerJSON)
-				if currentWriteErr != nil {
-					common.CloseClient(currentWriteErr, opponentClient)
-				}
+				opponentJSON := createSubmitTurnJSON(false, playerValidWord)
+				common.WriteJSON(opponentClient, opponentJSON)
+				currentPlayerJSON := createSubmitTurnJSON(playerValidWord, false)
+				common.WriteJSON(currentClient, currentPlayerJSON)
 				common.Clients[opponentClient].TurnSubmitted = false
 				common.Clients[opponentClient].Tiles = nil
 			} else {
-				opponentJSON := createchangePhaseJSON("submitTurnComplete", checkWordValidity(common.Clients[opponentClient].Tiles), checkWordValidity(data.Tiles))
-				//update opponent client of phase change
-				opponentWriteErr := opponentClient.WriteJSON(opponentJSON)
-				if opponentWriteErr != nil {
-					common.CloseClient(opponentWriteErr, opponentClient)
-				}
-				//update current player of phase change
-				currentPlayerJSON := createchangePhaseJSON("submitTurnComplete", checkWordValidity(data.Tiles), checkWordValidity(common.Clients[opponentClient].Tiles))
-				currentWriteErr := currentClient.WriteJSON(currentPlayerJSON)
-				if currentWriteErr != nil {
-					common.CloseClient(currentWriteErr, currentClient)
-				}
+				opponentJSON := createSubmitTurnJSON(checkWordValidity(common.Clients[opponentClient].Tiles), checkWordValidity(data.Tiles))
+				common.WriteJSON(opponentClient, opponentJSON)
+				currentPlayerJSON := createSubmitTurnJSON(checkWordValidity(data.Tiles), checkWordValidity(common.Clients[opponentClient].Tiles))
+				common.WriteJSON(currentClient, currentPlayerJSON)
 				common.Clients[opponentClient].TurnSubmitted = false
 				common.Clients[opponentClient].Tiles = nil
 			}
 		} else {
 			if data.Phase == "finalRound" {
-				playerValidWord := checkFinalRoundWordValidity(data.Tiles, common.Clients[currentClient])
 				if playerValidWord {
-					currentPlayerJSON := createchangePhaseJSON("submitTurnComplete", playerValidWord, false)
-					currentWriteErr := currentClient.WriteJSON(currentPlayerJSON)
-					if currentWriteErr != nil {
-						common.CloseClient(currentWriteErr, currentClient)
-					}
-					opponentJSON := createchangePhaseJSON("submitTurnComplete", false, playerValidWord)
-					opponentWriteErr := opponentClient.WriteJSON(opponentJSON)
-					if opponentWriteErr != nil {
-						common.CloseClient(opponentWriteErr, opponentClient)
-					}
+					currentPlayerJSON := createSubmitTurnJSON(playerValidWord, false)
+					common.WriteJSON(currentClient, currentPlayerJSON)
+					opponentJSON := createSubmitTurnJSON(false, playerValidWord)
+					common.WriteJSON(opponentClient, opponentJSON)
 				}
 			}
 			//if opponent hasn't submitted yet, set the current user's TurnSubmitted status to 'true' and Tiles to their list of selected tiles
 			common.Clients[currentClient].TurnSubmitted = true
 			common.Clients[currentClient].Tiles = data.Tiles
+			currentPlayerJSON := common.CreateBasicReturnMessageJSON("submitTurn")
+			common.WriteJSON(opponentClient, currentPlayerJSON)
 		}
 	}
 }
@@ -121,9 +100,9 @@ type returnData struct {
 	OpponentValidWord bool   `json:"opponentValidWord"`
 }
 
-func createchangePhaseJSON(eventType string, playerValidWord bool, opponentValidWord bool) common.DefaultReturnMessage {
+func createSubmitTurnJSON(playerValidWord bool, opponentValidWord bool) common.DefaultReturnMessage {
 	returnJSON := common.DefaultReturnMessage{
-		EventType: eventType,
+		EventType: "submitTurnComplete",
 		Data: returnData{
 			PlayerValidWord:   playerValidWord,
 			OpponentValidWord: opponentValidWord,

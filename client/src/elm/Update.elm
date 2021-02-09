@@ -632,6 +632,21 @@ update msg model =
                                     in
                                     ( { model | game = updatedGame }, Cmd.none )
 
+                                Multiplayer.SubmitTurn ->
+                                    let
+                                        game =
+                                            model.game
+
+                                        updatedGame =
+                                            case model.game.gameState of
+                                                Started sharedGameState ->
+                                                    { game | gameState = Started { sharedGameState | waitingForUser = True } }
+
+                                                _ ->
+                                                    model.game
+                                    in
+                                    ( { model | game = updatedGame }, Cmd.none )
+
                                 Multiplayer.SubmitTurnComplete playerValidWord opponentValidWord ->
                                     let
                                         game =

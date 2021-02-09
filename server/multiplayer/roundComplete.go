@@ -44,16 +44,10 @@ func HandleRoundComplete(paramsData []byte) {
 		common.Clients[opponentClient].FinalRoundWord = randomWord
 		common.Clients[currentClient].FinalRoundWord = randomWord
 		//update current client in order to start timer for "Round Complete" phase
-		currentWriteErr := currentClient.WriteJSON(returnJSON)
-		if jsonErr != nil {
-			common.CloseClient(currentWriteErr, opponentClient)
-		}
+		common.WriteJSON(currentClient, returnJSON)
 
 		//update opponent client in order to start timer for "Round Complete" phase
-		opponentWriteErr := opponentClient.WriteJSON(returnJSON)
-		if opponentWriteErr != nil {
-			common.CloseClient(opponentWriteErr, opponentClient)
-		}
+		common.WriteJSON(opponentClient, returnJSON)
 	} else { //if opponent hasn't selected "Next Round" yet, set the current user's NextRound status to true
 		common.Clients[currentClient].NextRound = true
 	}

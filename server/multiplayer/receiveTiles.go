@@ -20,10 +20,7 @@ func HandleReceiveTiles(paramsData []byte) {
 	}
 	opponentPlayerReturnJSON := createReceiveTilesJSON(common.Clients[opponentClient].PlayerID, data.Tiles)
 	//update opponent client with new tiles
-	opponentWriteErr := opponentClient.WriteJSON(opponentPlayerReturnJSON)
-	if opponentWriteErr != nil {
-		common.CloseClient(opponentWriteErr, opponentClient)
-	}
+	common.WriteJSON(opponentClient, opponentPlayerReturnJSON)
 }
 
 func createReceiveTilesJSON(playerID string, tiles []common.Tile) common.DefaultReturnMessage {

@@ -11,6 +11,7 @@ type Event
     | RoundComplete (Maybe String)
     | ReceiveTiles (List Tile)
     | ChangeTiles (List Tile)
+    | SubmitTurn
     | SubmitTurnComplete Bool Bool
 
 
@@ -41,6 +42,9 @@ eventDecoder =
                     "changeTiles" ->
                         Decode.map ChangeTiles
                             (Decode.at [ "Data", "tiles" ] listTilesDecoder)
+
+                    "submitTurn" ->
+                        Decode.succeed SubmitTurn
 
                     "submitTurnComplete" ->
                         Decode.map2 SubmitTurnComplete
