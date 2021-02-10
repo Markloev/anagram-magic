@@ -14,18 +14,18 @@ func HandleEndGame(paramsData []byte) {
 	if jsonErr != nil {
 		log.Printf("Error: %v", jsonErr)
 	}
-	//loop through list of clients to find current client
-	for client := range common.Clients {
-		if common.Clients[client].PlayerID == currentPlayerID {
-			if thisClient, ok := common.Clients[client]; ok {
-				thisClient.OpponentID = ""
-				thisClient.Searching = false
-				thisClient.TurnSubmitted = false
-				thisClient.NextRound = false
-				thisClient.Tiles = nil
-				thisClient.FinalRoundWord = ""
-				common.Clients[client] = thisClient
-			}
-		}
+	currentClient, getClientErr := common.GetCurrentPlayerClient(currentPlayerID)
+	if getClientErr != nil {
+		log.Printf("Error: %v", getClientErr)
+	} else {
+		var newClient common.Client
+		newClient.PlayerID = common.Clients[currentClient].PlayerID
+		newClient.OpponentID = ""
+		newClient.Searching = false
+		newClient.TurnSubmitted = false
+		newClient.NextRound = false
+		newClient.Tiles = nil
+		newClient.FinalRoundWord = ""
+		common.Clients[currentClient] = &newClient
 	}
 }

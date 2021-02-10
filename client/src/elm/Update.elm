@@ -199,8 +199,13 @@ update msg model =
                             else
                                 Cmd.none
 
-                        _ ->
-                            Cmd.none
+                        Searching ->
+                            if key == "Enter" then
+                                StopSearch
+                                    |> mkCmd
+
+                            else
+                                Cmd.none
             in
             ( model
             , cmd
@@ -621,6 +626,21 @@ update msg model =
                                             case model.game.gameState of
                                                 Started sharedGameState ->
                                                     { game | gameState = Started { sharedGameState | selectedTiles = selectedTiles } }
+
+                                                _ ->
+                                                    model.game
+                                    in
+                                    ( { model | game = updatedGame }, Cmd.none )
+
+                                Multiplayer.SubmitTurn ->
+                                    let
+                                        game =
+                                            model.game
+
+                                        updatedGame =
+                                            case model.game.gameState of
+                                                Started sharedGameState ->
+                                                    { game | gameState = Started { sharedGameState | waitingForUser = True } }
 
                                                 _ ->
                                                     model.game

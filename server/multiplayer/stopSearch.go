@@ -14,14 +14,9 @@ func HandleStopSearch(paramsData []byte) {
 	if jsonErr != nil {
 		log.Printf("Error: %v", jsonErr)
 	}
-	//loop through list of clients to find current client
-	for client := range common.Clients {
-		if common.Clients[client].PlayerID == currentPlayerID {
-			//update current client to say they are no longer searching
-			if thisClient, ok := common.Clients[client]; ok {
-				thisClient.Searching = false
-				common.Clients[client] = thisClient
-			}
-		}
+	currentClient, getClientErr := common.GetCurrentPlayerClient(currentPlayerID)
+	if getClientErr != nil {
+		log.Printf("Error: %v", getClientErr)
 	}
+	common.Clients[currentClient].Searching = false
 }

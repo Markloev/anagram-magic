@@ -14,23 +14,16 @@ func HandleReceiveTiles(paramsData []byte) {
 	if jsonErr != nil {
 		log.Printf("Error: %v", jsonErr)
 	}
-	//loop through list of clients
-	for client := range common.Clients {
-		//if other client is matched against current client
-		if common.Clients[client].OpponentID == data.PlayerID {
-			opponentPlayerReturnJSON := createReceiveTilesReturnMessageJSON(common.Clients[client].PlayerID, data.Tiles)
-			//update opponent client with new tiles
-			err := client.WriteJSON(opponentPlayerReturnJSON)
-			if err != nil {
-				log.Printf("Error: %v", err)
-				client.Close()
-				delete(common.Clients, client)
-			}
-		}
+	opponentClient, getClientErr := common.GetOpponentClient(data.PlayerID)
+	if getClientErr != nil {
+		log.Printf("Error: %v", getClientErr)
 	}
+	opponentPlayerReturnJSON := createReceiveTilesJSON(common.Clients[opponentClient].PlayerID, data.Tiles)
+	//update opponent client with new tiles
+	common.WriteJSON(opponentClient, opponentPlayerReturnJSON)
 }
 
-func createReceiveTilesReturnMessageJSON(playerID string, tiles []common.Tile) common.DefaultReturnMessage {
+func createReceiveTilesJSON(playerID string, tiles []common.Tile) common.DefaultReturnMessage {
 	returnJSON := common.DefaultReturnMessage{
 		EventType: "receiveTiles",
 		Data: common.TileData{
