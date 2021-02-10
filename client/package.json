@@ -11,7 +11,7 @@
     "dev": "webpack serve --watch --port 3000 --config config/webpack.dev.js",
     "nodebug": "webpack serve --watch --port 3000 --config config/webpack.dev.js --env nodebug",
     "prod": "webpack --config config/webpack.prod.js",
-    "test": "elm-test tests/*"
+    "test": "elm-test"
   },
   "repository": {
     "type": "git",
