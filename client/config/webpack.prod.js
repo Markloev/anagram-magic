@@ -29,12 +29,11 @@ const prod = {
             appMountId: 'main',
             mobile: true,
             lang: 'en-US',
-            title: 'Anagram Magic',
             links: [],
             xhtml: true,
             hash: false,
             chunks: ['main'],
-            favicon: '../client/dist/assets/images/favicon.ico'
+            favicon: '../client/dist/favicon.ico'
         }),
         // Copy static assets
         new CopyWebpackPlugin({

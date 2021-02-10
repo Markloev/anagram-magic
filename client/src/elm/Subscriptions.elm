@@ -39,7 +39,7 @@ subscriptions { game } =
             case game.gameState of
                 Started sg ->
                     Sub.batch
-                        [ -- , tick
+                        [ -- tick
                           Ports.receiveRandomTiles (listTilesDecoderResult >> ReceiveRandomTiles sg)
                         , Ports.receiveShuffledTiles (listTilesDecoderResult >> ReceiveShuffledTiles)
                         ]

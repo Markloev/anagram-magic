@@ -72,8 +72,14 @@ overview game sharedGame =
             [ text <| "Your Score: " ++ String.fromInt game.totalScore ]
         , div
             [ class "w-48 text-center" ]
-            [ countdownTimer game
-            ]
+          <|
+            case sharedGame.phase of
+                CompletedGame ->
+                    []
+
+                _ ->
+                    [ countdownTimer game
+                    ]
         , div [ class "flex w-44 text-lg font-medium justify-end items-center" ]
             [ text <| "Opponent Score: " ++ String.fromInt sharedGame.totalScore ]
         ]
@@ -90,14 +96,14 @@ tileSelection game =
     let
         getConsonantsButton =
             if List.length game.availableTiles >= tileListMax || hasMaxConsonants game.availableTiles then
-                Styles.styledButton NoOp "Consonant" (Just "w-24")
+                Styles.styledDisabledButton "Consonant" (Just "w-24")
 
             else
                 Styles.styledButton GetConsonant "Consonant" (Just "w-24")
 
         getVowelsButton =
             if List.length game.availableTiles >= tileListMax || hasMaxVowels game.availableTiles then
-                Styles.styledButton NoOp "Vowel" (Just "w-24")
+                Styles.styledDisabledButton "Vowel" (Just "w-24")
 
             else
                 Styles.styledButton GetVowel "Vowel" (Just "w-24")
@@ -230,19 +236,25 @@ finalRoundResults game sharedGame =
 completed : Game -> SharedGame -> Html Msg
 completed game sharedGame =
     let
-        victoryText =
-            if game.totalScore > sharedGame.totalScore then
-                "You Won!"
+        gameOver =
+            if not game.errorOccurred then
+                if game.totalScore > sharedGame.totalScore then
+                    div [ class "flex w-full justify-center text-3xl font-bold overflow-hidden" ] [ text "You Won!" ]
 
-            else if game.totalScore < sharedGame.totalScore then
-                "You Lost!"
+                else if game.totalScore < sharedGame.totalScore then
+                    div [ class "flex w-full justify-center text-3xl font-bold overflow-hidden" ] [ text "You Lost!" ]
+
+                else
+                    div [ class "flex w-full justify-center text-3xl font-bold overflow-hidden" ] [ text "You Tied!" ]
 
             else
-                "You Tied!"
+                div [ class "flex w-full flex-wrap font-bold overflow-hidden" ]
+                    [ div [ class "flex w-full justify-center text-xl overflow-hidden" ] [ text "Something went wrong with your opponent's game..." ]
+                    , div [ class "flex w-full justify-center text-3xl overflow-hidden" ] [ text "You won!" ]
+                    ]
     in
     div [ class "flex flex-wrap overflow-hidden" ]
-        [ div [ class "flex w-full justify-center text-3xl font-bold overflow-hidden" ]
-            [ text victoryText ]
+        [ gameOver
         , div [ class "flex w-full justify-center overflow-hidden" ]
             [ Styles.styledButton EndGame "End Game" (Just "w-32")
             ]
@@ -259,10 +271,10 @@ availableTiles game =
                         Styles.skeletonTile
 
                     else if game.waitingForUser then
-                        Styles.styledTile NoOp tile Nothing
+                        Styles.styledTile tile (class "") Nothing
 
                     else
-                        Styles.styledTile (SelectTile idx tile) tile Nothing
+                        Styles.styledTile tile (onClick <| SelectTile idx tile) Nothing
                 )
                 game.availableTiles
     in
@@ -276,10 +288,10 @@ selectedTiles game =
             List.indexedMap
                 (\idx tile ->
                     if game.waitingForUser then
-                        Styles.styledTile NoOp tile Nothing
+                        Styles.styledTile tile (class "") Nothing
 
                     else
-                        Styles.styledTile (RemoveTile tile.originalIndex idx) tile Nothing
+                        Styles.styledTile tile (onClick <| RemoveTile tile.originalIndex idx) Nothing
                 )
                 game.selectedTiles
 
@@ -295,7 +307,7 @@ resultsSelectedTiles tiles =
         tileContent =
             List.map
                 (\tile ->
-                    Styles.styledTile NoOp tile (Just "w-8, h-8")
+                    Styles.styledTile tile (class "") (Just "w-8, h-8")
                 )
                 tiles
     in

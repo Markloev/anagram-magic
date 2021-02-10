@@ -22,6 +22,7 @@ type alias Game =
     , totalScore : Int
     , waitingForUser : Bool
     , validWord : Bool
+    , errorOccurred : Bool
     }
 
 
@@ -57,6 +58,7 @@ initGame playerId =
     , totalScore = 0
     , waitingForUser = False
     , validWord = False
+    , errorOccurred = False
     }
 
 

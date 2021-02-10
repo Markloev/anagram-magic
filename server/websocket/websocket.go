@@ -19,11 +19,14 @@ func WS(w http.ResponseWriter, req *http.Request) {
 			return true
 		},
 	}
+
 	currentClient, err := upgrader.Upgrade(w, req, nil)
 	if err != nil {
 		log.Printf("Error: %v", err)
 	}
+
 	defer currentClient.Close()
+
 	playerID, ok := req.URL.Query()["playerId"]
 	if !ok || len(playerID[0]) < 1 {
 		log.Printf("Url Param 'playerId' is missing")
@@ -35,7 +38,7 @@ func WS(w http.ResponseWriter, req *http.Request) {
 		var incMessage common.Message
 		err := currentClient.ReadJSON(&incMessage)
 		if err != nil {
-			log.Printf("Error: %v", err)
+			common.ForceEndGame(err, currentClient)
 			delete(common.Clients, currentClient)
 			break
 		}
@@ -51,7 +54,7 @@ func HandleMessages() {
 	for {
 		// Grab the next message from the broadcast channel
 		params := <-common.Broadcast
-		// Send it out to every client that is currently connected
+
 		if params.EventType == "startSearch" {
 			multiplayer.HandleSearch(params.Data)
 		} else if params.EventType == "stopSearch" {
@@ -72,7 +75,6 @@ func HandleMessages() {
 				if err != nil {
 					log.Printf("Error: %v", err)
 					client.Close()
-					delete(common.Clients, client)
 				}
 			}
 		}

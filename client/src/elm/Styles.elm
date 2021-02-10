@@ -1,7 +1,7 @@
 module Styles exposing (..)
 
 import Game exposing (Tile)
-import Html exposing (Html, button, div, text)
+import Html exposing (Attribute, Html, button, div, text)
 import Html.Attributes exposing (class, classList, disabled, style)
 import Html.Events exposing (onClick)
 import Msg exposing (Msg(..))
@@ -20,7 +20,7 @@ styledButton cmd label classes =
 
 styledDisabledButton : String -> Maybe String -> Html Msg
 styledDisabledButton label classes =
-    div
+    button
         [ "flex items-center justify-center p-2 my-2 h-12 bg-gray-300 text-white rounded-md "
             ++ Maybe.withDefault "" classes
             |> class
@@ -29,14 +29,14 @@ styledDisabledButton label classes =
         [ text label ]
 
 
-styledTile : Msg -> Tile -> Maybe String -> Html Msg
-styledTile cmd tile classes =
+styledTile : Tile -> Attribute Msg -> Maybe String -> Html Msg
+styledTile tile clickAttr classes =
     div
         [ style "cursor" "pointer"
         , "p-2 my-2 w-12 h-12 bg-blue-400 text-white rounded-md focus:outline-none focus:ring-2 ring-blue-200 "
             ++ Maybe.withDefault "" classes
             |> class
-        , onClick cmd
+        , clickAttr
         ]
         [ div [ class "text-center" ]
             [ text <| String.fromChar tile.letter ]

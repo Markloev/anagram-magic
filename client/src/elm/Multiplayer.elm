@@ -1,6 +1,7 @@
 module Multiplayer exposing (..)
 
 import Game exposing (Phase(..), SpecificRound(..), Tile)
+import Helper exposing (listTilesEncoder, tileEncoder)
 import Json.Decode as Decode
 import Json.Encode as Encode
 import WebSocket
@@ -10,9 +11,10 @@ type Event
     = PlayerFound String Bool
     | RoundComplete (Maybe String)
     | ReceiveTiles (List Tile)
-    | ChangeTiles (List Tile)
+    | ChangeTiles String
     | SubmitTurn
     | SubmitTurnComplete Bool Bool
+    | ForceEndGame
 
 
 eventDecoder : Decode.Decoder Event
@@ -41,7 +43,7 @@ eventDecoder =
 
                     "changeTiles" ->
                         Decode.map ChangeTiles
-                            (Decode.at [ "Data", "tiles" ] listTilesDecoder)
+                            (Decode.at [ "Data", "selectedWord" ] Decode.string)
 
                     "submitTurn" ->
                         Decode.succeed SubmitTurn
@@ -50,6 +52,9 @@ eventDecoder =
                         Decode.map2 SubmitTurnComplete
                             (Decode.at [ "Data", "playerValidWord" ] Decode.bool)
                             (Decode.at [ "Data", "opponentValidWord" ] Decode.bool)
+
+                    "forceEndGame" ->
+                        Decode.succeed ForceEndGame
 
                     _ ->
                         Decode.fail "Unknown server event: "
@@ -98,16 +103,6 @@ roundCompleteEncoder phase playerId =
         |> WebSocket.eventEncoder "roundComplete"
 
 
-tileEncoder : Tile -> Encode.Value
-tileEncoder tile =
-    Encode.object
-        [ ( "letter", tile.letter |> Char.toCode |> Encode.int )
-        , ( "value", tile.value |> Encode.int )
-        , ( "originalIndex", tile.originalIndex |> Encode.int )
-        , ( "hidden", tile.hidden |> Encode.bool )
-        ]
-
-
 phaseEncoder : Phase -> ( String, Encode.Value )
 phaseEncoder phase =
     case phase of
@@ -119,11 +114,6 @@ phaseEncoder phase =
 
         _ ->
             ( "phase", Encode.string "regularRound" )
-
-
-listTilesEncoder : List Tile -> Encode.Value
-listTilesEncoder tiles =
-    tiles |> Encode.list tileEncoder
 
 
 tileDecoder : Decode.Decoder Tile

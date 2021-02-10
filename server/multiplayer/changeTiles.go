@@ -1,6 +1,7 @@
 package multiplayer
 
 import (
+	"encoding/base64"
 	"log"
 
 	"../common"
@@ -19,12 +20,21 @@ func HandleChangeTiles(paramsData []byte) {
 	common.WriteJSON(opponentClient, opponentJSON)
 }
 
+type returnChangeTilesData struct {
+	PlayerID     string `json:"playerId"`
+	SelectedWord string `json:"selectedWord"`
+}
+
 func createChangeTilesJSON(playerID string, tiles []common.Tile) common.DefaultReturnMessage {
+	var word string
+	for tile := range tiles {
+		word = word + string(tiles[tile].Letter)
+	}
 	returnJSON := common.DefaultReturnMessage{
 		EventType: "changeTiles",
-		Data: common.TileData{
-			PlayerID: playerID,
-			Tiles:    tiles,
+		Data: returnChangeTilesData{
+			PlayerID:     playerID,
+			SelectedWord: base64.StdEncoding.EncodeToString([]byte(word)),
 		},
 	}
 	return returnJSON

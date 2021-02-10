@@ -80,18 +80,22 @@ func GetOpponentClient(playerID string) (*websocket.Conn, error) {
 	return nil, errors.New("No opponent client found")
 }
 
-//CloseClient closes the current client session
-func CloseClient(err error, client *websocket.Conn) {
+//ForceEndGame ends the current game session if an error has occurred
+func ForceEndGame(err error, client *websocket.Conn) {
 	log.Printf("Error: %v", err)
+	opponentClient, getClientErr := GetOpponentClient(Clients[client].PlayerID)
+	if getClientErr != nil {
+		log.Printf("Error: %v", getClientErr)
+	}
+	WriteJSON(opponentClient, CreateBasicReturnMessageJSON("forceEndGame"))
 	client.Close()
-	delete(Clients, client)
 }
 
 //WriteJSON sends JSON to the client
 func WriteJSON(client *websocket.Conn, jsonMsg DefaultReturnMessage) {
 	currentWriteErr := client.WriteJSON(jsonMsg)
 	if currentWriteErr != nil {
-		CloseClient(currentWriteErr, client)
+		client.Close()
 	}
 }
 
