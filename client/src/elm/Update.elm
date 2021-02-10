@@ -523,10 +523,6 @@ update msg model =
                 ( newModel, cmd ) =
                     case Decode.decodeString Multiplayer.eventDecoder eventObject of
                         Err errMsg ->
-                            let
-                                _ =
-                                    Debug.log "Multiplayer Error" errMsg
-                            in
                             ( model, Cmd.none )
 
                         Ok event ->
@@ -728,8 +724,4 @@ update msg model =
             ( newModel, cmd )
 
         Error errMsg ->
-            let
-                _ =
-                    Debug.log "Error" errMsg
-            in
             ( model, Cmd.none )

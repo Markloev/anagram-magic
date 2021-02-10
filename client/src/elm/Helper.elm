@@ -7,7 +7,7 @@ import Json.Encode as Encode
 import Msg exposing (Msg(..))
 import Task
 import Time
-import WebSocket exposing (ConnectionInfo, SocketStatus(..))
+import WebSocket exposing (ConnectionInfo, SocketStatus(..), initConnectionInfo)
 
 
 mkCmd : msg -> Cmd msg
@@ -85,7 +85,7 @@ getConnectionInfo socketInfo =
             info
 
         _ ->
-            Debug.todo "Not connected to server."
+            initConnectionInfo
 
 
 setNextPhase : Bool -> Phase -> Phase

@@ -19,6 +19,13 @@ type alias ConnectionInfo =
     }
 
 
+initConnectionInfo =
+    { protocol = ""
+    , extensions = ""
+    , url = ""
+    }
+
+
 connect : String -> List String -> Cmd msg
 connect url protocols =
     message "connect"

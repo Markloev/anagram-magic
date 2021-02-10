@@ -30,7 +30,6 @@ const dev = {
             appMountId: 'main',
             mobile: true,
             lang: 'en-US',
-            title: 'Anagram Magic',
             links: [],
             xhtml: true,
             hash: false,
