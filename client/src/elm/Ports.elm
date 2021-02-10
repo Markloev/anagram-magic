@@ -27,18 +27,3 @@ port receiveRandomTiles : (Decode.Value -> msg) -> Sub msg
 
 
 port receiveShuffledTiles : (Decode.Value -> msg) -> Sub msg
-
-
-encodeTile : Tile -> Encode.Value
-encodeTile tile =
-    Encode.object
-        [ ( "letter", tile.letter |> Char.toCode |> Encode.int )
-        , ( "value", tile.value |> Encode.int )
-        , ( "originalIndex", tile.originalIndex |> Encode.int )
-        , ( "hidden", tile.hidden |> Encode.bool )
-        ]
-
-
-encodeListTiles : List Tile -> Encode.Value
-encodeListTiles tiles =
-    tiles |> Encode.list encodeTile

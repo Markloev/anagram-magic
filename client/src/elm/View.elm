@@ -72,8 +72,14 @@ overview game sharedGame =
             [ text <| "Your Score: " ++ String.fromInt game.totalScore ]
         , div
             [ class "w-48 text-center" ]
-            [ countdownTimer game
-            ]
+          <|
+            case sharedGame.phase of
+                CompletedGame ->
+                    []
+
+                _ ->
+                    [ countdownTimer game
+                    ]
         , div [ class "flex w-44 text-lg font-medium justify-end items-center" ]
             [ text <| "Opponent Score: " ++ String.fromInt sharedGame.totalScore ]
         ]
@@ -90,14 +96,14 @@ tileSelection game =
     let
         getConsonantsButton =
             if List.length game.availableTiles >= tileListMax || hasMaxConsonants game.availableTiles then
-                Styles.styledButton NoOp "Consonant" (Just "w-24")
+                Styles.styledDisabledButton "Consonant" (Just "w-24")
 
             else
                 Styles.styledButton GetConsonant "Consonant" (Just "w-24")
 
         getVowelsButton =
             if List.length game.availableTiles >= tileListMax || hasMaxVowels game.availableTiles then
-                Styles.styledButton NoOp "Vowel" (Just "w-24")
+                Styles.styledDisabledButton "Vowel" (Just "w-24")
 
             else
                 Styles.styledButton GetVowel "Vowel" (Just "w-24")
@@ -259,10 +265,10 @@ availableTiles game =
                         Styles.skeletonTile
 
                     else if game.waitingForUser then
-                        Styles.styledTile NoOp tile Nothing
+                        Styles.styledTile tile (class "") Nothing
 
                     else
-                        Styles.styledTile (SelectTile idx tile) tile Nothing
+                        Styles.styledTile tile (onClick <| SelectTile idx tile) Nothing
                 )
                 game.availableTiles
     in
@@ -276,10 +282,10 @@ selectedTiles game =
             List.indexedMap
                 (\idx tile ->
                     if game.waitingForUser then
-                        Styles.styledTile NoOp tile Nothing
+                        Styles.styledTile tile (class "") Nothing
 
                     else
-                        Styles.styledTile (RemoveTile tile.originalIndex idx) tile Nothing
+                        Styles.styledTile tile (onClick <| RemoveTile tile.originalIndex idx) Nothing
                 )
                 game.selectedTiles
 
@@ -295,7 +301,7 @@ resultsSelectedTiles tiles =
         tileContent =
             List.map
                 (\tile ->
-                    Styles.styledTile NoOp tile (Just "w-8, h-8")
+                    Styles.styledTile tile (class "") (Just "w-8, h-8")
                 )
                 tiles
     in

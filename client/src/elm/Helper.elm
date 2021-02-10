@@ -3,6 +3,7 @@ module Helper exposing (..)
 import Constants exposing (maxConsonantOrVowel)
 import Game exposing (Game, Phase(..), SpecificRound(..), Tile)
 import Html exposing (Html, div)
+import Json.Encode as Encode
 import Msg exposing (Msg(..))
 import Task
 import Time
@@ -14,14 +15,23 @@ mkCmd msg =
     Task.perform (always msg) (Task.succeed msg)
 
 
+andThen : (model -> ( model, Cmd msg )) -> ( model, Cmd msg ) -> ( model, Cmd msg )
+andThen fn ( model, cmd ) =
+    let
+        ( nextModel, nextCmd ) =
+            fn model
+    in
+    ( nextModel, Cmd.batch [ cmd, nextCmd ] )
+
+
 consonants : List Char
 consonants =
-    [ 'b', 'c', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm', 'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'y', 'z' ]
+    [ 'B', 'C', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'X', 'Y', 'Z' ]
 
 
 vowels : List Char
 vowels =
-    [ 'a', 'e', 'i', 'o', 'u' ]
+    [ 'A', 'E', 'I', 'O', 'U' ]
 
 
 hasMaxConsonants : List Tile -> Bool
@@ -66,24 +76,6 @@ toLetter str =
 
         _ ->
             Nothing
-
-
-fullWord : List Tile -> String
-fullWord tiles =
-    let
-        wordList =
-            List.map
-                (\tile ->
-                    tile.letter
-                )
-                tiles
-
-        wordString =
-            wordList
-                |> String.fromList
-                |> String.toLower
-    in
-    wordString
 
 
 getConnectionInfo : SocketStatus -> ConnectionInfo
@@ -224,3 +216,18 @@ wordToTiles word =
 unshuffleFinalWord : List Tile -> List Tile
 unshuffleFinalWord tiles =
     List.sortBy (\tile -> tile.originalIndex) tiles
+
+
+listTilesEncoder : List Tile -> Encode.Value
+listTilesEncoder tiles =
+    tiles |> Encode.list tileEncoder
+
+
+tileEncoder : Tile -> Encode.Value
+tileEncoder tile =
+    Encode.object
+        [ ( "letter", tile.letter |> Char.toCode |> Encode.int )
+        , ( "value", tile.value |> Encode.int )
+        , ( "originalIndex", tile.originalIndex |> Encode.int )
+        , ( "hidden", tile.hidden |> Encode.bool )
+        ]

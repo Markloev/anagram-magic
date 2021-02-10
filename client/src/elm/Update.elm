@@ -1,15 +1,17 @@
 module Update exposing (update)
 
+import Base64
 import Constants
 import Game exposing (GameState(..), Phase(..), SpecificRound(..), initGame, initSharedGame)
-import Helper exposing (getConnectionInfo, getScore, mkCmd, restartTimer, setNextPhase, toLetter, wordToTiles)
+import Helper exposing (andThen, getConnectionInfo, getScore, listTilesEncoder, mkCmd, restartTimer, setNextPhase, tileEncoder, toLetter, wordToTiles)
 import Json.Decode as Decode
 import List
 import List.Extra as LE
 import Msg exposing (Msg(..))
 import Multiplayer
-import Ports exposing (encodeListTiles, getRandomConsonant, getRandomTiles, getRandomVowel, shuffleTiles)
+import Ports exposing (getRandomConsonant, getRandomTiles, getRandomVowel, shuffleTiles)
 import Prelude exposing (iff)
+import Svg.Attributes exposing (r)
 import Time
 import Types exposing (Model)
 import WebSocket exposing (SocketStatus(..))
@@ -18,11 +20,6 @@ import WebSocket exposing (SocketStatus(..))
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        NoOp ->
-            ( model
-            , Cmd.none
-            )
-
         StartSearch ->
             let
                 game =
@@ -121,7 +118,7 @@ update msg model =
                                 Round _ ->
                                     if not model.game.waitingForUser then
                                         if key == " " then
-                                            encodeListTiles model.game.availableTiles
+                                            listTilesEncoder model.game.availableTiles
                                                 |> shuffleTiles
 
                                         else if key == "Enter" then
@@ -266,13 +263,13 @@ update msg model =
 
         GetConsonant ->
             ( model
-            , encodeListTiles model.game.availableTiles
+            , listTilesEncoder model.game.availableTiles
                 |> getRandomConsonant
             )
 
         GetVowel ->
             ( model
-            , encodeListTiles model.game.availableTiles
+            , listTilesEncoder model.game.availableTiles
                 |> getRandomVowel
             )
 
@@ -319,7 +316,7 @@ update msg model =
 
         ShuffleTiles ->
             ( model
-            , encodeListTiles model.game.availableTiles
+            , listTilesEncoder model.game.availableTiles
                 |> shuffleTiles
             )
 
@@ -488,7 +485,6 @@ update msg model =
                                             | phase = setNextPhase model.game.tileSelectionTurn sharedGameState.phase
                                         }
                             }
-                                |> restartTimer Constants.roundTimeSeconds
 
                         _ ->
                             model.game
@@ -564,8 +560,20 @@ update msg model =
                                         ( availableTiles, shuffleCmd ) =
                                             case randomWord of
                                                 Just r ->
-                                                    ( wordToTiles r
-                                                    , encodeListTiles (wordToTiles r)
+                                                    let
+                                                        decodedString =
+                                                            case Base64.decode r of
+                                                                Ok decStr ->
+                                                                    decStr
+
+                                                                Err _ ->
+                                                                    ""
+                                                    in
+                                                    ( decodedString
+                                                        |> wordToTiles
+                                                    , decodedString
+                                                        |> wordToTiles
+                                                        |> listTilesEncoder
                                                         |> shuffleTiles
                                                     )
 

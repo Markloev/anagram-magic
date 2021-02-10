@@ -7,8 +7,7 @@ import WebSocket exposing (ConnectionInfo)
 
 
 type Msg
-    = NoOp
-    | StartSearch
+    = StartSearch
     | StopSearch
     | Tick Time.Posix
     | KeyPressed String

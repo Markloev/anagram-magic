@@ -2,9 +2,11 @@ package multiplayer
 
 import (
 	"bufio"
+	"encoding/base64"
 	"log"
 	"math/rand"
 	"os"
+	"time"
 
 	"../common"
 )
@@ -32,7 +34,8 @@ func HandleRoundComplete(paramsData []byte) {
 		//if changing phase to final round, fetch a random nine-letter word to scramble
 		if data.Phase == "finalRound" {
 			randomWord = getRandomWord()
-			returnJSON = createRoundCompleteJSON(roundCompleteReturnData{RandomWord: randomWord})
+			encodedRandomWord := base64.StdEncoding.EncodeToString([]byte(randomWord))
+			returnJSON = createRoundCompleteJSON(roundCompleteReturnData{RandomWord: encodedRandomWord})
 		} else {
 			returnJSON = createRoundCompleteJSON(nil)
 		}
@@ -63,6 +66,7 @@ func createRoundCompleteJSON(data interface{}) common.DefaultReturnMessage {
 
 func getRandomWord() string {
 	const nineLetterWords = 57288
+	rand.Seed(time.Now().UnixNano())
 	randomLine := rand.Intn(nineLetterWords)
 	file, err := os.Open("nine_letter_words.txt")
 	if err != nil {
