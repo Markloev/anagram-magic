@@ -35,3 +35,8 @@ jobs:
       run: |
         cd client
         npm run test
+    
+    - name: Prod
+      run: |
+        cd client
+        npm run prod
