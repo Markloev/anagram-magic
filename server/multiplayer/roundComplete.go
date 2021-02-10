@@ -2,7 +2,6 @@ package multiplayer
 
 import (
 	"bufio"
-	"encoding/json"
 	"log"
 	"math/rand"
 	"os"
@@ -18,10 +17,7 @@ type roundCompleteData struct {
 //HandleRoundComplete sends message to both clients to start timers for "Round Complete" phase
 func HandleRoundComplete(paramsData []byte) {
 	var data roundCompleteData
-	jsonErr := json.Unmarshal(paramsData, &data)
-	if jsonErr != nil {
-		log.Printf("Error: %v", jsonErr)
-	}
+	common.DataToJSON(&data, paramsData)
 	opponentClient, getClientErr := common.GetOpponentClient(data.PlayerID)
 	if getClientErr != nil {
 		log.Printf("Error: %v", getClientErr)

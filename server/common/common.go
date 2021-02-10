@@ -94,3 +94,24 @@ func WriteJSON(client *websocket.Conn, jsonMsg DefaultReturnMessage) {
 		CloseClient(currentWriteErr, client)
 	}
 }
+
+//DataToJSON converts incoming data to JSON format or returns error
+func DataToJSON(incData interface{}, paramsData []byte) {
+	parseErr := json.Unmarshal(paramsData, &incData)
+	if parseErr != nil {
+		log.Printf("Error: %v", parseErr)
+	}
+}
+
+//CreateNewClient creates a new client with default values
+func CreateNewClient(playerID string) *Client {
+	var newClient Client
+	newClient.PlayerID = playerID
+	newClient.OpponentID = ""
+	newClient.Searching = false
+	newClient.TurnSubmitted = false
+	newClient.NextRound = false
+	newClient.Tiles = nil
+	newClient.FinalRoundWord = ""
+	return &newClient
+}

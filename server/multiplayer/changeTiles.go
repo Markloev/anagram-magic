@@ -1,7 +1,6 @@
 package multiplayer
 
 import (
-	"encoding/json"
 	"log"
 
 	"../common"
@@ -10,10 +9,7 @@ import (
 //HandleChangeTiles handles sending the updated list of selected tiles to the opponent
 func HandleChangeTiles(paramsData []byte) {
 	var data common.TileData
-	parseErr := json.Unmarshal(paramsData, &data)
-	if parseErr != nil {
-		log.Printf("Error: %v", parseErr)
-	}
+	common.DataToJSON(&data, paramsData)
 	opponentClient, getClientErr := common.GetOpponentClient(data.PlayerID)
 	if getClientErr != nil {
 		log.Printf("Error: %v", getClientErr)

@@ -1,7 +1,6 @@
 package multiplayer
 
 import (
-	"encoding/json"
 	"errors"
 	"log"
 
@@ -17,10 +16,7 @@ type searchingReturnData struct {
 //HandleSearch handles return message to player that is searching for a game
 func HandleSearch(paramsData []byte) {
 	var currentPlayerID string
-	parseErr := json.Unmarshal(paramsData, &currentPlayerID)
-	if parseErr != nil {
-		log.Printf("Error: %v", parseErr)
-	}
+	common.DataToJSON(&currentPlayerID, paramsData)
 	currentClient, getClientErr := common.GetCurrentPlayerClient(currentPlayerID)
 	if getClientErr != nil {
 		log.Printf("Error: %v", getClientErr)

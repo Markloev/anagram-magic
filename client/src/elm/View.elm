@@ -68,13 +68,13 @@ gameView game sharedGame =
 overview : Game -> SharedGame -> Html Msg
 overview game sharedGame =
     div [ class "flex justify-between mb-4" ]
-        [ div [ class "w-42 text-lg font-medium" ]
+        [ div [ class "flex w-44 text-lg font-medium justify-start items-center" ]
             [ text <| "Your Score: " ++ String.fromInt game.totalScore ]
         , div
             [ class "w-48 text-center" ]
             [ countdownTimer game
             ]
-        , div [ class "flex w-42 text-lg font-medium justify-end" ]
+        , div [ class "flex w-44 text-lg font-medium justify-end items-center" ]
             [ text <| "Opponent Score: " ++ String.fromInt sharedGame.totalScore ]
         ]
 

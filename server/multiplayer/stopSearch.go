@@ -1,7 +1,6 @@
 package multiplayer
 
 import (
-	"encoding/json"
 	"log"
 
 	"../common"
@@ -10,10 +9,7 @@ import (
 //HandleStopSearch handles stopping the search for the current client
 func HandleStopSearch(paramsData []byte) {
 	var currentPlayerID string
-	jsonErr := json.Unmarshal(paramsData, &currentPlayerID)
-	if jsonErr != nil {
-		log.Printf("Error: %v", jsonErr)
-	}
+	common.DataToJSON(&paramsData, paramsData)
 	currentClient, getClientErr := common.GetCurrentPlayerClient(currentPlayerID)
 	if getClientErr != nil {
 		log.Printf("Error: %v", getClientErr)
