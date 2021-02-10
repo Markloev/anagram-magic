@@ -90,7 +90,7 @@ func checkFinalRoundWordValidity(tiles []common.Tile, client *common.Client) boo
 	return word == client.FinalRoundWord
 }
 
-type returnData struct {
+type returnSubmitTurnData struct {
 	PlayerID          string `json:"playerId"`
 	PlayerValidWord   bool   `json:"playerValidWord"`
 	OpponentValidWord bool   `json:"opponentValidWord"`
@@ -99,7 +99,7 @@ type returnData struct {
 func createSubmitTurnJSON(playerValidWord bool, opponentValidWord bool) common.DefaultReturnMessage {
 	returnJSON := common.DefaultReturnMessage{
 		EventType: "submitTurnComplete",
-		Data: returnData{
+		Data: returnSubmitTurnData{
 			PlayerValidWord:   playerValidWord,
 			OpponentValidWord: opponentValidWord,
 		},

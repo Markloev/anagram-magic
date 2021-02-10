@@ -11,9 +11,10 @@ type Event
     = PlayerFound String Bool
     | RoundComplete (Maybe String)
     | ReceiveTiles (List Tile)
-    | ChangeTiles (List Tile)
+    | ChangeTiles String
     | SubmitTurn
     | SubmitTurnComplete Bool Bool
+    | ForceEndGame
 
 
 eventDecoder : Decode.Decoder Event
@@ -42,7 +43,7 @@ eventDecoder =
 
                     "changeTiles" ->
                         Decode.map ChangeTiles
-                            (Decode.at [ "Data", "tiles" ] listTilesDecoder)
+                            (Decode.at [ "Data", "selectedWord" ] Decode.string)
 
                     "submitTurn" ->
                         Decode.succeed SubmitTurn
@@ -51,6 +52,9 @@ eventDecoder =
                         Decode.map2 SubmitTurnComplete
                             (Decode.at [ "Data", "playerValidWord" ] Decode.bool)
                             (Decode.at [ "Data", "opponentValidWord" ] Decode.bool)
+
+                    "forceEndGame" ->
+                        Decode.succeed ForceEndGame
 
                     _ ->
                         Decode.fail "Unknown server event: "

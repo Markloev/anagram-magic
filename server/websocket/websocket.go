@@ -38,7 +38,7 @@ func WS(w http.ResponseWriter, req *http.Request) {
 		var incMessage common.Message
 		err := currentClient.ReadJSON(&incMessage)
 		if err != nil {
-			log.Printf("Error HERE: %v", err)
+			common.ForceEndGame(err, currentClient)
 			delete(common.Clients, currentClient)
 			break
 		}
@@ -75,7 +75,6 @@ func HandleMessages() {
 				if err != nil {
 					log.Printf("Error: %v", err)
 					client.Close()
-					delete(common.Clients, client)
 				}
 			}
 		}

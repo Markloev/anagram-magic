@@ -625,15 +625,23 @@ update msg model =
                                     in
                                     ( { model | game = updatedGame }, Cmd.none )
 
-                                Multiplayer.ChangeTiles selectedTiles ->
+                                Multiplayer.ChangeTiles selectedWord ->
                                     let
+                                        decodedWord =
+                                            case Base64.decode selectedWord of
+                                                Ok decStr ->
+                                                    decStr
+
+                                                Err _ ->
+                                                    ""
+
                                         game =
                                             model.game
 
                                         updatedGame =
                                             case model.game.gameState of
                                                 Started sharedGameState ->
-                                                    { game | gameState = Started { sharedGameState | selectedTiles = selectedTiles } }
+                                                    { game | gameState = Started { sharedGameState | selectedTiles = wordToTiles decodedWord } }
 
                                                 _ ->
                                                     model.game
@@ -685,6 +693,29 @@ update msg model =
                                                                     , totalScore = opponentTotalScore
                                                                     , waitingForUser = False
                                                                     , phase = setNextPhase (not model.game.tileSelectionTurn) sharedGameState.phase
+                                                                }
+                                                    }
+                                                        |> restartTimer Constants.roundResultSeconds
+
+                                                _ ->
+                                                    model.game
+                                    in
+                                    ( { model | game = updatedGame }, Cmd.none )
+
+                                Multiplayer.ForceEndGame ->
+                                    let
+                                        game =
+                                            model.game
+
+                                        updatedGame =
+                                            case model.game.gameState of
+                                                Started sharedGameState ->
+                                                    { game
+                                                        | errorOccurred = True
+                                                        , gameState =
+                                                            Started
+                                                                { sharedGameState
+                                                                    | phase = CompletedGame
                                                                 }
                                                     }
                                                         |> restartTimer Constants.roundResultSeconds

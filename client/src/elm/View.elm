@@ -236,19 +236,25 @@ finalRoundResults game sharedGame =
 completed : Game -> SharedGame -> Html Msg
 completed game sharedGame =
     let
-        victoryText =
-            if game.totalScore > sharedGame.totalScore then
-                "You Won!"
+        gameOver =
+            if not game.errorOccurred then
+                if game.totalScore > sharedGame.totalScore then
+                    div [ class "flex w-full justify-center text-3xl font-bold overflow-hidden" ] [ text "You Won!" ]
 
-            else if game.totalScore < sharedGame.totalScore then
-                "You Lost!"
+                else if game.totalScore < sharedGame.totalScore then
+                    div [ class "flex w-full justify-center text-3xl font-bold overflow-hidden" ] [ text "You Lost!" ]
+
+                else
+                    div [ class "flex w-full justify-center text-3xl font-bold overflow-hidden" ] [ text "You Tied!" ]
 
             else
-                "You Tied!"
+                div [ class "flex w-full flex-wrap font-bold overflow-hidden" ]
+                    [ div [ class "flex w-full justify-center text-xl overflow-hidden" ] [ text "Something went wrong with your opponent's game..." ]
+                    , div [ class "flex w-full justify-center text-3xl overflow-hidden" ] [ text "You won!" ]
+                    ]
     in
     div [ class "flex flex-wrap overflow-hidden" ]
-        [ div [ class "flex w-full justify-center text-3xl font-bold overflow-hidden" ]
-            [ text victoryText ]
+        [ gameOver
         , div [ class "flex w-full justify-center overflow-hidden" ]
             [ Styles.styledButton EndGame "End Game" (Just "w-32")
             ]
