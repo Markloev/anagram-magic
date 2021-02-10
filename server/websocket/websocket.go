@@ -21,7 +21,7 @@ func WS(w http.ResponseWriter, req *http.Request) {
 	}
 	currentClient, err := upgrader.Upgrade(w, req, nil)
 	if err != nil {
-		log.Fatal("Error: %v", err)
+		log.Printf("Error: %v", err)
 	}
 	defer currentClient.Close()
 	playerID, ok := req.URL.Query()["playerId"]
@@ -29,15 +29,7 @@ func WS(w http.ResponseWriter, req *http.Request) {
 		log.Printf("Url Param 'playerId' is missing")
 		return
 	}
-	var newClient common.Client
-	newClient.PlayerID = playerID[0]
-	newClient.OpponentID = ""
-	newClient.Searching = false
-	newClient.TurnSubmitted = false
-	newClient.NextRound = false
-	newClient.Tiles = nil
-	newClient.FinalRoundWord = ""
-	common.Clients[currentClient] = &newClient
+	common.Clients[currentClient] = common.CreateNewClient(playerID[0])
 
 	for {
 		var incMessage common.Message

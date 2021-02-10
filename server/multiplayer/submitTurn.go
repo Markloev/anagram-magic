@@ -2,7 +2,6 @@ package multiplayer
 
 import (
 	"bufio"
-	"encoding/json"
 	"log"
 	"os"
 
@@ -18,10 +17,7 @@ type submitTurnData struct {
 //HandleSubmitTurn handles notifying the opponent that the opponent has finished their turn
 func HandleSubmitTurn(paramsData []byte) {
 	var data submitTurnData
-	jsonErr := json.Unmarshal(paramsData, &data)
-	if jsonErr != nil {
-		log.Printf("Error: %v", jsonErr)
-	}
+	common.DataToJSON(&data, paramsData)
 	currentClient, getClientErr := common.GetCurrentPlayerClient(data.PlayerID)
 	if getClientErr != nil {
 		log.Printf("Error: %v", getClientErr)

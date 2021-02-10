@@ -1,7 +1,6 @@
 package multiplayer
 
 import (
-	"encoding/json"
 	"log"
 
 	"../common"
@@ -10,10 +9,7 @@ import (
 //HandleReceiveTiles handles notifying the opponent that tiles for the round have been selected by the current player
 func HandleReceiveTiles(paramsData []byte) {
 	var data common.TileData
-	jsonErr := json.Unmarshal(paramsData, &data)
-	if jsonErr != nil {
-		log.Printf("Error: %v", jsonErr)
-	}
+	common.DataToJSON(&data, paramsData)
 	opponentClient, getClientErr := common.GetOpponentClient(data.PlayerID)
 	if getClientErr != nil {
 		log.Printf("Error: %v", getClientErr)
