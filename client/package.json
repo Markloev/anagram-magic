@@ -3,7 +3,7 @@
   "name": "anagram-magic",
   "version": "1.0.0",
   "description": "Remake of the legendary Miniclip game of the past: Anagram Magic (in Elm/Go)",
-  "license": "GNU",
+  "license": "GPL-3.0-only",
   "main": "index.js",
   "scripts": {
     "analyse": "elm-analyse -s -p 3001 -o",
