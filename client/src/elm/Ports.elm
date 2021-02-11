@@ -1,6 +1,5 @@
 port module Ports exposing (..)
 
-import Game exposing (Tile)
 import Json.Decode as Decode
 import Json.Encode as Encode
 

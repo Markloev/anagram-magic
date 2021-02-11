@@ -6,12 +6,11 @@ import Time exposing (Posix)
 type GameState
     = NotStarted
     | Searching
-    | Started SharedGame
+    | Started Game
 
 
 type alias Game =
-    { playerId : String
-    , gameState : GameState
+    { phase : Phase
     , tileSelectionTurn : Bool
     , currentTime : Posix
     , startedTime : Posix
@@ -23,12 +22,12 @@ type alias Game =
     , waitingForUser : Bool
     , validWord : Bool
     , errorOccurred : Bool
+    , shared : Shared
     }
 
 
-type alias SharedGame =
+type alias Shared =
     { playerId : String
-    , phase : Phase
     , selectedTiles : List Tile
     , totalScore : Int
     , waitingForUser : Bool
@@ -36,19 +35,10 @@ type alias SharedGame =
     }
 
 
-type alias Tile =
-    { letter : Char
-    , value : Int
-    , originalIndex : Int
-    , hidden : Bool
-    }
-
-
-initGame : String -> Game
-initGame playerId =
-    { playerId = playerId
-    , gameState = NotStarted
-    , tileSelectionTurn = False
+initGame : Bool -> String -> Phase -> Game
+initGame tileSelectionTurn opponentId phase =
+    { phase = phase
+    , tileSelectionTurn = tileSelectionTurn
     , currentTime = Time.millisToPosix 0
     , startedTime = Time.millisToPosix 0
     , timeInterval = 0
@@ -59,17 +49,25 @@ initGame playerId =
     , waitingForUser = False
     , validWord = False
     , errorOccurred = False
+    , shared = initShared opponentId
     }
 
 
-initSharedGame : String -> Phase -> SharedGame
-initSharedGame opponentId phase =
+initShared : String -> Shared
+initShared opponentId =
     { playerId = opponentId
-    , phase = phase
     , selectedTiles = []
     , totalScore = 0
     , waitingForUser = False
     , validWord = False
+    }
+
+
+type alias Tile =
+    { letter : Char
+    , value : Int
+    , originalIndex : Int
+    , hidden : Bool
     }
 
 

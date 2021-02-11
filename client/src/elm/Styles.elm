@@ -2,7 +2,7 @@ module Styles exposing (..)
 
 import Game exposing (Tile)
 import Html exposing (Attribute, Html, button, div, text)
-import Html.Attributes exposing (class, classList, disabled, style)
+import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)
 import Msg exposing (Msg(..))
 
