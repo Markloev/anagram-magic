@@ -13,7 +13,7 @@ import WebSocket exposing (SocketStatus(..))
 
 
 subscriptions : Model -> Sub Msg
-subscriptions { game } =
+subscriptions model =
     let
         webSocketSub =
             WebSocket.events
@@ -36,12 +36,12 @@ subscriptions { game } =
                 )
 
         subs =
-            case game.gameState of
-                Started sg ->
+            case model.gameState of
+                Started g ->
                     Sub.batch
                         [ -- tick
-                          Ports.receiveRandomTiles (listTilesDecoderResult >> ReceiveRandomTiles sg)
-                        , Ports.receiveShuffledTiles (listTilesDecoderResult >> ReceiveShuffledTiles)
+                          Ports.receiveRandomTiles (listTilesDecoderResult >> ReceiveRandomTiles g)
+                        , Ports.receiveShuffledTiles (listTilesDecoderResult >> ReceiveShuffledTiles g)
                         ]
 
                 _ ->

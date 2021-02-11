@@ -19,6 +19,7 @@ type alias ConnectionInfo =
     }
 
 
+initConnectionInfo : ConnectionInfo
 initConnectionInfo =
     { protocol = ""
     , extensions = ""

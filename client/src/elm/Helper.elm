@@ -2,7 +2,7 @@ module Helper exposing (..)
 
 import Constants exposing (maxConsonantOrVowel)
 import Game exposing (Game, Phase(..), SpecificRound(..), Tile)
-import Html exposing (Html, div)
+import Html exposing (Html)
 import Json.Encode as Encode
 import Msg exposing (Msg(..))
 import Task

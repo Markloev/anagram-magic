@@ -1,7 +1,7 @@
 module Multiplayer exposing (..)
 
 import Game exposing (Phase(..), SpecificRound(..), Tile)
-import Helper exposing (listTilesEncoder, tileEncoder)
+import Helper exposing (listTilesEncoder)
 import Json.Decode as Decode
 import Json.Encode as Encode
 import WebSocket

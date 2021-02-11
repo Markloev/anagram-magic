@@ -1,6 +1,6 @@
 module Msg exposing (Msg(..))
 
-import Game exposing (Phase, SharedGame, Tile)
+import Game exposing (Game, Tile)
 import Json.Decode as Decode
 import Time
 import WebSocket exposing (ConnectionInfo)
@@ -11,19 +11,19 @@ type Msg
     | StopSearch
     | Tick Time.Posix
     | KeyPressed String
-    | KeyCharPressed Char
-    | GetConsonant
-    | GetVowel
+    | KeyCharPressed Game Char
+    | GetConsonant Game
+    | GetVowel Game
     | GetRandom
-    | ReceiveRandomTiles SharedGame (Result Decode.Error (List Tile))
-    | ShuffleTiles
-    | ReceiveShuffledTiles (Result Decode.Error (List Tile))
-    | RemoveTileBackspace
-    | SelectTile Int Tile
-    | RemoveTile Int Int
-    | Submit Phase
-    | NextRound Phase
-    | Continue
+    | ReceiveRandomTiles Game (Result Decode.Error (List Tile))
+    | ShuffleTiles Game
+    | ReceiveShuffledTiles Game (Result Decode.Error (List Tile))
+    | RemoveTileBackspace Game
+    | SelectTile Game Int Tile
+    | RemoveTile Game Int Int
+    | Submit Game
+    | NextRound Game
+    | Continue Game
     | EndGame
     | SocketConnect ConnectionInfo
     | SocketClosed Int (Maybe String)
