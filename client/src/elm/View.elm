@@ -320,9 +320,9 @@ countdownTimer game =
         [ div [ class "countdown-number font-medium" ]
             [ text <|
                 String.fromInt
-                    (game.timeInterval
-                        - (Time.posixToMillis game.currentTime
-                            - Time.posixToMillis game.startedTime
+                    (game.time.timeInterval
+                        - (Time.posixToMillis game.time.currentTime
+                            - Time.posixToMillis game.time.startedTime
                             |> Time.millisToPosix
                             |> Time.toSecond Time.utc
                           )
@@ -333,7 +333,8 @@ countdownTimer game =
                 [ r "18"
                 , cx "20"
                 , cy "20"
-                , style "animation" ("countdown " ++ String.fromInt game.timeInterval ++ "s linear infinite forwards")
+
+                -- , style "animation" ("countdown " ++ String.fromInt game.time.timeInterval ++ "s linear infinite forwards")
                 ]
                 []
             ]

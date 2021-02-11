@@ -1,7 +1,7 @@
 module Helper exposing (..)
 
 import Constants exposing (maxConsonantOrVowel)
-import Game exposing (Game, Phase(..), SpecificRound(..), Tile)
+import Game exposing (Game, Phase(..), SpecificRound(..), Tile, initTime)
 import Html exposing (Html)
 import Json.Encode as Encode
 import Msg exposing (Msg(..))
@@ -182,11 +182,20 @@ getScore validWord tiles =
 
 restartTimer : Int -> Game -> Game
 restartTimer interval game =
+    let
+        time =
+            game.time
+
+        updatedTime =
+            { time
+                | currentTime = Time.millisToPosix 0
+                , startedTime = Time.millisToPosix 0
+                , timeInterval = interval
+                , elapsedTime = 0
+            }
+    in
     { game
-        | currentTime = Time.millisToPosix 0
-        , startedTime = Time.millisToPosix 0
-        , timeInterval = interval
-        , elapsedTime = 0
+        | time = updatedTime
     }
 
 

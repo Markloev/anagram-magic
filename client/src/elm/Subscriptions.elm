@@ -39,8 +39,8 @@ subscriptions model =
             case model.gameState of
                 Started g ->
                     Sub.batch
-                        [ -- tick
-                          Ports.receiveRandomTiles (listTilesDecoderResult >> ReceiveRandomTiles g)
+                        [ tick
+                        , Ports.receiveRandomTiles (listTilesDecoderResult >> ReceiveRandomTiles g)
                         , Ports.receiveShuffledTiles (listTilesDecoderResult >> ReceiveShuffledTiles g)
                         ]
 

@@ -11,11 +11,8 @@ type GameState
 
 type alias Game =
     { phase : Phase
+    , time : Time
     , tileSelectionTurn : Bool
-    , currentTime : Posix
-    , startedTime : Posix
-    , timeInterval : Int
-    , elapsedTime : Int
     , selectedTiles : List Tile
     , availableTiles : List Tile
     , totalScore : Int
@@ -38,11 +35,8 @@ type alias Shared =
 initGame : Bool -> String -> Phase -> Game
 initGame tileSelectionTurn opponentId phase =
     { phase = phase
+    , time = initTime
     , tileSelectionTurn = tileSelectionTurn
-    , currentTime = Time.millisToPosix 0
-    , startedTime = Time.millisToPosix 0
-    , timeInterval = 0
-    , elapsedTime = 0
     , selectedTiles = []
     , availableTiles = []
     , totalScore = 0
@@ -60,6 +54,23 @@ initShared opponentId =
     , totalScore = 0
     , waitingForUser = False
     , validWord = False
+    }
+
+
+type alias Time =
+    { currentTime : Posix
+    , startedTime : Posix
+    , timeInterval : Int
+    , elapsedTime : Int
+    }
+
+
+initTime : Time
+initTime =
+    { currentTime = Time.millisToPosix 0
+    , startedTime = Time.millisToPosix 0
+    , timeInterval = 0
+    , elapsedTime = 0
     }
 
 

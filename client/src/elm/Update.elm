@@ -39,20 +39,29 @@ update msg model =
                     case model.gameState of
                         Started game ->
                             let
+                                time =
+                                    game.time
+
                                 isStart =
-                                    Time.posixToMillis game.startedTime == 0
+                                    Time.posixToMillis time.startedTime == 0
 
                                 secondsPassed =
-                                    Time.posixToMillis game.currentTime
-                                        - Time.posixToMillis game.startedTime
+                                    Time.posixToMillis time.currentTime
+                                        - Time.posixToMillis time.startedTime
                                         |> Time.millisToPosix
                                         |> Time.toSecond Time.utc
 
                                 ( updatedGame, timedCmd ) =
-                                    if secondsPassed == game.timeInterval then
+                                    if secondsPassed == game.time.timeInterval then
+                                        let
+                                            updatedTime =
+                                                { time
+                                                    | currentTime = posix
+                                                    , startedTime = posix
+                                                }
+                                        in
                                         ( { game
-                                            | currentTime = posix
-                                            , startedTime = posix
+                                            | time = updatedTime
                                           }
                                         , case game.phase of
                                             Waiting _ ->
@@ -75,9 +84,15 @@ update msg model =
                                         )
 
                                     else
+                                        let
+                                            updatedTime =
+                                                { time
+                                                    | currentTime = posix
+                                                    , startedTime = iff isStart posix game.time.startedTime
+                                                }
+                                        in
                                         ( { game
-                                            | currentTime = posix
-                                            , startedTime = iff isStart posix game.startedTime
+                                            | time = updatedTime
                                           }
                                         , Cmd.none
                                         )
