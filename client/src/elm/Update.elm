@@ -40,20 +40,11 @@ update msg model =
                         time =
                             game.time
 
-                        isStart =
-                            Time.posixToMillis time.startedTime == 0
-
                         secondsPassed =
                             Time.posixToMillis time.currentTime
                                 - Time.posixToMillis time.startedTime
                                 |> Time.millisToPosix
                                 |> Time.toSecond Time.utc
-
-                        sds =
-                            Debug.log "Seconds: " secondsPassed
-
-                        sdsds =
-                            Debug.log "Interval: " game.time.timeInterval
 
                         ( updatedGame, timedCmd ) =
                             if secondsPassed == game.time.timeInterval then
