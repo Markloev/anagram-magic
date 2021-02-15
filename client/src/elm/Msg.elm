@@ -9,7 +9,7 @@ import WebSocket exposing (ConnectionInfo)
 type Msg
     = StartSearch
     | StopSearch
-    | Tick Time.Posix
+    | Tick Game Time.Posix
     | KeyPressed String
     | KeyCharPressed Game Char
     | GetConsonant Game

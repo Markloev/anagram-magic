@@ -7,7 +7,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 
-	"./websocket"
+	"github.com/markloev/anagram-magic/websocket"
 )
 
 func main() {

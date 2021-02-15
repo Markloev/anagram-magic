@@ -2,7 +2,7 @@ module Subscriptions exposing (subscriptions)
 
 import Browser.Events
 import Constants exposing (timeInterval)
-import Game exposing (GameState(..))
+import Game exposing (Game, GameState(..), Phase(..))
 import Json.Decode as Decode
 import Msg exposing (Msg(..))
 import Multiplayer exposing (listTilesDecoderResult)
@@ -38,11 +38,15 @@ subscriptions model =
         subs =
             case model.gameState of
                 Started g ->
-                    Sub.batch
-                        [ tick
-                        , Ports.receiveRandomTiles (listTilesDecoderResult >> ReceiveRandomTiles g)
-                        , Ports.receiveShuffledTiles (listTilesDecoderResult >> ReceiveShuffledTiles g)
-                        ]
+                    if g.phase == CompletedGame then
+                        Sub.none
+
+                    else
+                        Sub.batch
+                            [ -- tick g
+                            Ports.receiveRandomTiles (listTilesDecoderResult >> ReceiveRandomTiles g)
+                            , Ports.receiveShuffledTiles (listTilesDecoderResult >> ReceiveShuffledTiles g)
+                            ]
 
                 _ ->
                     Sub.none
@@ -54,9 +58,9 @@ subscriptions model =
         ]
 
 
-tick : Sub Msg
-tick =
-    Time.every timeInterval Tick
+tick : Game -> Sub Msg
+tick game =
+    Time.every timeInterval (Tick game)
 
 
 keyDecoder : Decode.Decoder String

@@ -4,8 +4,8 @@ import (
 	"errors"
 	"log"
 
-	"../common"
 	"github.com/gorilla/websocket"
+	"github.com/markloev/anagram-magic/common"
 )
 
 type searchingReturnData struct {

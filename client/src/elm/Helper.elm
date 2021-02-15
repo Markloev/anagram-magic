@@ -1,7 +1,7 @@
 module Helper exposing (..)
 
 import Constants exposing (maxConsonantOrVowel)
-import Game exposing (Game, Phase(..), SpecificRound(..), Tile, initTime)
+import Game exposing (Game, Phase(..), SpecificRound(..), Tile)
 import Html exposing (Html)
 import Json.Encode as Encode
 import Msg exposing (Msg(..))
@@ -191,7 +191,7 @@ restartTimer interval game =
                 | currentTime = Time.millisToPosix 0
                 , startedTime = Time.millisToPosix 0
                 , timeInterval = interval
-                , elapsedTime = 0
+                , paused = False
             }
     in
     { game

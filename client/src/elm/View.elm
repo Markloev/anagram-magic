@@ -78,7 +78,11 @@ overview game =
                     []
 
                 _ ->
-                    [ countdownTimer game
+                    [ if game.time.paused then
+                        div [] []
+
+                      else
+                        countdownTimer game
                     ]
         , div [ class "flex w-44 text-lg font-medium justify-end items-center" ]
             [ text <| "Opponent Score: " ++ String.fromInt game.shared.totalScore ]
@@ -319,22 +323,29 @@ countdownTimer game =
     div [ class "countdown" ]
         [ div [ class "countdown-number font-medium" ]
             [ text <|
-                String.fromInt
-                    (game.time.timeInterval
-                        - (Time.posixToMillis game.time.currentTime
-                            - Time.posixToMillis game.time.startedTime
-                            |> Time.millisToPosix
-                            |> Time.toSecond Time.utc
-                          )
-                    )
+                if game.time.paused then
+                    "0"
+
+                else
+                    String.fromInt
+                        (game.time.timeInterval
+                            - (Time.posixToMillis game.time.currentTime
+                                - Time.posixToMillis game.time.startedTime
+                                |> Time.millisToPosix
+                                |> Time.toSecond Time.utc
+                              )
+                        )
             ]
         , svg []
             [ circle
                 [ r "18"
                 , cx "20"
                 , cy "20"
+                , if game.time.paused then
+                    class ""
 
-                -- , style "animation" ("countdown " ++ String.fromInt game.time.timeInterval ++ "s linear infinite forwards")
+                  else
+                    style "animation" ("countdown " ++ String.fromInt game.time.timeInterval ++ "s linear infinite forwards")
                 ]
                 []
             ]

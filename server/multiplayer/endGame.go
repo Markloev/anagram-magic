@@ -3,7 +3,7 @@ package multiplayer
 import (
 	"log"
 
-	"../common"
+	"github.com/markloev/anagram-magic/common"
 )
 
 //HandleEndGame removes the client from the list of clients searching/playing

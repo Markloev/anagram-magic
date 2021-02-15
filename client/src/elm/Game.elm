@@ -61,7 +61,7 @@ type alias Time =
     { currentTime : Posix
     , startedTime : Posix
     , timeInterval : Int
-    , elapsedTime : Int
+    , paused : Bool
     }
 
 
@@ -70,7 +70,7 @@ initTime =
     { currentTime = Time.millisToPosix 0
     , startedTime = Time.millisToPosix 0
     , timeInterval = 0
-    , elapsedTime = 0
+    , paused = True
     }
 
 

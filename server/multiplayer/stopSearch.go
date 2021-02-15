@@ -3,7 +3,7 @@ package multiplayer
 import (
 	"log"
 
-	"../common"
+	"github.com/markloev/anagram-magic/common"
 )
 
 //HandleStopSearch handles stopping the search for the current client
