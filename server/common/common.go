@@ -81,13 +81,13 @@ func GetOpponentClient(playerID string) (*websocket.Conn, error) {
 }
 
 //ForceEndGame ends the current game session if an error has occurred
-func ForceEndGame(err error, client *websocket.Conn) {
+func ForceEndGame(client *websocket.Conn, err error) {
 	log.Printf("Error: %v", err)
 	opponentClient, getClientErr := GetOpponentClient(Clients[client].PlayerID)
 	if getClientErr != nil {
 		log.Printf("Error: %v", getClientErr)
 	}
-	WriteJSON(opponentClient, CreateBasicReturnMessageJSON("forceEndGame"))
+	opponentClient.WriteJSON(CreateBasicReturnMessageJSON("forceEndGame"))
 	client.Close()
 }
 

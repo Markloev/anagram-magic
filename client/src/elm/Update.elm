@@ -33,59 +33,66 @@ update msg model =
                 (Multiplayer.basicEncoder "stopSearch" model.playerId)
             )
 
-        Tick posix ->
+        Tick game posix ->
             let
                 ( updatedModel, cmd ) =
-                    case model.gameState of
-                        Started game ->
-                            let
-                                isStart =
-                                    Time.posixToMillis game.startedTime == 0
+                    let
+                        time =
+                            game.time
 
-                                secondsPassed =
-                                    Time.posixToMillis game.currentTime
-                                        - Time.posixToMillis game.startedTime
-                                        |> Time.millisToPosix
-                                        |> Time.toSecond Time.utc
+                        secondsPassed =
+                            Time.posixToMillis time.currentTime
+                                - Time.posixToMillis time.startedTime
+                                |> Time.millisToPosix
+                                |> Time.toSecond Time.utc
 
-                                ( updatedGame, timedCmd ) =
-                                    if secondsPassed == game.timeInterval then
-                                        ( { game
+                        ( updatedGame, timedCmd ) =
+                            if secondsPassed == game.time.timeInterval then
+                                let
+                                    updatedTime =
+                                        { time
                                             | currentTime = posix
                                             , startedTime = posix
-                                          }
-                                        , case game.phase of
-                                            Waiting _ ->
-                                                Cmd.none
+                                            , paused = True
+                                        }
+                                in
+                                ( { game
+                                    | time = updatedTime
+                                  }
+                                , case game.phase of
+                                    Waiting _ ->
+                                        Cmd.none
 
-                                            TileSelection _ ->
-                                                GetRandom
-                                                    |> mkCmd
+                                    TileSelection _ ->
+                                        GetRandom
+                                            |> mkCmd
 
-                                            Round _ ->
-                                                Submit game
-                                                    |> mkCmd
+                                    Round _ ->
+                                        Submit game
+                                            |> mkCmd
 
-                                            CompletedRound _ ->
-                                                NextRound game
-                                                    |> mkCmd
+                                    CompletedRound _ ->
+                                        NextRound game
+                                            |> mkCmd
 
-                                            CompletedGame ->
-                                                Cmd.none
-                                        )
+                                    CompletedGame ->
+                                        Cmd.none
+                                )
 
-                                    else
-                                        ( { game
+                            else
+                                let
+                                    updatedTime =
+                                        { time
                                             | currentTime = posix
-                                            , startedTime = iff isStart posix game.startedTime
-                                          }
-                                        , Cmd.none
-                                        )
-                            in
-                            ( { model | gameState = Started updatedGame }, timedCmd )
-
-                        _ ->
-                            ( model, Cmd.none )
+                                        }
+                                in
+                                ( { game
+                                    | time = updatedTime
+                                  }
+                                , Cmd.none
+                                )
+                    in
+                    ( { model | gameState = Started updatedGame }, timedCmd )
             in
             ( updatedModel
             , cmd

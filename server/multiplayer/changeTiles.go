@@ -4,7 +4,7 @@ import (
 	"encoding/base64"
 	"log"
 
-	"../common"
+	"github.com/markloev/anagram-magic/common"
 )
 
 //HandleChangeTiles handles sending the updated list of selected tiles to the opponent

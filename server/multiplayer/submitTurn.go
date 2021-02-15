@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"../common"
+	"github.com/markloev/anagram-magic/common"
 )
 
 type submitTurnData struct {

@@ -182,11 +182,20 @@ getScore validWord tiles =
 
 restartTimer : Int -> Game -> Game
 restartTimer interval game =
+    let
+        time =
+            game.time
+
+        updatedTime =
+            { time
+                | currentTime = Time.millisToPosix 0
+                , startedTime = Time.millisToPosix 0
+                , timeInterval = interval
+                , paused = False
+            }
+    in
     { game
-        | currentTime = Time.millisToPosix 0
-        , startedTime = Time.millisToPosix 0
-        , timeInterval = interval
-        , elapsedTime = 0
+        | time = updatedTime
     }
 
 

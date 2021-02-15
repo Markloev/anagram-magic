@@ -3,7 +3,7 @@ package multiplayer
 import (
 	"log"
 
-	"../common"
+	"github.com/markloev/anagram-magic/common"
 )
 
 //HandleReceiveTiles handles notifying the opponent that tiles for the round have been selected by the current player

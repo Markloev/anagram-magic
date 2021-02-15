@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	"../common"
+	"github.com/markloev/anagram-magic/common"
 )
 
 type roundCompleteData struct {

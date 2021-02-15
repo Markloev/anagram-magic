@@ -6,8 +6,8 @@ import (
 
 	"github.com/gorilla/websocket"
 
-	"../common"
-	"../multiplayer"
+	"github.com/markloev/anagram-magic/common"
+	"github.com/markloev/anagram-magic/multiplayer"
 )
 
 //WS handles opening of web socket
@@ -38,7 +38,7 @@ func WS(w http.ResponseWriter, req *http.Request) {
 		var incMessage common.Message
 		err := currentClient.ReadJSON(&incMessage)
 		if err != nil {
-			common.ForceEndGame(err, currentClient)
+			common.ForceEndGame(currentClient, err)
 			delete(common.Clients, currentClient)
 			break
 		}
