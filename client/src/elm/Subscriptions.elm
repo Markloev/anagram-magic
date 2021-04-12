@@ -1,15 +1,13 @@
 module Subscriptions exposing (subscriptions)
 
 import Browser.Events
-import Constants exposing (timeInterval)
-import Game exposing (Game, GameState(..), Phase(..))
+import Game exposing (GameState(..), Phase(..))
 import Json.Decode as Decode
+import Model exposing (Model)
 import Msg exposing (Msg(..))
-import Multiplayer exposing (listTilesDecoderResult)
 import Ports
-import Time
-import Types exposing (Model)
-import WebSocket exposing (SocketStatus(..))
+import WebSocket.Multiplayer exposing (listTilesDecoderResult)
+import WebSocket.WebSocket as WebSocket exposing (SocketStatus(..))
 
 
 subscriptions : Model -> Sub Msg
@@ -20,13 +18,13 @@ subscriptions model =
                 (\event ->
                     case event of
                         WebSocket.Connected info ->
-                            SocketConnect info
+                            WebSocketConnect info
 
                         WebSocket.StringMessage _ message ->
                             ReceivedString message
 
                         WebSocket.Closed _ unsentBytes reason ->
-                            Msg.SocketClosed unsentBytes reason
+                            WebSocketClosed unsentBytes reason
 
                         WebSocket.Error _ ->
                             Msg.Error "WebSocket Error"
@@ -43,8 +41,8 @@ subscriptions model =
 
                     else
                         Sub.batch
-                            [ -- tick g
-                            Ports.receiveRandomTiles (listTilesDecoderResult >> ReceiveRandomTiles g)
+                            [ Ports.receiveRandomTiles
+                                (listTilesDecoderResult >> ReceiveRandomTiles g)
                             , Ports.receiveShuffledTiles (listTilesDecoderResult >> ReceiveShuffledTiles g)
                             ]
 
@@ -56,11 +54,6 @@ subscriptions model =
         , Browser.Events.onKeyUp (Decode.map KeyPressed keyDecoder)
         , subs
         ]
-
-
-tick : Game -> Sub Msg
-tick game =
-    Time.every timeInterval (Tick game)
 
 
 keyDecoder : Decode.Decoder String

@@ -16,7 +16,7 @@ type roundCompleteData struct {
 	Phase    string `json:"phase"`
 }
 
-//HandleRoundComplete sends message to both clients to start timers for "Round Complete" phase
+//HandleRoundComplete sends message to both clients to begin "Round Complete" phase
 func HandleRoundComplete(paramsData []byte) {
 	var data roundCompleteData
 	common.DataToJSON(&data, paramsData)
@@ -42,10 +42,10 @@ func HandleRoundComplete(paramsData []byte) {
 		common.Clients[opponentClient].NextRound = false
 		common.Clients[opponentClient].FinalRoundWord = randomWord
 		common.Clients[currentClient].FinalRoundWord = randomWord
-		//update current client in order to start timer for "Round Complete" phase
+		//update current client in order to begin "Round Complete" phase
 		common.WriteJSON(currentClient, returnJSON)
 
-		//update opponent client in order to start timer for "Round Complete" phase
+		//update opponent client in order to begin "Round Complete" phase
 		common.WriteJSON(opponentClient, returnJSON)
 	} else { //if opponent hasn't selected "Next Round" yet, set the current user's NextRound status to true
 		common.Clients[currentClient].NextRound = true

@@ -1,10 +1,10 @@
-module Multiplayer exposing (..)
+module WebSocket.Multiplayer exposing (..)
 
 import Game exposing (Phase(..), SpecificRound(..), Tile)
-import Helper exposing (listTilesEncoder)
 import Json.Decode as Decode
 import Json.Encode as Encode
-import WebSocket
+import Utils.CoreHelpers exposing (listTilesEncoder)
+import WebSocket.WebSocket
 
 
 type Event
@@ -63,7 +63,7 @@ eventDecoder =
 
 basicEncoder : String -> String -> Encode.Value
 basicEncoder eventType playerId =
-    WebSocket.eventEncoder eventType (Encode.string playerId)
+    WebSocket.WebSocket.eventEncoder eventType (Encode.string playerId)
 
 
 receiveTilesEncoder : List Tile -> String -> Encode.Value
@@ -72,7 +72,7 @@ receiveTilesEncoder tiles playerId =
         [ ( "playerId", Encode.string playerId )
         , ( "tiles", listTilesEncoder tiles )
         ]
-        |> WebSocket.eventEncoder "receiveTiles"
+        |> WebSocket.WebSocket.eventEncoder "receiveTiles"
 
 
 submitTurnEncoder : Phase -> List Tile -> String -> Encode.Value
@@ -82,7 +82,7 @@ submitTurnEncoder phase tiles playerId =
         , ( "tiles", listTilesEncoder tiles )
         , phaseEncoder phase
         ]
-        |> WebSocket.eventEncoder "submitTurn"
+        |> WebSocket.WebSocket.eventEncoder "submitTurn"
 
 
 sharedTilesEncoder : List Tile -> String -> Encode.Value
@@ -91,7 +91,7 @@ sharedTilesEncoder tiles playerId =
         [ ( "playerId", Encode.string playerId )
         , ( "tiles", listTilesEncoder tiles )
         ]
-        |> WebSocket.eventEncoder "changeTiles"
+        |> WebSocket.WebSocket.eventEncoder "changeTiles"
 
 
 roundCompleteEncoder : Phase -> String -> Encode.Value
@@ -100,7 +100,7 @@ roundCompleteEncoder phase playerId =
         [ ( "playerId", Encode.string playerId )
         , phaseEncoder phase
         ]
-        |> WebSocket.eventEncoder "roundComplete"
+        |> WebSocket.WebSocket.eventEncoder "roundComplete"
 
 
 phaseEncoder : Phase -> ( String, Encode.Value )

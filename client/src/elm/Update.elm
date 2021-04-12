@@ -3,17 +3,15 @@ module Update exposing (update)
 import Base64
 import Constants
 import Game exposing (GameState(..), Phase(..), SpecificRound(..), initGame)
-import Helper exposing (andThen, getConnectionInfo, getScore, listTilesEncoder, mkCmd, restartTimer, setNextPhase, toLetter, wordToTiles)
 import Json.Decode as Decode
 import List
 import List.Extra as LE
+import Model exposing (Model)
 import Msg exposing (Msg(..))
-import Multiplayer
 import Ports exposing (getRandomConsonant, getRandomTiles, getRandomVowel, shuffleTiles)
-import Prelude exposing (iff)
-import Time
-import Types exposing (Model)
-import WebSocket exposing (SocketStatus(..))
+import Utils.CoreHelpers exposing (addNone, getConnectionInfo, getScore, listTilesEncoder, mkCmd, setNextPhase, toLetter, wordToTiles)
+import WebSocket.Multiplayer as Multiplayer
+import WebSocket.WebSocket as WebSocket exposing (SocketStatus(..))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -31,71 +29,6 @@ update msg model =
             , WebSocket.sendJsonString
                 (getConnectionInfo model.socketInfo)
                 (Multiplayer.basicEncoder "stopSearch" model.playerId)
-            )
-
-        Tick game posix ->
-            let
-                ( updatedModel, cmd ) =
-                    let
-                        time =
-                            game.time
-
-                        secondsPassed =
-                            Time.posixToMillis time.currentTime
-                                - Time.posixToMillis time.startedTime
-                                |> Time.millisToPosix
-                                |> Time.toSecond Time.utc
-
-                        ( updatedGame, timedCmd ) =
-                            if secondsPassed == game.time.timeInterval then
-                                let
-                                    updatedTime =
-                                        { time
-                                            | currentTime = posix
-                                            , startedTime = posix
-                                            , paused = True
-                                        }
-                                in
-                                ( { game
-                                    | time = updatedTime
-                                  }
-                                , case game.phase of
-                                    Waiting _ ->
-                                        Cmd.none
-
-                                    TileSelection _ ->
-                                        GetRandom
-                                            |> mkCmd
-
-                                    Round _ ->
-                                        Submit game
-                                            |> mkCmd
-
-                                    CompletedRound _ ->
-                                        NextRound game
-                                            |> mkCmd
-
-                                    CompletedGame ->
-                                        Cmd.none
-                                )
-
-                            else
-                                let
-                                    updatedTime =
-                                        { time
-                                            | currentTime = posix
-                                        }
-                                in
-                                ( { game
-                                    | time = updatedTime
-                                  }
-                                , Cmd.none
-                                )
-                    in
-                    ( { model | gameState = Started updatedGame }, timedCmd )
-            in
-            ( updatedModel
-            , cmd
             )
 
         KeyPressed key ->
@@ -288,19 +221,18 @@ update msg model =
                                             , shared = updatedShared
                                             , phase = setNextPhase game.tileSelectionTurn game.phase
                                           }
-                                            |> restartTimer Constants.roundTimeSeconds
                                         , WebSocket.sendJsonString
                                             (getConnectionInfo model.socketInfo)
                                             (Multiplayer.receiveTilesEncoder tilesResult model.playerId)
                                         )
 
                                     else
-                                        ( { game | availableTiles = tilesResult }, Cmd.none )
+                                        addNone { game | availableTiles = tilesResult }
                             in
                             ( newGameState, multiplayerPhaseCmd )
 
                         Err _ ->
-                            ( game, Cmd.none )
+                            addNone game
             in
             ( { model | gameState = Started updatedGame }, cmd )
 
@@ -321,9 +253,7 @@ update msg model =
                         Err _ ->
                             game
             in
-            ( { model | gameState = Started updatedGameState }
-            , Cmd.none
-            )
+            addNone { model | gameState = Started updatedGameState }
 
         RemoveTileBackspace game ->
             let
@@ -450,9 +380,7 @@ update msg model =
                         | phase = setNextPhase game.tileSelectionTurn game.phase
                     }
             in
-            ( { model | gameState = Started updatedGame }
-            , Cmd.none
-            )
+            addNone { model | gameState = Started updatedGame }
 
         EndGame ->
             ( { model | gameState = NotStarted }
@@ -461,23 +389,22 @@ update msg model =
                 (Multiplayer.basicEncoder "endGame" model.playerId)
             )
 
-        SocketConnect info ->
-            ( { model | socketInfo = SocketConnected info }, Cmd.none )
+        WebSocketConnect info ->
+            addNone { model | socketInfo = SocketConnected info }
 
-        Msg.SocketClosed code reason ->
-            ( { model
-                | socketInfo = WebSocket.SocketClosed code reason
-                , gameState = NotStarted
-              }
-            , Cmd.none
-            )
+        WebSocketClosed code reason ->
+            addNone
+                { model
+                    | socketInfo = WebSocket.SocketClosed code reason
+                    , gameState = NotStarted
+                }
 
         ReceivedString eventObject ->
             let
                 ( newModel, cmd ) =
                     case Decode.decodeString Multiplayer.eventDecoder eventObject of
                         Err _ ->
-                            ( model, Cmd.none )
+                            addNone model
 
                         Ok event ->
                             case event of
@@ -492,9 +419,8 @@ update msg model =
 
                                         updatedGame =
                                             initGame tileSelectionTurn opponentId updatedPhase
-                                                |> restartTimer Constants.tileSelectionSeconds
                                     in
-                                    ( { model | gameState = Started updatedGame }, Cmd.none )
+                                    addNone { model | gameState = Started updatedGame }
 
                                 Multiplayer.RoundComplete randomWord ->
                                     let
@@ -519,7 +445,7 @@ update msg model =
                                                     )
 
                                                 Nothing ->
-                                                    ( [], Cmd.none )
+                                                    addNone []
 
                                         updatedGameState =
                                             case model.gameState of
@@ -534,15 +460,13 @@ update msg model =
                                                             }
                                                     in
                                                     Started
-                                                        ({ game
+                                                        { game
                                                             | availableTiles = availableTiles
                                                             , selectedTiles = []
                                                             , waitingForUser = False
                                                             , phase = setNextPhase game.tileSelectionTurn game.phase
                                                             , shared = updatedShared
-                                                         }
-                                                            |> restartTimer Constants.tileSelectionSeconds
-                                                        )
+                                                        }
 
                                                 _ ->
                                                     model.gameState
@@ -555,18 +479,16 @@ update msg model =
                                             case model.gameState of
                                                 Started game ->
                                                     Started
-                                                        ({ game
+                                                        { game
                                                             | availableTiles = availableTiles
                                                             , waitingForUser = False
                                                             , phase = setNextPhase game.tileSelectionTurn game.phase
-                                                         }
-                                                            |> restartTimer Constants.roundTimeSeconds
-                                                        )
+                                                        }
 
                                                 _ ->
                                                     model.gameState
                                     in
-                                    ( { model | gameState = updatedGameState }, Cmd.none )
+                                    addNone { model | gameState = updatedGameState }
 
                                 Multiplayer.ChangeTiles selectedWord ->
                                     let
@@ -595,7 +517,7 @@ update msg model =
                                                 _ ->
                                                     model.gameState
                                     in
-                                    ( { model | gameState = updatedGameState }, Cmd.none )
+                                    addNone { model | gameState = updatedGameState }
 
                                 Multiplayer.SubmitTurn ->
                                     let
@@ -616,7 +538,7 @@ update msg model =
                                                 _ ->
                                                     model.gameState
                                     in
-                                    ( { model | gameState = updatedGameState }, Cmd.none )
+                                    addNone { model | gameState = updatedGameState }
 
                                 Multiplayer.SubmitTurnComplete playerValidWord opponentValidWord ->
                                     let
@@ -645,21 +567,19 @@ update msg model =
                                                             }
                                                     in
                                                     Started
-                                                        ({ game
+                                                        { game
                                                             | validWord = playerValidWord
                                                             , totalScore = playerTotalScore
                                                             , tileSelectionTurn = not game.tileSelectionTurn
                                                             , waitingForUser = False
                                                             , phase = setNextPhase (not game.tileSelectionTurn) game.phase
                                                             , shared = updatedShared
-                                                         }
-                                                            |> restartTimer Constants.roundResultSeconds
-                                                        )
+                                                        }
 
                                                 _ ->
                                                     model.gameState
                                     in
-                                    ( { model | gameState = updatedGameState }, Cmd.none )
+                                    addNone { model | gameState = updatedGameState }
 
                                 Multiplayer.ForceEndGame ->
                                     let
@@ -667,19 +587,17 @@ update msg model =
                                             case model.gameState of
                                                 Started game ->
                                                     Started
-                                                        ({ game
+                                                        { game
                                                             | errorOccurred = True
                                                             , phase = CompletedGame
-                                                         }
-                                                            |> restartTimer Constants.roundResultSeconds
-                                                        )
+                                                        }
 
                                                 _ ->
                                                     model.gameState
                                     in
-                                    ( { model | gameState = updatedGameState }, Cmd.none )
+                                    addNone { model | gameState = updatedGameState }
             in
             ( newModel, cmd )
 
         Error _ ->
-            ( model, Cmd.none )
+            addNone model

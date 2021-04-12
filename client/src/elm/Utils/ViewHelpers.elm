@@ -1,10 +1,56 @@
-module Styles exposing (..)
+module Utils.ViewHelpers exposing (..)
 
-import Game exposing (Tile)
+import Constants exposing (consonants, maxConsonantOrVowel, vowels)
+import Game exposing (Phase(..), SpecificRound(..), Tile)
 import Html exposing (Attribute, Html, button, div, text)
 import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)
 import Msg exposing (Msg(..))
+import WebSocket.WebSocket exposing (SocketStatus(..))
+
+
+repeatHtml : Int -> Html Msg -> List (Html Msg)
+repeatHtml n html =
+    if n <= 0 then
+        []
+
+    else
+        List.append (repeatHtml (n - 1) html) [ html ]
+
+
+hasMaxConsonants : List Tile -> Bool
+hasMaxConsonants tiles =
+    List.length
+        (List.filter
+            (\isConsonant -> isConsonant == True)
+            (List.map
+                (\tile ->
+                    List.member tile.letter consonants
+                )
+                tiles
+            )
+        )
+        >= maxConsonantOrVowel
+
+
+hasMaxVowels : List Tile -> Bool
+hasMaxVowels tiles =
+    List.length
+        (List.filter
+            (\isVowel -> isVowel == True)
+            (List.map
+                (\tile ->
+                    List.member tile.letter vowels
+                )
+                tiles
+            )
+        )
+        >= maxConsonantOrVowel
+
+
+unshuffleFinalWord : List Tile -> List Tile
+unshuffleFinalWord tiles =
+    List.sortBy (\tile -> tile.originalIndex) tiles
 
 
 styledButton : Msg -> String -> Maybe String -> Html Msg
