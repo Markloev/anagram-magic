@@ -1,7 +1,5 @@
 module Game exposing (..)
 
-import Time exposing (Posix)
-
 
 type GameState
     = NotStarted
@@ -11,7 +9,6 @@ type GameState
 
 type alias Game =
     { phase : Phase
-    , time : Time
     , tileSelectionTurn : Bool
     , selectedTiles : List Tile
     , availableTiles : List Tile
@@ -35,7 +32,6 @@ type alias Shared =
 initGame : Bool -> String -> Phase -> Game
 initGame tileSelectionTurn opponentId phase =
     { phase = phase
-    , time = initTime
     , tileSelectionTurn = tileSelectionTurn
     , selectedTiles = []
     , availableTiles = []
@@ -54,23 +50,6 @@ initShared opponentId =
     , totalScore = 0
     , waitingForUser = False
     , validWord = False
-    }
-
-
-type alias Time =
-    { currentTime : Posix
-    , startedTime : Posix
-    , timeInterval : Int
-    , paused : Bool
-    }
-
-
-initTime : Time
-initTime =
-    { currentTime = Time.millisToPosix 0
-    , startedTime = Time.millisToPosix 0
-    , timeInterval = 0
-    , paused = True
     }
 
 

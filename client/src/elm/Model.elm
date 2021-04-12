@@ -1,7 +1,7 @@
-module Types exposing (Model, initModel)
+module Model exposing (Model, initModel)
 
 import Game exposing (GameState(..))
-import WebSocket exposing (SocketStatus(..))
+import WebSocket.WebSocket exposing (SocketStatus(..))
 
 
 type alias Model =
